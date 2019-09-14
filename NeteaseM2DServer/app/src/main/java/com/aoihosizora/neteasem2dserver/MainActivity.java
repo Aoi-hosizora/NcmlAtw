@@ -25,6 +25,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {
+                    Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE
+            }, REQUEST_PERMISSION_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                Toast.makeText(this, "Grant permission failed", Toast.LENGTH_LONG).show();
+        }
     }
 
     @BindView(R.id.id_btn_server)
@@ -32,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.id_btn_server)
     void on_btn_server_clicked(View view) {
-        Intent intent = new Intent(this, MainService.class);
+        Intent intent = new Intent(this, MusicNotificationService.class);
         if (m_btn_server.getText().equals(getString(R.string.btn_start))) {
             m_btn_server.setText(getString(R.string.btn_stop));
             startService(intent);
