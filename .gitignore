@@ -12,3 +12,9 @@ captures/
 local.properties
 
 *.exe
+
+bin/
+obj/
+Debug/
+Release/
+
