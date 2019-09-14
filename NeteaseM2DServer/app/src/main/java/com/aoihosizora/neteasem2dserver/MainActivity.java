@@ -1,12 +1,9 @@
 package com.aoihosizora.neteasem2dserver;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -75,9 +72,11 @@ public class MainActivity extends AppCompatActivity {
             }
             catch (Exception ex) { }
             startService(ServiceIntent);
+            Toast.makeText(this, "Start service success", Toast.LENGTH_SHORT).show();
         } else {
             m_btn_server.setText(getString(R.string.btn_start));
             stopService(ServiceIntent);
+            Toast.makeText(this, "Stop service success", Toast.LENGTH_SHORT).show();
         }
     }
 
