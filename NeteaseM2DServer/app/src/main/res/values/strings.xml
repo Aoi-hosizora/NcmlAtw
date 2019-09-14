@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">NeteaseM2DServer</string>
+    <string name="btn_start">Start Server</string>
+    <string name="btn_stop">Stop Server</string>
+</resources>

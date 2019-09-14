@@ -1,0 +1,14 @@
+build/
+captures/
+
+.vscode/
+.idea/
+.settings/
+
+*.iml
+.gradle
+.DS_Store
+.externalNativeBuild
+local.properties
+
+*.exe
