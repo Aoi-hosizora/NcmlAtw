@@ -41,6 +41,7 @@
             this.buttonExit = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.timerSong = new System.Windows.Forms.Timer(this.components);
+            this.buttonOpenWeb = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.SuspendLayout();
             // 
@@ -67,7 +68,7 @@
             0,
             0});
             this.numericUpDownPort.Name = "numericUpDownPort";
-            this.numericUpDownPort.Size = new System.Drawing.Size(75, 23);
+            this.numericUpDownPort.Size = new System.Drawing.Size(69, 23);
             this.numericUpDownPort.TabIndex = 1;
             this.numericUpDownPort.Value = new decimal(new int[] {
             1212,
@@ -77,25 +78,26 @@
             // 
             // buttonListen
             // 
-            this.buttonListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonListen.Location = new System.Drawing.Point(200, 134);
+            this.buttonListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonListen.Location = new System.Drawing.Point(12, 134);
             this.buttonListen.Name = "buttonListen";
             this.buttonListen.Size = new System.Drawing.Size(75, 25);
-            this.buttonListen.TabIndex = 8;
+            this.buttonListen.TabIndex = 7;
             this.buttonListen.Text = "监听端口";
             this.buttonListen.UseVisualStyleBackColor = true;
             this.buttonListen.Click += new System.EventHandler(this.buttonListen_Click);
             // 
             // buttonShowLyric
             // 
-            this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonShowLyric.Enabled = false;
-            this.buttonShowLyric.Location = new System.Drawing.Point(99, 134);
+            this.buttonShowLyric.Location = new System.Drawing.Point(93, 134);
             this.buttonShowLyric.Name = "buttonShowLyric";
             this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
-            this.buttonShowLyric.TabIndex = 7;
+            this.buttonShowLyric.TabIndex = 8;
             this.buttonShowLyric.Text = "打开桌面歌词";
             this.buttonShowLyric.UseVisualStyleBackColor = true;
+            this.buttonShowLyric.Click += new System.EventHandler(this.buttonShowLyric_Click);
             // 
             // label2
             // 
@@ -148,11 +150,11 @@
             // 
             // buttonExit
             // 
-            this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonExit.Location = new System.Drawing.Point(281, 134);
+            this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonExit.Location = new System.Drawing.Point(275, 134);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(75, 25);
-            this.buttonExit.TabIndex = 9;
+            this.buttonExit.TabIndex = 10;
             this.buttonExit.Text = "退出";
             this.buttonExit.UseVisualStyleBackColor = true;
             this.buttonExit.Click += new System.EventHandler(this.buttonExit_Click);
@@ -161,21 +163,34 @@
             // 
             this.timerSong.Tick += new System.EventHandler(this.timerSong_Tick);
             // 
+            // buttonOpenWeb
+            // 
+            this.buttonOpenWeb.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonOpenWeb.Enabled = false;
+            this.buttonOpenWeb.Location = new System.Drawing.Point(194, 134);
+            this.buttonOpenWeb.Name = "buttonOpenWeb";
+            this.buttonOpenWeb.Size = new System.Drawing.Size(75, 25);
+            this.buttonOpenWeb.TabIndex = 9;
+            this.buttonOpenWeb.Text = "打开网页";
+            this.buttonOpenWeb.UseVisualStyleBackColor = true;
+            this.buttonOpenWeb.Click += new System.EventHandler(this.buttonOpenWeb_Click);
+            // 
             // MainForm
             // 
             this.AcceptButton = this.buttonListen;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(368, 171);
+            this.ClientSize = new System.Drawing.Size(362, 171);
+            this.Controls.Add(this.buttonOpenWeb);
             this.Controls.Add(this.buttonExit);
+            this.Controls.Add(this.buttonShowLyric);
+            this.Controls.Add(this.buttonListen);
             this.Controls.Add(this.labelSongDuration);
             this.Controls.Add(this.labelSongArtist);
             this.Controls.Add(this.labelSongAlbum);
             this.Controls.Add(this.labelSongTitle);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.buttonShowLyric);
-            this.Controls.Add(this.buttonListen);
             this.Controls.Add(this.numericUpDownPort);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -205,6 +220,7 @@
         private System.Windows.Forms.Button buttonExit;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.Timer timerSong;
+        private System.Windows.Forms.Button buttonOpenWeb;
     }
 }
 

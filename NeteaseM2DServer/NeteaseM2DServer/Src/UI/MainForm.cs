@@ -9,6 +9,8 @@ using System.Windows.Forms;
 using NeteaseM2DServer.Src.Service;
 using System.Threading;
 using NeteaseM2DServer.Src.Model;
+using NeteaseM2DServer.Src.Api;
+using System.Text.RegularExpressions;
 
 namespace NeteaseM2DServer.Src.UI
 {
@@ -17,6 +19,8 @@ namespace NeteaseM2DServer.Src.UI
         public MainForm() {
             InitializeComponent();
         }
+
+#region 线程服务
 
         private Thread socketThread;
         private SocketService socketService;
@@ -29,27 +33,26 @@ namespace NeteaseM2DServer.Src.UI
             socketService = new SocketService();
             socketService.port = port;
 
-            socketService.listenCb = (ok) =>
-            {
+            socketService.listenCb = (ok) => {
                 // コントロールが作成されたスレッド以外のスレッドからコントロール 'buttonListen' がアクセスされました
-                 this.Invoke(new Action(() => {
-                     Global.isListening = buttonShowLyric.Enabled = ok;
-                     numericUpDownPort.Enabled = !ok;
-                     if (ok) {
-                         labelSongDuration.Text = "正在等待歌曲...";
-                         buttonListen.Text = "取消监听";
+                this.Invoke(new Action(() => {
+                    Global.isListening = ok;
+                    numericUpDownPort.Enabled = !ok;
+                    if (ok) {
+                        labelSongDuration.Text = "正在等待歌曲...";
+                        buttonListen.Text = "取消监听";
 
-                         labelSongTitle.Text = "未知歌曲";
-                         labelSongArtist.Text = "未知歌手";
-                         labelSongAlbum.Text = "未知专辑";
-                     }
-                     else {
-                         labelSongDuration.Text = "未监听...";
-                         buttonListen.Text = "监听端口";
-                         timerSong.Enabled = false;
-                         MessageBox.Show("端口监听失败，可能是被占用。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                     }
-                 }));
+                        labelSongTitle.Text = "未知歌曲";
+                        labelSongArtist.Text = "未知歌手";
+                        labelSongAlbum.Text = "未知专辑";
+                    }
+                    else {
+                        labelSongDuration.Text = "未监听...";
+                        buttonListen.Text = "监听端口";
+                        timerSong.Enabled = false;
+                        MessageBox.Show("端口监听失败，可能是被占用。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }));
             };
 
             socketService.pingCb = (ok) => { };
@@ -63,14 +66,15 @@ namespace NeteaseM2DServer.Src.UI
         }
 
         /// <summary>
-        /// Socket 获取 MetaData 回调
+        /// Socket 获取 MetaData 歌曲信息 回调
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="obj">Metadata</param>
         private void SocketMetaDataCb(Metadata obj) {
             Console.WriteLine(obj.ToString());
             if (!Global.isListening) return;
 
             this.Invoke(new Action(() => {
+                buttonShowLyric.Enabled = buttonOpenWeb.Enabled = true;
                 labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = true;
                 Global.currentSong = obj;
 
@@ -81,14 +85,17 @@ namespace NeteaseM2DServer.Src.UI
                 toolTip.SetToolTip(labelSongArtist, labelSongArtist.Text.Substring(3));
                 toolTip.SetToolTip(labelSongAlbum, labelSongAlbum.Text.Substring(3));
 
+                // TODO 获取歌词
+                Search();
+
                 timerSong.Enabled = true;
             }));
         }
 
         /// <summary>
-        /// Socket 获取 PlatbackState 回调
+        /// Socket 获取 PlatbackState 播放状态 回调
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="obj">PlaybackState</param>
         private void SocketPlaybackStateCb(PlaybackState obj) {
             Global.stateUpdateMS = GetTimeStamp();
 
@@ -111,41 +118,16 @@ namespace NeteaseM2DServer.Src.UI
                 socketThread.Abort();
         }
 
-        private void MainForm_Load(object sender, EventArgs e) {
-            labelSongDuration.Text = "未监听...";
-        }
-
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
-            StopThread();
-        }
-
-        private void buttonListen_Click(object sender, EventArgs e) {
-            if ((sender as Button).Text == "监听端口") {
-                StartThread(int.Parse(numericUpDownPort.Value.ToString()));
-            }
-            else {
-                StopThread();
-                labelSongDuration.Text = "未监听...";
-                buttonListen.Text = "监听端口";
-                Global.isListening = buttonShowLyric.Enabled = false;
-                numericUpDownPort.Enabled = true;
-                timerSong.Enabled = false;
-                labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = false;
-            }
-            
-        }
-
-        private void buttonExit_Click(object sender, EventArgs e) {
-            this.Close();
-        }
-
+        /// <summary>
+        /// 时间更新
+        /// </summary>
         private void timerSong_Tick(object sender, EventArgs e) {
             long now = GetTimeStamp();
 
             if (!Global.currentState.isPlay) return;
             string currentPos = "未知", duration = "未知";
             if (Global.currentState != null) {
-                double s = Global.currentState.currentPosSecond + (double) ((now - Global.stateUpdateMS) / 1000.0);
+                double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
                 currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
             }
             if (Global.currentSong != null) {
@@ -156,9 +138,111 @@ namespace NeteaseM2DServer.Src.UI
             labelSongDuration.Text = currentPos + " / " + duration;
         }
 
+
+#endregion
+
+#region 歌曲查找
+
+        /// <summary>
+        /// 查找歌曲 Id 和 歌词
+        /// </summary>
+        public void Search() {
+            var api = new NeteaseMusicAPI();
+
+            Regex reg = new Regex("(.*)");
+            string searchStr = reg.Replace(Global.currentSong.title, "") + " " + Global.currentSong.artist + " " + Global.currentSong.album;
+
+            SearchResult ret = api.Search(searchStr);
+            if (ret.Result != null && ret.Result.Songs != null && ret.Result.Songs.Count > 0)
+                Global.MusicId = ret.Result.Songs.ElementAt(0).Id;
+            else
+                Global.MusicId = -1;
+         
+
+            // TODO 查找歌词
+        }
+
+#endregion
+
+#region 界面交互
+
+        /// <summary>
+        /// 获取时间戳
+        /// </summary>
+        /// <returns>13位时间戳</returns>
         private long GetTimeStamp() {
             TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
             return Int64.Parse(Convert.ToInt64(ts.TotalMilliseconds).ToString());
         }
+
+
+        private void MainForm_Load(object sender, EventArgs e) {
+            labelSongDuration.Text = "未监听...";
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
+            StopThread();
+        }
+
+        /// <summary>
+        /// 监听 / 取消监听
+        /// </summary>
+        private void buttonListen_Click(object sender, EventArgs e) {
+            if ((sender as Button).Text == "监听端口") {
+                StartThread(int.Parse(numericUpDownPort.Value.ToString()));
+            }
+            else {
+                StopThread();
+                labelSongDuration.Text = "未监听...";
+                buttonListen.Text = "监听端口";
+
+                numericUpDownPort.Enabled = true;
+                timerSong.Enabled = false;
+                labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = false;
+
+                Global.isListening = buttonShowLyric.Enabled = buttonOpenWeb.Enabled = false;
+                Global.currentSong = null;
+                Global.currentState = null;
+                Global.isListening = false;
+                Global.MusicId = -1;
+            }
+
+        }
+
+        /// <summary>
+        /// 退出
+        /// </summary>
+        private void buttonExit_Click(object sender, EventArgs e) {
+            this.Close();
+        }
+
+        /// <summary>
+        /// 打开歌词
+        /// </summary>
+        private void buttonShowLyric_Click(object sender, EventArgs e) {
+
+        }
+
+        /// <summary>
+        /// 打开网页
+        /// </summary>
+        private void buttonOpenWeb_Click(object sender, EventArgs e)
+        {
+            if (Global.MusicId != -1) {
+                string url = "https://music.163.com/#/song?id=" + Global.MusicId;
+                System.Diagnostics.Process.Start(url);
+            }
+            else {
+                DialogResult ret =
+                    MessageBox.Show("未找到歌曲 \"" + Global.currentSong.title + "\"。", "错误", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
+                if (ret == DialogResult.Retry) {
+                    Search();
+                    buttonOpenWeb_Click(sender, e);
+                }
+            }
+        }
+
+#endregion
+
     }
 }

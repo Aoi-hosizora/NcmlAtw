@@ -12,5 +12,7 @@ namespace NeteaseM2DServer.Src.Model
 
         public static Metadata currentSong { get; set; }
         public static PlaybackState currentState { get; set; }
+
+        public static long MusicId { get; set; }
     }
 }
