@@ -18,3 +18,7 @@ obj/
 Debug/
 Release/
 
+*.suo
+*.user
+
+NeteaseM2DServer_Tmp/
