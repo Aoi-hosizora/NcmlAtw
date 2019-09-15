@@ -5,63 +5,84 @@ using System.Text;
 using System.Net.Sockets;
 using System.Net;
 using System.Runtime.CompilerServices;
+using NeteaseM2DServer.Src.Model;
 
 namespace NeteaseM2DServer.Src.Service
 {
-    class SocketService
-    {
+    class SocketService {
+
+        public int port { get; set; }
+        public PingCallBackDelegate pingCb;
+        public PlaybackStateCallBackDelegate playbackStateCb;
+        public MetadataCallBackDelegate metaDataCb;
+
+        public delegate void PingCallBackDelegate(bool ok);
+        public delegate void PlaybackStateCallBackDelegate(PlaybackState obj);
+        public delegate void MetadataCallBackDelegate(Metadata obj);
 
         /// <summary>
         /// 新线程，委托调用 `RunService`
         /// </summary>
-        /// <param name="obj">int： 1212</param>
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void RunThread(object obj) {
-            if (obj == null)
-                return;
-            else {
-                try {
-                    RunService(Convert.ToInt32(obj));
-                }
-                catch (Exception) {
-                    return;
-                }
-            }
+        public void RunThread() {
+            if (port > 0 && port < 65536)
+                RunService(port);
         }
+
+        /// <summary>
+        /// TCP Listener
+        /// </summary>
+        public TcpListener serverListener;
 
         /// <summary>
         /// 监听 Socket 服务
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void RunService(int port) {
-            TcpListener listener = new TcpListener(new IPEndPoint(IPAddress.Parse("0.0.0.0"), port));
-            listener.Start();
+        public void RunService(int port) {
+            serverListener = new TcpListener(new IPEndPoint(IPAddress.Parse("0.0.0.0"), port));
+            serverListener.Start();
             while (true) {
-                TcpClient remoteClient = listener.AcceptTcpClient();
-                NetworkStream streamToClient = remoteClient.GetStream();
-                byte[] srcBuffer = new byte[2048];
-                int bytesRead;
+
+                TcpClient remoteClient;
                 try {
-                    string ret;
-                    lock (streamToClient) {
-                        bytesRead = streamToClient.Read(srcBuffer, 0, 1024);
-                        if (bytesRead == 0) {
-                            ret = "ping";
-                        }
-                        else {
-                            byte[] retBuffer = new byte[bytesRead - 1];
-                            Buffer.BlockCopy(srcBuffer, 0, retBuffer, 0, bytesRead - 1);
-                            ret = System.Text.Encoding.UTF8.GetString(retBuffer);
-                        }
-                       
-                        Console.WriteLine(ret);
-                    }
-                } catch (Exception ex) {
+                    // ブロック操作は WSACancelBlockingCall の呼び出しに割り込まれました。
+                    remoteClient = serverListener.AcceptTcpClient();
+                }
+                catch (Exception ex) {
                     Console.WriteLine(ex.Message);
+                    break;
+                }
+
+                try {
+                    using (NetworkStream remoteStream = remoteClient.GetStream()) {
+                        byte[] srcBuffer = new byte[2048];
+                        string ret;
+
+                        int bytesRead;
+                        lock (remoteStream) {
+                            bytesRead = remoteStream.Read(srcBuffer, 0, 2048);
+                            if (bytesRead == 0)
+                                pingCb(true); // ping
+                            else {
+                                byte[] retBuffer = new byte[bytesRead - 1];
+                                Buffer.BlockCopy(srcBuffer, 0, retBuffer, 0, bytesRead - 1);
+                                ret = System.Text.Encoding.UTF8.GetString(retBuffer);
+
+                                if (ret.StartsWith("{\"isPlay\":"))
+                                    playbackStateCb(PlaybackState.parseJson(ret)); // PlaybackState
+                                else
+                                    metaDataCb(Metadata.parseJson(ret)); // Metadata
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex) {
+                    Console.WriteLine(ex.Message);
+                }
+                finally {
+                    remoteClient.Close();
                 }
             }
         }
-
-
     }
 }

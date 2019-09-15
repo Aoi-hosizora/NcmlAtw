@@ -11,8 +11,12 @@ namespace NeteaseM2DServer.Src.Model
         public bool isPlay { get; set; }
         public double currentPosSecond { get; set; }
 
-        public PlaybackState parseJson(string json) {
+        public static PlaybackState parseJson(string json) {
             return JsonConvert.DeserializeObject<PlaybackState>(json);
+        }
+
+        public override string ToString() {
+            return JsonConvert.SerializeObject(this, Formatting.None);
         }
     }
 }

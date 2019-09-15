@@ -13,8 +13,12 @@ namespace NeteaseM2DServer.Src.Model
         public string album { get; set; }
         public double duration { get; set; }
 
-        public Metadata parseJson(string json) {
+        public static Metadata parseJson(string json) {
             return JsonConvert.DeserializeObject<Metadata>(json);
+        }
+
+        public override string ToString() {
+            return JsonConvert.SerializeObject(this, Formatting.None);
         }
     }
 }
