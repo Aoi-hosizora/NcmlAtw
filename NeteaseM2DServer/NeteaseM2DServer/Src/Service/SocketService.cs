@@ -12,10 +12,12 @@ namespace NeteaseM2DServer.Src.Service
     class SocketService {
 
         public int port { get; set; }
+        public SuccessListenCackDelegate listenCb;
         public PingCallBackDelegate pingCb;
         public PlaybackStateCallBackDelegate playbackStateCb;
         public MetadataCallBackDelegate metaDataCb;
 
+        public delegate void SuccessListenCackDelegate(bool ok);
         public delegate void PingCallBackDelegate(bool ok);
         public delegate void PlaybackStateCallBackDelegate(PlaybackState obj);
         public delegate void MetadataCallBackDelegate(Metadata obj);
@@ -30,7 +32,7 @@ namespace NeteaseM2DServer.Src.Service
         }
 
         /// <summary>
-        /// TCP Listener
+        /// TCP Socket 服务器
         /// </summary>
         public TcpListener serverListener;
 
@@ -38,11 +40,22 @@ namespace NeteaseM2DServer.Src.Service
         /// 监听 Socket 服务
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void RunService(int port) {
+        public void RunService(int port)
+        {
             serverListener = new TcpListener(new IPEndPoint(IPAddress.Parse("0.0.0.0"), port));
-            serverListener.Start();
-            while (true) {
+            try {
+                serverListener.Start();
+                listenCb(true);
+            }
+            catch (Exception ex) {
+                // 监听失败
+                Console.WriteLine(ex.Message);
+                listenCb(false);
+                return;
+            }
 
+            // 监听成功
+            while (true) {
                 TcpClient remoteClient;
                 try {
                     // ブロック操作は WSACancelBlockingCall の呼び出しに割り込まれました。
@@ -53,6 +66,7 @@ namespace NeteaseM2DServer.Src.Service
                     break;
                 }
 
+                // 收到数据
                 try {
                     using (NetworkStream remoteStream = remoteClient.GetStream()) {
                         byte[] srcBuffer = new byte[2048];

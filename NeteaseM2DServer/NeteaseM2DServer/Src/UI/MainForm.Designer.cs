@@ -29,8 +29,16 @@
         private void InitializeComponent()
         {
             this.label1 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.numericUpDownPort = new System.Windows.Forms.NumericUpDown();
+            this.buttonListen = new System.Windows.Forms.Button();
+            this.buttonShowLyric = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.labelSongTitle = new System.Windows.Forms.Label();
+            this.labelSongAlbum = new System.Windows.Forms.Label();
+            this.labelSongArtist = new System.Windows.Forms.Label();
+            this.labelSongDuration = new System.Windows.Forms.Label();
+            this.buttonExit = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -38,39 +46,128 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(12, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(272, 17);
+            this.label1.Size = new System.Drawing.Size(263, 17);
             this.label1.TabIndex = 0;
-            this.label1.Text = "请输入在本机监听的端口（用于安卓端的监听）：";
+            this.label1.Text = "请输入在本机监听的端口（用于安卓端的监听）:";
             // 
-            // numericUpDown1
+            // numericUpDownPort
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(290, 7);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            65536,
+            this.numericUpDownPort.Location = new System.Drawing.Point(281, 7);
+            this.numericUpDownPort.Maximum = new decimal(new int[] {
+            65535,
             0,
             0,
             0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
+            this.numericUpDownPort.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(82, 23);
-            this.numericUpDown1.TabIndex = 1;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            1,
+            this.numericUpDownPort.Name = "numericUpDownPort";
+            this.numericUpDownPort.Size = new System.Drawing.Size(75, 23);
+            this.numericUpDownPort.TabIndex = 1;
+            this.numericUpDownPort.Value = new decimal(new int[] {
+            1212,
             0,
             0,
             0});
+            // 
+            // buttonListen
+            // 
+            this.buttonListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonListen.Location = new System.Drawing.Point(200, 127);
+            this.buttonListen.Name = "buttonListen";
+            this.buttonListen.Size = new System.Drawing.Size(75, 25);
+            this.buttonListen.TabIndex = 8;
+            this.buttonListen.Text = "监听端口";
+            this.buttonListen.UseVisualStyleBackColor = true;
+            this.buttonListen.Click += new System.EventHandler(this.buttonListen_Click);
+            // 
+            // buttonShowLyric
+            // 
+            this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonShowLyric.Enabled = false;
+            this.buttonShowLyric.Location = new System.Drawing.Point(99, 127);
+            this.buttonShowLyric.Name = "buttonShowLyric";
+            this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
+            this.buttonShowLyric.TabIndex = 7;
+            this.buttonShowLyric.Text = "打开桌面歌词";
+            this.buttonShowLyric.UseVisualStyleBackColor = true;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 36);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(68, 17);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "当前歌曲：";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
+            // 
+            // labelSongTitle
+            // 
+            this.labelSongTitle.AutoSize = true;
+            this.labelSongTitle.Location = new System.Drawing.Point(12, 63);
+            this.labelSongTitle.Name = "labelSongTitle";
+            this.labelSongTitle.Size = new System.Drawing.Size(32, 17);
+            this.labelSongTitle.TabIndex = 4;
+            this.labelSongTitle.Text = "Title";
+            this.labelSongTitle.Visible = false;
+            // 
+            // labelSongAlbum
+            // 
+            this.labelSongAlbum.AutoSize = true;
+            this.labelSongAlbum.Location = new System.Drawing.Point(12, 85);
+            this.labelSongAlbum.Name = "labelSongAlbum";
+            this.labelSongAlbum.Size = new System.Drawing.Size(45, 17);
+            this.labelSongAlbum.TabIndex = 5;
+            this.labelSongAlbum.Text = "Album";
+            this.labelSongAlbum.Visible = false;
+            // 
+            // labelSongArtist
+            // 
+            this.labelSongArtist.AutoSize = true;
+            this.labelSongArtist.Location = new System.Drawing.Point(12, 107);
+            this.labelSongArtist.Name = "labelSongArtist";
+            this.labelSongArtist.Size = new System.Drawing.Size(38, 17);
+            this.labelSongArtist.TabIndex = 6;
+            this.labelSongArtist.Text = "Artist";
+            this.labelSongArtist.Visible = false;
+            // 
+            // labelSongDuration
+            // 
+            this.labelSongDuration.AutoSize = true;
+            this.labelSongDuration.Location = new System.Drawing.Point(73, 36);
+            this.labelSongDuration.Name = "labelSongDuration";
+            this.labelSongDuration.Size = new System.Drawing.Size(91, 17);
+            this.labelSongDuration.TabIndex = 3;
+            this.labelSongDuration.Text = "(00.00 / 00.00)";
+            // 
+            // buttonExit
+            // 
+            this.buttonExit.Location = new System.Drawing.Point(281, 127);
+            this.buttonExit.Name = "buttonExit";
+            this.buttonExit.Size = new System.Drawing.Size(75, 25);
+            this.buttonExit.TabIndex = 9;
+            this.buttonExit.Text = "退出";
+            this.buttonExit.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
+            this.AcceptButton = this.buttonListen;
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(384, 341);
-            this.Controls.Add(this.numericUpDown1);
+            this.ClientSize = new System.Drawing.Size(368, 164);
+            this.Controls.Add(this.buttonExit);
+            this.Controls.Add(this.labelSongDuration);
+            this.Controls.Add(this.labelSongArtist);
+            this.Controls.Add(this.labelSongAlbum);
+            this.Controls.Add(this.labelSongTitle);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.buttonShowLyric);
+            this.Controls.Add(this.buttonListen);
+            this.Controls.Add(this.numericUpDownPort);
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -79,7 +176,7 @@
             this.Text = "NeteaseM2D Setting";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -88,7 +185,15 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.NumericUpDown numericUpDownPort;
+        private System.Windows.Forms.Button buttonListen;
+        private System.Windows.Forms.Button buttonShowLyric;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelSongTitle;
+        private System.Windows.Forms.Label labelSongAlbum;
+        private System.Windows.Forms.Label labelSongArtist;
+        private System.Windows.Forms.Label labelSongDuration;
+        private System.Windows.Forms.Button buttonExit;
     }
 }
 

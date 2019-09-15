@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Src\Model\Global.cs" />
     <Compile Include="Src\Model\Metadata.cs" />
     <Compile Include="Src\Model\PlaybackState.cs" />
     <Compile Include="Src\Service\SocketService.cs" />
