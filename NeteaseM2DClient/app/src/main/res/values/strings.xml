@@ -11,12 +11,16 @@
     <string name="edt_port">8888</string>
 
     <string name="progress_linking">连接中&#8230;</string>
+
     <string name="alert_title">错误</string>
     <string name="alert_pos">确定</string>
+
+    <string name="alert_check_per">请先允许升程序访问系统通知。</string>
     <string name="alert_ip_format">IP 地址输入格式错误，请检查。</string>
     <string name="alert_port_format">端口应为 0 到 65535 内的纯数字，请检查。</string>
     <string name="alert_connect_failed">无法连接到PC端。</string>
     <string name="alert_disconnect_failed">断开连接错误。</string>
+    <string name="alert_break_connect">连接已断开。</string>
 
     <string name="tst_connect_success">连接成功</string>
     <string name="tst_auth_failed">授权失败</string>

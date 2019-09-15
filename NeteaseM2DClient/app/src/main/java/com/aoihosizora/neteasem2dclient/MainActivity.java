@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
@@ -25,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
     // public static String TAG = "MainActivity";
 
+    public static int REQUEST_NETWORK_PERMISSION_CODE = 1;
+
     private Intent ServiceIntent;
 
     @Override
@@ -33,12 +36,28 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.bind(this);
-        ServiceIntent = new Intent(this, MusicNotificationService.class);
+        ServiceIntent = new Intent(this, MainService.class);
 
+        // 服务事件
+        MainService.m_MainEvent = new MainService.MainEvent() {
+            @Override
+            @UiThread
+            public void onDisConnect() {
+                showAlert(getString(R.string.alert_break_connect));
+                on_ui_stop();
+            }
+        };
+
+        // 访问权限
         if (!isNotificationListenersEnabled()) {
-            Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            showAlert(getString(R.string.alert_check_per), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+            });
         }
     }
 
@@ -67,11 +86,11 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.id_edt_port)
     TextView m_edt_port;
 
-
     @OnClick(R.id.id_btn_service)
     @UiThread
     void on_btn_service_clicked() {
         if (m_btn_service.getText().equals(getString(R.string.btn_start))) {
+            // 开启服务
             final String ip_str = m_edt_ip.getText().toString();
             final String port_str = m_edt_port.getText().toString();
 
@@ -86,16 +105,10 @@ public class MainActivity extends AppCompatActivity {
                 connect();
         }
         else {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    disconnect();
-                }
-            }).start();
+            // 断开服务
+            disconnect();
         }
     }
-
-    public static int REQUEST_NETWORK_PERMISSION_CODE = 1;
 
     /**
      * 格式正确，连接
@@ -103,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
     @UiThread
     private void connect() {
 
+        // 判断网路权限
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {
                     Manifest.permission.INTERNET
@@ -120,14 +134,14 @@ public class MainActivity extends AppCompatActivity {
                     ClientSendUtil.ip = m_edt_ip.getText().toString();
                     ClientSendUtil.port = Integer.parseInt(m_edt_port.getText().toString());
                     if (!ClientSendUtil.ping()) {
+
+                        // 连接不通
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 progressDialog.dismiss();
                                 showAlert(getString(R.string.alert_connect_failed));
-                                m_btn_service.setText(getString(R.string.btn_start));
-                                m_edt_ip.setEnabled(true);
-                                m_edt_port.setEnabled(true);
+                                on_ui_stop();
                             }
                         });
                         return;
@@ -138,9 +152,6 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             progressDialog.dismiss();
                             Toast.makeText(MainActivity.this, R.string.tst_connect_success, Toast.LENGTH_SHORT).show();
-                            m_btn_service.setText(getString(R.string.btn_stop));
-                            m_edt_ip.setEnabled(false);
-                            m_edt_port.setEnabled(false);
 
                             try {
                                 stopService(ServiceIntent);
@@ -148,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
                                 ex.printStackTrace();
                             }
                             startService(ServiceIntent);
+                            on_ui_starting();
                         }
                     });
 
@@ -160,39 +172,58 @@ public class MainActivity extends AppCompatActivity {
      */
     @UiThread
     private void disconnect() {
-
+        on_ui_stop();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            m_btn_service.setText(getString(R.string.btn_start));
-                            m_edt_ip.setEnabled(true);
-                            m_edt_port.setEnabled(true);
-                            stopService(ServiceIntent);
-                        }
-                    });
-                }
-                catch (Exception ex) {
+                    stopService(ServiceIntent);
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
         }).start();
     }
 
+    /**
+     * 连接界面更新
+     */
+    @UiThread
+    private void on_ui_starting() {
+        m_btn_service.setText(getString(R.string.btn_stop));
+        m_edt_ip.setEnabled(false);
+        m_edt_port.setEnabled(false);
+    }
+
+    /**
+     * 断开连接界面更新
+     */
+    @UiThread
+    private void on_ui_stop() {
+        m_btn_service.setText(getString(R.string.btn_start));
+        m_edt_ip.setEnabled(true);
+        m_edt_port.setEnabled(true);
+    }
+
     @Override
     protected void onDestroy() {
-        stopService(ServiceIntent);
+        try {
+            stopService(ServiceIntent);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         super.onDestroy();
     }
 
     private void showAlert(String msg) {
+        showAlert(msg, null);
+    }
+
+    private void showAlert(String msg, DialogInterface.OnClickListener listener) {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.alert_title)
                 .setMessage(msg)
-                .setPositiveButton(R.string.alert_pos, null)
+                .setPositiveButton(R.string.alert_pos, listener)
                 .show();
     }
 

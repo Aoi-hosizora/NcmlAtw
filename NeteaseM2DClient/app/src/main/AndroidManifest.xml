@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.aoihosizora.neteasem2dclient.MusicNotificationService"
+        <service android:name="com.aoihosizora.neteasem2dclient.MainService"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" >
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />

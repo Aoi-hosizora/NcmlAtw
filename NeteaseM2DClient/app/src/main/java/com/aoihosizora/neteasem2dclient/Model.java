@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class Model {
+class Model {
 
     static class PlaybackState implements Serializable {
 
@@ -17,7 +17,7 @@ public class Model {
             this.currentPosSecond = currentPosSecond;
         }
 
-        public JSONObject toJson() {
+        JSONObject toJson() {
             JSONObject obj = new JSONObject();
             try {
                 obj.put("isPlay", isPlay);
@@ -38,14 +38,14 @@ public class Model {
         String album;
         double duration;
 
-        public Metadata(String title, String artist, String album, double duration) {
+        Metadata(String title, String artist, String album, double duration) {
             this.title = title;
             this.artist = artist;
             this.album = album;
             this.duration = duration;
         }
 
-        public JSONObject toJson() {
+        JSONObject toJson() {
             JSONObject obj = new JSONObject();
             try {
                 obj.put("title", title);
