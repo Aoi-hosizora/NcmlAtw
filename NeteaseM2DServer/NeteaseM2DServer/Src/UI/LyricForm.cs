@@ -9,48 +9,16 @@ using System.Windows.Forms;
 using Microsoft.VisualBasic.Devices;
 using System.Runtime.InteropServices;
 using NeteaseM2DServer.Src.Model;
+using NeteaseM2DServer.Src.Util;
 
 namespace NeteaseM2DServer.Src.UI
 {
     public partial class LyricForm : Form {
 
-        private const uint WS_EX_LAYERED = 0x80000;
-        private const int WS_EX_TRANSPARENT = 0x20;
-        private const int GWL_STYLE = (-16);
-        private const int GWL_EXSTYLE = (-20);
-        private const int LWA_ALPHA = 0x2;
-
-        [DllImport("user32", EntryPoint = "SetWindowLong")]
-        private static extern uint SetWindowLong(IntPtr hwnd, int nIndex, uint dwNewLong);
-
-        [DllImport("user32", EntryPoint = "GetWindowLong")]
-        private static extern uint GetWindowLong(IntPtr hwnd, int nIndex);
-
-        [DllImport("user32", EntryPoint = "SetLayeredWindowAttributes")]
-        // bAlpha: 0 .. 255
-        private static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, int bAlpha, int dwFlags);
-
-        /// <summary>
-        /// 设置窗口穿透
-        /// </summary>
-        /// <param name="opacity">this.Opacity</param>
-        /// <param name="isCross">是否穿透</param>
-        private void setWindowCrossOver(double opacity, bool isCross = true) {
-            uint intExTemp = GetWindowLong(this.Handle, GWL_EXSTYLE);
-            uint oldGWLEx;
-            if (isCross)
-                oldGWLEx = SetWindowLong(this.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT | WS_EX_LAYERED);
-            else
-                oldGWLEx = SetWindowLong(this.Handle, GWL_EXSTYLE, WS_EX_LAYERED);
-
-            SetLayeredWindowAttributes(this.Handle, 0, (int)(opacity * 255), LWA_ALPHA);
-        }
-
         private static LyricForm Instance;
         public static LyricForm getInstance() {
-            if (Instance == null) {
+            if (Instance == null)
                 Instance = new LyricForm();
-            }
             return Instance;
         }
 
@@ -58,47 +26,89 @@ namespace NeteaseM2DServer.Src.UI
             InitializeComponent();
         }
 
+        private void LyricForm_Load(object sender, EventArgs e) {
+            this.Opacity = 0;
+
+            // 窗口位置
+            menuItemPosition_Click(menuItemPosition, e);
+
+            // 订阅移动窗口事件
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Object_MouseDown);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Object_MouseMove);
+            foreach (Control o in this.Controls) {
+                o.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Object_MouseDown);
+                o.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Object_MouseMove);
+            }
+
+            // 显示窗口
+            timerShow.Enabled = true;
+
+            // 透明度菜单
+            for (int i = 1; i <= 10; i++) {
+                var menuItemOpacitySubItem = new ToolStripMenuItem();
+                menuItemOpacitySubItem.Name = "menuItemOpacitySubItem" + i + "0";
+                menuItemOpacitySubItem.Tag = ((double)i) / 10.0;
+                menuItemOpacitySubItem.Text = (i != 10) ? "&" + i + "0%" : "1&00%";
+                menuItemOpacitySubItem.Click += new System.EventHandler(this.menuItemOpacitySubItem_Click);
+                menuItemOpacity.DropDownItems.Add(menuItemOpacitySubItem);
+            }
+        }
+
+        /// <summary>
+        /// 检查退出条件
+        /// </summary>
+        private void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
+            e.Cancel = this.Opacity != 0;
+            if (timerShow.Enabled) timerShow.Enabled = false;
+            if (timerLyric.Enabled) timerLyric.Enabled = false;
+            timerHide.Enabled = true;
+        }
+
+        #region 窗口设置
+
         private Point MouseDownMousePosition;
         private Point MouseDownWinPosition;
 
+        /// <summary>
+        /// 按下，记录位置用于移动
+        /// </summary>
         private void Object_MouseDown(object sender, MouseEventArgs e) {
             MouseDownMousePosition = Cursor.Position;
             MouseDownWinPosition = new Point(this.Left, this.Top);
         }
 
+        /// <summary>
+        /// 按钮右键移动，其他左键移动
+        /// </summary>
         private void Object_MouseMove(object sender, MouseEventArgs e) {
-            if (e.Button == MouseButtons.Left) { 
+            bool rn = e.Button == MouseButtons.Left;
+            if (sender.GetType().Equals(typeof(Button))) 
+                rn = e.Button == MouseButtons.Right;
+            if (rn) { 
                 this.Top = MouseDownWinPosition.Y + Cursor.Position.Y - MouseDownMousePosition.Y;
                 this.Left = MouseDownWinPosition.X + Cursor.Position.X - MouseDownMousePosition.X;
             }
-        }
-
-        private void LyricForm_Load(object sender, EventArgs e) {
-            this.Opacity = 0;
-            Computer My = new Computer();
-            this.Width = (int)(My.Screen.WorkingArea.Width * 0.8);
-            this.Left = (My.Screen.Bounds.Width - this.Width) / 2;
-            this.Top = My.Screen.WorkingArea.Height - this.Height * 1;
-
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Object_MouseDown);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Object_MouseMove);
-            foreach (Control o in this.Controls) {
-                if (o.GetType().Equals(typeof(Button))) continue;
-                o.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Object_MouseDown);
-                o.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Object_MouseMove);
-            }
-            timerShow.Enabled = true;
         }
 
         /// <summary>
         /// 窗口显示 Timer
         /// </summary>
         private void timerShow_Tick(object sender, EventArgs e) {
-            this.Opacity += 0.05;
-            if (this.Opacity >= Global.LyricWinOpacity) {
+            bool rn;
+            if (this.Opacity < Global.LyricWinOpacity) {
+                this.Opacity += 0.05;
+                rn = this.Opacity >= Global.LyricWinOpacity;
+            }
+            else {
+                this.Opacity -= 0.05;
+                rn = this.Opacity <= Global.LyricWinOpacity;
+            }
+
+            if (rn) {
                 this.Opacity = Global.LyricWinOpacity;
                 timerShow.Enabled = false;
-                setWindowCrossOver(this.Opacity);
+
+                CommonUtil.setWindowCrossOver(this, this.Opacity, true);
                 timerLyric.Enabled = true;
             }
         }
@@ -116,39 +126,93 @@ namespace NeteaseM2DServer.Src.UI
             }
         }
 
+        #endregion // 窗口设置
+
+        #region 弹出菜单
+
         /// <summary>
-        /// 检查退出条件
+        /// 菜单，退出
         /// </summary>
-        private void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
-            e.Cancel = this.Opacity != 0;
-            if (timerShow.Enabled) timerShow.Enabled = false;
-            if (timerLyric.Enabled) timerLyric.Enabled = false;
-            timerHide.Enabled = true;
+        private void menuItemExit_Click(object sender, EventArgs e) {
+            this.Close();
         }
 
         /// <summary>
-        /// 退出，测试用
+        /// 菜单，锁定
         /// </summary>
-        private void button1_Click(object sender, EventArgs e) {
-            this.Close();
+        private void menuItemLock_Click(object sender, EventArgs e) {
+            menuItemLock.Checked = !menuItemLock.Checked;
+            CommonUtil.setWindowCrossOver(this, this.Opacity, menuItemLock.Checked);
+        }
+
+        /// <summary>
+        /// 菜单，原位置
+        /// </summary>
+        private void menuItemPosition_Click(object sender, EventArgs e) {
+            Computer My = new Computer();
+            this.Width = (int)(My.Screen.WorkingArea.Width * 0.8);
+            this.Left = (My.Screen.Bounds.Width - this.Width) / 2;
+            this.Top = My.Screen.WorkingArea.Height - this.Height * 1;
+        }
+
+        /// <summary>
+        /// 菜单，透明度修改
+        /// </summary>
+        private void menuItemOpacitySubItem_Click(object sender, EventArgs e) {
+            Global.LyricWinOpacity = (double)(sender as ToolStripMenuItem).Tag;
+            timerShow.Enabled = true;
+        }
+
+        /// <summary>
+        /// 菜单，修改文字颜色
+        /// </summary>
+        private void menuItemForeColor_Click(object sender, EventArgs e) {
+            colorDialog.Color = labelLyric.ForeColor;
+            colorDialog.ShowDialog();
+            labelLyric.ForeColor = colorDialog.Color;
+        }
+
+        /// <summary>
+        /// 菜单，修改背景颜色
+        /// </summary>
+        private void menuForeBackColor_Click(object sender, EventArgs e) {
+            colorDialog.Color = this.BackColor;
+            colorDialog.ShowDialog();
+            this.BackColor = colorDialog.Color;
+        }
+
+        /// <summary>
+        /// 菜单，恢复颜色
+        /// </summary>
+        private void menuItemRestoreColor_Click(object sender, EventArgs e) {
+            labelLyric.ForeColor = Color.White;
+            this.BackColor = Color.Black;
+        }
+
+        #endregion // 弹出菜单
+
+        /// <summary>
+        /// 弹出菜单
+        /// </summary>
+        private void buttonOption_Click(object sender, EventArgs e) {
+            contextMenuStrip.Show(
+                this.Left + (sender as Button).Left,
+                this.Top + (sender as Button).Top - contextMenuStrip.Height
+            );
         }
 
         /// <summary>
         /// 主计时器，歌词和窗口
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void timerLyric_Tick(object sender, EventArgs e)
-        {
-            if (Cursor.Position.X > this.Left + button1.Left &&
-                Cursor.Position.X < this.Left + button1.Left + button1.Width &&
-                Cursor.Position.Y > this.Top + button1.Top &&
-                Cursor.Position.Y < this.Top + button1.Top + button1.Height) {
-                setWindowCrossOver(this.Opacity, false);
-            }
-            else {
-                setWindowCrossOver(this.Opacity, true);
-            }
+        private void timerLyric_Tick(object sender, EventArgs e) {
+            // interval == 1
+
+            // 窗口
+            if (menuItemLock.Checked)
+                CommonUtil.setWindowCrossOver(this, this.Opacity, !CommonUtil.ControlInRange(this, buttonOption));
+
+            // 歌词显示
+            // TODO
         }
     } 
 }

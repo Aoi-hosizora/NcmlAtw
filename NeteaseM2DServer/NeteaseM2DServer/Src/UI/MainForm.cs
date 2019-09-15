@@ -11,6 +11,7 @@ using System.Threading;
 using NeteaseM2DServer.Src.Model;
 using NeteaseM2DServer.Src.Api;
 using System.Text.RegularExpressions;
+using NeteaseM2DServer.Src.Util;
 
 namespace NeteaseM2DServer.Src.UI
 {
@@ -20,7 +21,7 @@ namespace NeteaseM2DServer.Src.UI
             InitializeComponent();
         }
 
-#region 线程服务
+        #region 线程服务
 
         private Thread socketThread;
         private SocketService socketService;
@@ -85,7 +86,6 @@ namespace NeteaseM2DServer.Src.UI
                 toolTip.SetToolTip(labelSongArtist, labelSongArtist.Text.Substring(3));
                 toolTip.SetToolTip(labelSongAlbum, labelSongAlbum.Text.Substring(3));
 
-                // TODO 获取歌词
                 Search();
 
                 timerSong.Enabled = true;
@@ -97,7 +97,7 @@ namespace NeteaseM2DServer.Src.UI
         /// </summary>
         /// <param name="obj">PlaybackState</param>
         private void SocketPlaybackStateCb(PlaybackState obj) {
-            Global.stateUpdateMS = GetTimeStamp();
+            Global.stateUpdateMS = CommonUtil.GetTimeStamp();
 
             Console.WriteLine(obj.ToString());
             if (!Global.isListening) return;
@@ -122,7 +122,7 @@ namespace NeteaseM2DServer.Src.UI
         /// 时间更新
         /// </summary>
         private void timerSong_Tick(object sender, EventArgs e) {
-            long now = GetTimeStamp();
+            long now = CommonUtil.GetTimeStamp();
 
             if (!Global.currentState.isPlay) return;
             string currentPos = "未知", duration = "未知";
@@ -139,9 +139,9 @@ namespace NeteaseM2DServer.Src.UI
         }
 
 
-#endregion
+        #endregion // 线程服务
 
-#region 歌曲查找
+        #region 歌曲查找
 
         /// <summary>
         /// 查找歌曲 Id 和 歌词
@@ -169,19 +169,9 @@ namespace NeteaseM2DServer.Src.UI
                 Global.MusicId = -1;
         }
 
-#endregion
+        #endregion // 歌曲查找
 
-#region 界面交互
-
-        /// <summary>
-        /// 获取时间戳
-        /// </summary>
-        /// <returns>13位时间戳</returns>
-        private long GetTimeStamp() {
-            TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            return Int64.Parse(Convert.ToInt64(ts.TotalMilliseconds).ToString());
-        }
-
+        #region 界面交互
 
         private void MainForm_Load(object sender, EventArgs e) {
             labelSongDuration.Text = "未监听...";
@@ -213,7 +203,6 @@ namespace NeteaseM2DServer.Src.UI
                 Global.isListening = false;
                 Global.MusicId = -1;
             }
-
         }
 
         /// <summary>
@@ -251,7 +240,7 @@ namespace NeteaseM2DServer.Src.UI
             }
         }
 
-#endregion
+        #endregion // 界面交互
 
     }
 }
