@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDownPort = new System.Windows.Forms.NumericUpDown();
             this.buttonListen = new System.Windows.Forms.Button();
@@ -38,6 +39,8 @@
             this.labelSongArtist = new System.Windows.Forms.Label();
             this.labelSongDuration = new System.Windows.Forms.Label();
             this.buttonExit = new System.Windows.Forms.Button();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.timerSong = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.SuspendLayout();
             // 
@@ -75,7 +78,7 @@
             // buttonListen
             // 
             this.buttonListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonListen.Location = new System.Drawing.Point(200, 127);
+            this.buttonListen.Location = new System.Drawing.Point(200, 134);
             this.buttonListen.Name = "buttonListen";
             this.buttonListen.Size = new System.Drawing.Size(75, 25);
             this.buttonListen.TabIndex = 8;
@@ -87,7 +90,7 @@
             // 
             this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonShowLyric.Enabled = false;
-            this.buttonShowLyric.Location = new System.Drawing.Point(99, 127);
+            this.buttonShowLyric.Location = new System.Drawing.Point(99, 134);
             this.buttonShowLyric.Name = "buttonShowLyric";
             this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
             this.buttonShowLyric.TabIndex = 7;
@@ -102,34 +105,34 @@
             this.label2.Size = new System.Drawing.Size(68, 17);
             this.label2.TabIndex = 2;
             this.label2.Text = "当前歌曲：";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // labelSongTitle
             // 
-            this.labelSongTitle.AutoSize = true;
+            this.labelSongTitle.AutoEllipsis = true;
             this.labelSongTitle.Location = new System.Drawing.Point(12, 63);
             this.labelSongTitle.Name = "labelSongTitle";
-            this.labelSongTitle.Size = new System.Drawing.Size(32, 17);
+            this.labelSongTitle.Size = new System.Drawing.Size(347, 17);
             this.labelSongTitle.TabIndex = 4;
             this.labelSongTitle.Text = "Title";
+            this.toolTip.SetToolTip(this.labelSongTitle, "Title");
             this.labelSongTitle.Visible = false;
             // 
             // labelSongAlbum
             // 
-            this.labelSongAlbum.AutoSize = true;
+            this.labelSongAlbum.AutoEllipsis = true;
             this.labelSongAlbum.Location = new System.Drawing.Point(12, 85);
             this.labelSongAlbum.Name = "labelSongAlbum";
-            this.labelSongAlbum.Size = new System.Drawing.Size(45, 17);
+            this.labelSongAlbum.Size = new System.Drawing.Size(344, 17);
             this.labelSongAlbum.TabIndex = 5;
             this.labelSongAlbum.Text = "Album";
             this.labelSongAlbum.Visible = false;
             // 
             // labelSongArtist
             // 
-            this.labelSongArtist.AutoSize = true;
+            this.labelSongArtist.AutoEllipsis = true;
             this.labelSongArtist.Location = new System.Drawing.Point(12, 107);
             this.labelSongArtist.Name = "labelSongArtist";
-            this.labelSongArtist.Size = new System.Drawing.Size(38, 17);
+            this.labelSongArtist.Size = new System.Drawing.Size(344, 17);
             this.labelSongArtist.TabIndex = 6;
             this.labelSongArtist.Text = "Artist";
             this.labelSongArtist.Visible = false;
@@ -139,18 +142,24 @@
             this.labelSongDuration.AutoSize = true;
             this.labelSongDuration.Location = new System.Drawing.Point(73, 36);
             this.labelSongDuration.Name = "labelSongDuration";
-            this.labelSongDuration.Size = new System.Drawing.Size(91, 17);
+            this.labelSongDuration.Size = new System.Drawing.Size(83, 17);
             this.labelSongDuration.TabIndex = 3;
-            this.labelSongDuration.Text = "(00.00 / 00.00)";
+            this.labelSongDuration.Text = "00:00 / 00:00";
             // 
             // buttonExit
             // 
-            this.buttonExit.Location = new System.Drawing.Point(281, 127);
+            this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonExit.Location = new System.Drawing.Point(281, 134);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(75, 25);
             this.buttonExit.TabIndex = 9;
             this.buttonExit.Text = "退出";
             this.buttonExit.UseVisualStyleBackColor = true;
+            this.buttonExit.Click += new System.EventHandler(this.buttonExit_Click);
+            // 
+            // timerSong
+            // 
+            this.timerSong.Tick += new System.EventHandler(this.timerSong_Tick);
             // 
             // MainForm
             // 
@@ -158,7 +167,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(368, 164);
+            this.ClientSize = new System.Drawing.Size(368, 171);
             this.Controls.Add(this.buttonExit);
             this.Controls.Add(this.labelSongDuration);
             this.Controls.Add(this.labelSongArtist);
@@ -194,6 +203,8 @@
         private System.Windows.Forms.Label labelSongArtist;
         private System.Windows.Forms.Label labelSongDuration;
         private System.Windows.Forms.Button buttonExit;
+        private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.Timer timerSong;
     }
 }
 

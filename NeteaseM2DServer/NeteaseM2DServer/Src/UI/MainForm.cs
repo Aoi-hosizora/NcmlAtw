@@ -29,25 +29,30 @@ namespace NeteaseM2DServer.Src.UI
             socketService = new SocketService();
             socketService.port = port;
 
-            socketService.listenCb = (ok) => {
+            socketService.listenCb = (ok) =>
+            {
+                // コントロールが作成されたスレッド以外のスレッドからコントロール 'buttonListen' がアクセスされました
                  this.Invoke(new Action(() => {
-                    Global.isListening = ok;
-                    // コントロールが作成されたスレッド以外のスレッドからコントロール 'buttonListen' がアクセスされました
-                    buttonListen.Enabled = ok;
-                    if (ok)
-                        labelSongDuration.Text = "正在等待歌曲...";
+                     Global.isListening = buttonShowLyric.Enabled = ok;
+                     numericUpDownPort.Enabled = !ok;
+                     if (ok) {
+                         labelSongDuration.Text = "正在等待歌曲...";
+                         buttonListen.Text = "取消监听";
+
+                         labelSongTitle.Text = "未知歌曲";
+                         labelSongArtist.Text = "未知歌手";
+                         labelSongAlbum.Text = "未知专辑";
+                     }
+                     else {
+                         labelSongDuration.Text = "未监听...";
+                         buttonListen.Text = "监听端口";
+                         timerSong.Enabled = false;
+                         MessageBox.Show("端口监听失败，可能是被占用。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                     }
                  }));
             };
 
-            socketService.pingCb = (ok) => {
-                // this.Invoke(new Action(() => {
-                //     Global.isListening = buttonListen.Enabled = ok;
-                //     labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = ok;
-                //     labelSongTitle.Text = "未知歌曲";
-                //     labelSongArtist.Text = "未知歌手";
-                //     labelSongAlbum.Text = "未知专辑";
-                // }));
-            };
+            socketService.pingCb = (ok) => { };
 
             socketService.metaDataCb = SocketMetaDataCb;
             socketService.playbackStateCb = SocketPlaybackStateCb;
@@ -63,19 +68,20 @@ namespace NeteaseM2DServer.Src.UI
         /// <param name="obj"></param>
         private void SocketMetaDataCb(Metadata obj) {
             Console.WriteLine(obj.ToString());
+            if (!Global.isListening) return;
 
             this.Invoke(new Action(() => {
-                Global.isListening = buttonListen.Enabled = true;
                 labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = true;
-
                 Global.currentSong = obj;
-                labelSongTitle.Text = obj.title;
-                labelSongArtist.Text = obj.artist;
-                labelSongAlbum.Text = obj.album;
 
-                labelSongDuration.Text = "(" + 
-                    (Global.currentState == null ? -1 : Global.currentState.currentPosSecond) + " / " +
-                    obj.duration + ")";
+                labelSongTitle.Text = "标题：" + obj.title;
+                labelSongArtist.Text = "歌手：" + obj.artist;
+                labelSongAlbum.Text = "专辑：" + obj.album;
+                toolTip.SetToolTip(labelSongTitle, labelSongTitle.Text.Substring(3));
+                toolTip.SetToolTip(labelSongArtist, labelSongArtist.Text.Substring(3));
+                toolTip.SetToolTip(labelSongAlbum, labelSongAlbum.Text.Substring(3));
+
+                timerSong.Enabled = true;
             }));
         }
 
@@ -84,16 +90,14 @@ namespace NeteaseM2DServer.Src.UI
         /// </summary>
         /// <param name="obj"></param>
         private void SocketPlaybackStateCb(PlaybackState obj) {
+            Global.stateUpdateMS = GetTimeStamp();
+
             Console.WriteLine(obj.ToString());
+            if (!Global.isListening) return;
 
             this.Invoke(new Action(() => {
-                Global.isListening = buttonListen.Enabled = true;
-                labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = true;
-
+                timerSong.Enabled = true;
                 Global.currentState = obj;
-                labelSongDuration.Text = "(" +
-                    obj.currentPosSecond + " / " +
-                    (Global.currentSong == null ? -1 : Global.currentSong.duration) + ")";
             }));
         }
 
@@ -115,13 +119,46 @@ namespace NeteaseM2DServer.Src.UI
             StopThread();
         }
 
-        private void label2_Click(object sender, EventArgs e)
-        {
-
+        private void buttonListen_Click(object sender, EventArgs e) {
+            if ((sender as Button).Text == "监听端口") {
+                StartThread(int.Parse(numericUpDownPort.Value.ToString()));
+            }
+            else {
+                StopThread();
+                labelSongDuration.Text = "未监听...";
+                buttonListen.Text = "监听端口";
+                Global.isListening = buttonShowLyric.Enabled = false;
+                numericUpDownPort.Enabled = true;
+                timerSong.Enabled = false;
+                labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = false;
+            }
+            
         }
 
-        private void buttonListen_Click(object sender, EventArgs e) {
-            StartThread(int.Parse(numericUpDownPort.Value.ToString()));
+        private void buttonExit_Click(object sender, EventArgs e) {
+            this.Close();
+        }
+
+        private void timerSong_Tick(object sender, EventArgs e) {
+            long now = GetTimeStamp();
+
+            if (!Global.currentState.isPlay) return;
+            string currentPos = "未知", duration = "未知";
+            if (Global.currentState != null) {
+                double s = Global.currentState.currentPosSecond + (double) ((now - Global.stateUpdateMS) / 1000.0);
+                currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
+            }
+            if (Global.currentSong != null) {
+                double s = Global.currentSong.duration;
+                duration = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
+            }
+
+            labelSongDuration.Text = currentPos + " / " + duration;
+        }
+
+        private long GetTimeStamp() {
+            TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            return Int64.Parse(Convert.ToInt64(ts.TotalMilliseconds).ToString());
         }
     }
 }
