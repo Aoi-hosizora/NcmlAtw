@@ -152,14 +152,21 @@ namespace NeteaseM2DServer.Src.UI
             Regex reg = new Regex("(.*)");
             string searchStr = reg.Replace(Global.currentSong.title, "") + " " + Global.currentSong.artist + " " + Global.currentSong.album;
 
-            SearchResult ret = api.Search(searchStr);
-            if (ret.Result != null && ret.Result.Songs != null && ret.Result.Songs.Count > 0)
-                Global.MusicId = ret.Result.Songs.ElementAt(0).Id;
+            SearchResult searchResult = api.Search(searchStr);
+            if (searchResult != null && searchResult.Code == 200 &&
+                searchResult.Result != null && searchResult.Result.Songs != null &&
+                searchResult.Result.Songs.Count > 0) {
+                Global.MusicId = searchResult.Result.Songs.ElementAt(0).Id;
+                
+                // TODO 查找歌词
+                LyricResult lyricResult = api.Lyric(Global.MusicId);
+                if (lyricResult != null && lyricResult.Code == 200 &&
+                    lyricResult.Lrc != null) {
+                    Global.MusicLrc = lyricResult.Lrc.Lyric;
+                }
+            }
             else
                 Global.MusicId = -1;
-         
-
-            // TODO 查找歌词
         }
 
 #endregion
