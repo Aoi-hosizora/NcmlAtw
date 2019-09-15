@@ -40,7 +40,7 @@
             this.labelSongDuration = new System.Windows.Forms.Label();
             this.buttonExit = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.timerSong = new System.Windows.Forms.Timer(this.components);
+            this.timerGlobal = new System.Windows.Forms.Timer(this.components);
             this.buttonOpenWeb = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.SuspendLayout();
@@ -90,6 +90,7 @@
             // buttonShowLyric
             // 
             this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonShowLyric.Enabled = false;
             this.buttonShowLyric.Location = new System.Drawing.Point(93, 134);
             this.buttonShowLyric.Name = "buttonShowLyric";
             this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
@@ -150,6 +151,7 @@
             // buttonExit
             // 
             this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.buttonExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonExit.Location = new System.Drawing.Point(275, 134);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(75, 25);
@@ -158,9 +160,10 @@
             this.buttonExit.UseVisualStyleBackColor = true;
             this.buttonExit.Click += new System.EventHandler(this.buttonExit_Click);
             // 
-            // timerSong
+            // timerGlobal
             // 
-            this.timerSong.Tick += new System.EventHandler(this.timerSong_Tick);
+            this.timerGlobal.Interval = 200;
+            this.timerGlobal.Tick += new System.EventHandler(this.timerGlobal_Tick);
             // 
             // buttonOpenWeb
             // 
@@ -220,7 +223,7 @@
         private System.Windows.Forms.Label labelSongDuration;
         private System.Windows.Forms.Button buttonExit;
         private System.Windows.Forms.ToolTip toolTip;
-        private System.Windows.Forms.Timer timerSong;
+        private System.Windows.Forms.Timer timerGlobal;
         private System.Windows.Forms.Button buttonOpenWeb;
     }
 }

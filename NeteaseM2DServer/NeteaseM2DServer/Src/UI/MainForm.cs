@@ -50,13 +50,15 @@ namespace NeteaseM2DServer.Src.UI
                     else {
                         labelSongDuration.Text = "未监听...";
                         buttonListen.Text = "监听端口";
-                        timerSong.Enabled = false;
+                        timerGlobal.Enabled = false;
                         MessageBox.Show("端口监听失败，可能是被占用。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }));
             };
 
-            socketService.pingCb = (ok) => { };
+            socketService.pingCb = (ok) => {
+                Console.WriteLine("ping");
+            };
 
             socketService.metaDataCb = SocketMetaDataCb;
             socketService.playbackStateCb = SocketPlaybackStateCb;
@@ -88,7 +90,7 @@ namespace NeteaseM2DServer.Src.UI
 
                 Search();
 
-                timerSong.Enabled = true;
+                timerGlobal.Enabled = true;
             }));
         }
 
@@ -103,7 +105,7 @@ namespace NeteaseM2DServer.Src.UI
             if (!Global.isListening) return;
 
             this.Invoke(new Action(() => {
-                timerSong.Enabled = true;
+                timerGlobal.Enabled = true;
                 Global.currentState = obj;
             }));
         }
@@ -121,13 +123,14 @@ namespace NeteaseM2DServer.Src.UI
         /// <summary>
         /// 时间更新
         /// </summary>
-        private void timerSong_Tick(object sender, EventArgs e) {
+        private void timerSong_Tick() {
             long now = CommonUtil.GetTimeStamp();
 
             if (!Global.currentState.isPlay) return;
             string currentPos = "未知", duration = "未知";
             if (Global.currentState != null) {
                 double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
+                Global.currentPos = (int) (s * 1000);
                 currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
             }
             if (Global.currentSong != null) {
@@ -164,6 +167,8 @@ namespace NeteaseM2DServer.Src.UI
                     lyricResult.Lrc != null) {
                     Global.MusicLrc = lyricResult.Lrc.Lyric;
                 }
+                else
+                    Global.MusicLrc = "";
             }
             else
                 Global.MusicId = -1;
@@ -175,6 +180,7 @@ namespace NeteaseM2DServer.Src.UI
 
         private void MainForm_Load(object sender, EventArgs e) {
             labelSongDuration.Text = "未监听...";
+            Global.MainFormTimer = timerSong_Tick;
         }
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
@@ -194,7 +200,7 @@ namespace NeteaseM2DServer.Src.UI
                 buttonListen.Text = "监听端口";
 
                 numericUpDownPort.Enabled = true;
-                timerSong.Enabled = false;
+                timerGlobal.Enabled = false;
                 labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = false;
 
                 Global.isListening = buttonShowLyric.Enabled = buttonOpenWeb.Enabled = false;
@@ -241,6 +247,18 @@ namespace NeteaseM2DServer.Src.UI
         }
 
         #endregion // 界面交互
+
+        /// <summary>
+        /// 全局计时器
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void timerGlobal_Tick(object sender, EventArgs e) {
+            if (Global.MainFormTimer != null)
+                Global.MainFormTimer();
+//             if (Global.LyricFormTimer != null)
+//                 Global.LyricFormTimer();
+        }
 
     }
 }

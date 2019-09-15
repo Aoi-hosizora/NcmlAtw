@@ -31,10 +31,8 @@
             this.components = new System.ComponentModel.Container();
             this.labelLyric = new System.Windows.Forms.Label();
             this.timerShow = new System.Windows.Forms.Timer(this.components);
-            this.timerLyric = new System.Windows.Forms.Timer(this.components);
             this.timerHide = new System.Windows.Forms.Timer(this.components);
             this.buttonOption = new System.Windows.Forms.Button();
-            this.timerCountDown = new System.Windows.Forms.Timer(this.components);
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuItemLock = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemOpacity = new System.Windows.Forms.ToolStripMenuItem();
@@ -68,11 +66,6 @@
             this.timerShow.Interval = 1;
             this.timerShow.Tick += new System.EventHandler(this.timerShow_Tick);
             // 
-            // timerLyric
-            // 
-            this.timerLyric.Interval = 1;
-            this.timerLyric.Tick += new System.EventHandler(this.timerLyric_Tick);
-            // 
             // timerHide
             // 
             this.timerHide.Interval = 1;
@@ -92,10 +85,6 @@
             this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。");
             this.buttonOption.UseVisualStyleBackColor = true;
             this.buttonOption.Click += new System.EventHandler(this.buttonOption_Click);
-            // 
-            // timerCountDown
-            // 
-            this.timerCountDown.Interval = 1000;
             // 
             // contextMenuStrip
             // 
@@ -168,8 +157,8 @@
             // menuItemExit
             // 
             this.menuItemExit.Name = "menuItemExit";
-            this.menuItemExit.Size = new System.Drawing.Size(137, 22);
-            this.menuItemExit.Text = "退出(&X)";
+            this.menuItemExit.Size = new System.Drawing.Size(152, 22);
+            this.menuItemExit.Text = "关闭歌词(&X)";
             this.menuItemExit.Click += new System.EventHandler(this.menuItemExit_Click);
             // 
             // colorDialog
@@ -205,10 +194,8 @@
 
         private System.Windows.Forms.Label labelLyric;
         private System.Windows.Forms.Timer timerShow;
-        private System.Windows.Forms.Timer timerLyric;
         private System.Windows.Forms.Timer timerHide;
         private System.Windows.Forms.Button buttonOption;
-        private System.Windows.Forms.Timer timerCountDown;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem menuItemLock;
         private System.Windows.Forms.ToolStripMenuItem menuItemExit;

@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Runtime.CompilerServices;
 using NeteaseM2DServer.Src.Model;
+using System.Threading;
 
 namespace NeteaseM2DServer.Src.Service
 {
@@ -40,8 +41,7 @@ namespace NeteaseM2DServer.Src.Service
         /// 监听 Socket 服务
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void RunService(int port)
-        {
+        public void RunService(int port) {
             serverListener = new TcpListener(new IPEndPoint(IPAddress.Parse("0.0.0.0"), port));
             try {
                 serverListener.Start();
@@ -96,6 +96,7 @@ namespace NeteaseM2DServer.Src.Service
                 finally {
                     remoteClient.Close();
                 }
+                Thread.Sleep(100);
             }
         }
     }

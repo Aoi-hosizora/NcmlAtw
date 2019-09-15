@@ -40,9 +40,6 @@ namespace NeteaseM2DServer.Src.UI
                 o.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Object_MouseMove);
             }
 
-            // 显示窗口
-            timerShow.Enabled = true;
-
             // 透明度菜单
             for (int i = 1; i <= 10; i++) {
                 var menuItemOpacitySubItem = new ToolStripMenuItem();
@@ -52,6 +49,10 @@ namespace NeteaseM2DServer.Src.UI
                 menuItemOpacitySubItem.Click += new System.EventHandler(this.menuItemOpacitySubItem_Click);
                 menuItemOpacity.DropDownItems.Add(menuItemOpacitySubItem);
             }
+
+            // 显示窗口 & 歌词
+            timerShow.Enabled = true;
+            Global.LyricFormTimer = timerLyric_Tick;
         }
 
         /// <summary>
@@ -60,8 +61,9 @@ namespace NeteaseM2DServer.Src.UI
         private void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
             e.Cancel = this.Opacity != 0;
             if (timerShow.Enabled) timerShow.Enabled = false;
-            if (timerLyric.Enabled) timerLyric.Enabled = false;
+            // if (timerLyric.Enabled) timerLyric.Enabled = false;
             timerHide.Enabled = true;
+            Global.LyricFormTimer = null;
         }
 
         #region 窗口设置
@@ -109,7 +111,7 @@ namespace NeteaseM2DServer.Src.UI
                 timerShow.Enabled = false;
 
                 CommonUtil.setWindowCrossOver(this, this.Opacity, true);
-                timerLyric.Enabled = true;
+                // timerLyric.Enabled = true;
             }
         }
 
@@ -131,7 +133,7 @@ namespace NeteaseM2DServer.Src.UI
         #region 弹出菜单
 
         /// <summary>
-        /// 菜单，退出
+        /// 菜单，关闭歌词
         /// </summary>
         private void menuItemExit_Click(object sender, EventArgs e) {
             this.Close();
@@ -201,18 +203,37 @@ namespace NeteaseM2DServer.Src.UI
             );
         }
 
+        private long currentSongId = -1;
+
         /// <summary>
         /// 主计时器，歌词和窗口
         /// </summary>
-        private void timerLyric_Tick(object sender, EventArgs e) {
-            // interval == 1
+        private void timerLyric_Tick() {
+            // interval == 10
 
             // 窗口
             if (menuItemLock.Checked)
                 CommonUtil.setWindowCrossOver(this, this.Opacity, !CommonUtil.ControlInRange(this, buttonOption));
 
+            // 歌词转换
+            if (currentSongId != Global.MusicId) {
+                currentSongId = Global.MusicId;
+                if (Global.MusicLrc != "")
+                    Global.MusicLyricPage = LyricPage.parseLrc(Global.MusicLrc);
+                else
+                    Global.MusicLyricPage = null;
+            }
+
             // 歌词显示
             // TODO
+            if (Global.MusicLrc == "") labelLyric.Text = "未找到歌词";
+            else if (Global.MusicLyricPage == null) labelLyric.Text = "歌词处理中";
+            else {
+                LyricLine currLine = CommonUtil.GetCurrentLine(Global.currentPos, Global.MusicLyricPage);
+                // Console.WriteLine("currentPos: " + Global.currentPos + " timeDuration: " + currLine.timeDuration + " lyric: " + currLine.ToString());
+                if (currLine.Lyric != labelLyric.Text)
+                    labelLyric.Text = currLine.Lyric;
+            }
         }
     } 
 }
