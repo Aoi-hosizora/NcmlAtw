@@ -90,7 +90,6 @@
             // buttonShowLyric
             // 
             this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonShowLyric.Enabled = false;
             this.buttonShowLyric.Location = new System.Drawing.Point(93, 134);
             this.buttonShowLyric.Name = "buttonShowLyric";
             this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
@@ -181,6 +180,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
+            this.CancelButton = this.buttonExit;
             this.ClientSize = new System.Drawing.Size(362, 171);
             this.Controls.Add(this.buttonOpenWeb);
             this.Controls.Add(this.buttonExit);

@@ -15,5 +15,7 @@ namespace NeteaseM2DServer.Src.Model
 
         public static long MusicId { get; set; }
         public static string MusicLrc { get; set; }
+
+        public static double LyricWinOpacity = 0.35;
     }
 }

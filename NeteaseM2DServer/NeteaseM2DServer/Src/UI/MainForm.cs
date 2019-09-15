@@ -227,7 +227,9 @@ namespace NeteaseM2DServer.Src.UI
         /// 打开歌词
         /// </summary>
         private void buttonShowLyric_Click(object sender, EventArgs e) {
-
+            LyricForm lyricForm = LyricForm.getInstance();
+            lyricForm.Activate();
+            lyricForm.Show();
         }
 
         /// <summary>
