@@ -50,6 +50,8 @@
             this.menuItemSlow1 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuItemCopy = new System.Windows.Forms.ToolStripMenuItem();
+            this.label3 = new System.Windows.Forms.Label();
+            this.textBoxIP = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
             this.timeAdjustContextMenu.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
@@ -58,7 +60,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(12, 37);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(263, 17);
             this.label1.TabIndex = 0;
@@ -66,7 +68,7 @@
             // 
             // numericUpDownPort
             // 
-            this.numericUpDownPort.Location = new System.Drawing.Point(281, 7);
+            this.numericUpDownPort.Location = new System.Drawing.Point(281, 35);
             this.numericUpDownPort.Maximum = new decimal(new int[] {
             65535,
             0,
@@ -90,7 +92,7 @@
             // 
             this.buttonListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonListen.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonListen.Location = new System.Drawing.Point(12, 132);
+            this.buttonListen.Location = new System.Drawing.Point(12, 175);
             this.buttonListen.Name = "buttonListen";
             this.buttonListen.Size = new System.Drawing.Size(75, 25);
             this.buttonListen.TabIndex = 7;
@@ -103,7 +105,7 @@
             this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonShowLyric.Enabled = false;
             this.buttonShowLyric.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonShowLyric.Location = new System.Drawing.Point(93, 132);
+            this.buttonShowLyric.Location = new System.Drawing.Point(93, 175);
             this.buttonShowLyric.Name = "buttonShowLyric";
             this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
             this.buttonShowLyric.TabIndex = 8;
@@ -114,7 +116,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 36);
+            this.label2.Location = new System.Drawing.Point(12, 64);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(68, 17);
             this.label2.TabIndex = 2;
@@ -124,7 +126,7 @@
             // 
             this.labelSongTitle.AutoEllipsis = true;
             this.labelSongTitle.ContextMenuStrip = this.contextMenuStrip;
-            this.labelSongTitle.Location = new System.Drawing.Point(12, 61);
+            this.labelSongTitle.Location = new System.Drawing.Point(12, 89);
             this.labelSongTitle.Name = "labelSongTitle";
             this.labelSongTitle.Size = new System.Drawing.Size(338, 17);
             this.labelSongTitle.TabIndex = 4;
@@ -136,7 +138,7 @@
             // 
             this.labelSongAlbum.AutoEllipsis = true;
             this.labelSongAlbum.ContextMenuStrip = this.contextMenuStrip;
-            this.labelSongAlbum.Location = new System.Drawing.Point(12, 84);
+            this.labelSongAlbum.Location = new System.Drawing.Point(12, 112);
             this.labelSongAlbum.Name = "labelSongAlbum";
             this.labelSongAlbum.Size = new System.Drawing.Size(338, 17);
             this.labelSongAlbum.TabIndex = 5;
@@ -147,7 +149,7 @@
             // 
             this.labelSongArtist.AutoEllipsis = true;
             this.labelSongArtist.ContextMenuStrip = this.contextMenuStrip;
-            this.labelSongArtist.Location = new System.Drawing.Point(12, 107);
+            this.labelSongArtist.Location = new System.Drawing.Point(12, 135);
             this.labelSongArtist.Name = "labelSongArtist";
             this.labelSongArtist.Size = new System.Drawing.Size(338, 17);
             this.labelSongArtist.TabIndex = 6;
@@ -157,7 +159,7 @@
             // labelSongDuration
             // 
             this.labelSongDuration.AutoSize = true;
-            this.labelSongDuration.Location = new System.Drawing.Point(73, 36);
+            this.labelSongDuration.Location = new System.Drawing.Point(73, 64);
             this.labelSongDuration.Name = "labelSongDuration";
             this.labelSongDuration.Size = new System.Drawing.Size(83, 17);
             this.labelSongDuration.TabIndex = 3;
@@ -168,7 +170,7 @@
             this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonExit.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonExit.Location = new System.Drawing.Point(275, 132);
+            this.buttonExit.Location = new System.Drawing.Point(275, 175);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(75, 25);
             this.buttonExit.TabIndex = 10;
@@ -185,7 +187,7 @@
             this.buttonOpenWeb.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonOpenWeb.Enabled = false;
             this.buttonOpenWeb.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonOpenWeb.Location = new System.Drawing.Point(194, 132);
+            this.buttonOpenWeb.Location = new System.Drawing.Point(194, 175);
             this.buttonOpenWeb.Name = "buttonOpenWeb";
             this.buttonOpenWeb.Size = new System.Drawing.Size(75, 25);
             this.buttonOpenWeb.TabIndex = 9;
@@ -196,7 +198,7 @@
             // buttonTimeAdjust
             // 
             this.buttonTimeAdjust.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonTimeAdjust.Location = new System.Drawing.Point(275, 36);
+            this.buttonTimeAdjust.Location = new System.Drawing.Point(275, 64);
             this.buttonTimeAdjust.Name = "buttonTimeAdjust";
             this.buttonTimeAdjust.Size = new System.Drawing.Size(75, 25);
             this.buttonTimeAdjust.TabIndex = 11;
@@ -257,9 +259,26 @@
             // menuItemCopy
             // 
             this.menuItemCopy.Name = "menuItemCopy";
-            this.menuItemCopy.Size = new System.Drawing.Size(152, 22);
+            this.menuItemCopy.Size = new System.Drawing.Size(113, 22);
             this.menuItemCopy.Text = "复制(&C)";
             this.menuItemCopy.Click += new System.EventHandler(this.menuItemCopy_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 9);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(119, 17);
+            this.label3.TabIndex = 13;
+            this.label3.Text = "当前局域网内的 IP：";
+            // 
+            // textBoxIP
+            // 
+            this.textBoxIP.Location = new System.Drawing.Point(137, 6);
+            this.textBoxIP.Name = "textBoxIP";
+            this.textBoxIP.ReadOnly = true;
+            this.textBoxIP.Size = new System.Drawing.Size(213, 23);
+            this.textBoxIP.TabIndex = 14;
             // 
             // MainForm
             // 
@@ -268,7 +287,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.buttonExit;
-            this.ClientSize = new System.Drawing.Size(362, 169);
+            this.ClientSize = new System.Drawing.Size(362, 209);
+            this.Controls.Add(this.textBoxIP);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.buttonTimeAdjust);
             this.Controls.Add(this.buttonOpenWeb);
             this.Controls.Add(this.buttonExit);
@@ -321,6 +342,8 @@
         private System.Windows.Forms.ToolStripMenuItem menuItemSlow1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem menuItemCopy;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox textBoxIP;
     }
 }
 

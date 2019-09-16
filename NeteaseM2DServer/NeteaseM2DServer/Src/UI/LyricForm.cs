@@ -294,7 +294,7 @@ namespace NeteaseM2DServer.Src.UI {
         /// <summary>
         /// 文字颜色变换速度
         /// </summary>
-        int colorChangeRate = 20;
+        int colorRate = 20;
 
         /// <summary>
         /// 歌词文字变化动画
@@ -304,12 +304,12 @@ namespace NeteaseM2DServer.Src.UI {
             int G = labelLyric.ForeColor.G;
             int B = labelLyric.ForeColor.B;
             Color dest = isFront ? this.BackColor : Properties.Settings.Default.LyricForeColor;
-            R = (R == dest.R) ? R : ((R > dest.R) ? (R - colorChangeRate <= 0 ? 0 : R - colorChangeRate) : (R + colorChangeRate >= 255 ? 255 : R + colorChangeRate));
-            G = (G == dest.G) ? G : ((G > dest.G) ? (G - colorChangeRate <= 0 ? 0 : G - colorChangeRate) : (G + colorChangeRate >= 255 ? 255 : G + colorChangeRate));
-            B = (B == dest.B) ? B : ((B > dest.B) ? (B - colorChangeRate <= 0 ? 0 : B - colorChangeRate) : (B + colorChangeRate >= 255 ? 255 : B + colorChangeRate));
+            R = (R == dest.R) ? R : ((R > dest.R) ? (R - colorRate <= 0 ? 0 : R - colorRate) : (R + colorRate >= 255 ? 255 : R + colorRate));
+            G = (G == dest.G) ? G : ((G > dest.G) ? (G - colorRate <= 0 ? 0 : G - colorRate) : (G + colorRate >= 255 ? 255 : G + colorRate));
+            B = (B == dest.B) ? B : ((B > dest.B) ? (B - colorRate <= 0 ? 0 : B - colorRate) : (B + colorRate >= 255 ? 255 : B + colorRate));
             labelLyric.ForeColor = Color.FromArgb(R, G, B);
 
-            if (R == this.BackColor.R && G == this.BackColor.G && B == this.BackColor.B) {
+            if (Math.Abs(R - dest.R) < colorRate && Math.Abs(G - dest.G) < colorRate && Math.Abs(B - dest.B) < colorRate) {
                 if (isFront) {
                     isFront = false;
                    labelLyric.Text = currentToLyricContext;

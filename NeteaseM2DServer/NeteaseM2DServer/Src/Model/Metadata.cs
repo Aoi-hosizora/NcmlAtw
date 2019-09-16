@@ -20,5 +20,13 @@ namespace NeteaseM2DServer.Src.Model {
         public override string ToString() {
             return JsonConvert.SerializeObject(this, Formatting.None);
         }
+
+        public override bool Equals(object obj) {
+            if (obj.GetType() != typeof(Metadata)) return false;
+            return title.Equals((obj as Metadata).title) &&
+                artist.Equals((obj as Metadata).artist) &&
+                album.Equals((obj as Metadata).album) &&
+                duration == (obj as Metadata).duration;
+        }
     }
 }

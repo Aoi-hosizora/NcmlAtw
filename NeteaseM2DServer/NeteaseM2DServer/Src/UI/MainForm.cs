@@ -13,6 +13,8 @@ using NeteaseM2DServer.Src.Api;
 using System.Text.RegularExpressions;
 using NeteaseM2DServer.Src.Util;
 using System.Runtime.CompilerServices;
+using System.Net;
+using System.Net.Sockets;
 
 namespace NeteaseM2DServer.Src.UI {
 
@@ -88,6 +90,8 @@ namespace NeteaseM2DServer.Src.UI {
             this.Invoke(new Action(() => {
                 buttonShowLyric.Enabled = buttonOpenWeb.Enabled = true;
                 labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = true;
+
+                if (Global.currentSong != null && Global.currentSong.Equals(obj)) return;
                 Global.currentSong = obj;
 
                 labelSongTitle.Text = "标题：" + obj.title;
@@ -100,7 +104,7 @@ namespace NeteaseM2DServer.Src.UI {
                 double s = Global.currentSong.duration;
                 Global.durationStr = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
 
-                // 搜索更新歌词
+                // 新线程搜索，防止阻塞 UI
                 new Thread(() => {
                     this.Invoke(new Action(() => {
                         // 正在搜索
@@ -165,9 +169,9 @@ namespace NeteaseM2DServer.Src.UI {
                 string[] trueToken = trueRet.title.Split(new string[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries);
 
                 // (
-                if (!searchToken[0].Equals(trueToken[0])) return false;
+                if (!searchToken[0].Trim().Equals(trueToken[0].Trim())) return false;
                 // )
-                if (!searchToken[1].Equals(trueToken[1])) return false;
+                if (!searchToken[1].Trim().Equals(trueToken[1].Trim())) return false;
 
                 else return true;
             } else {
@@ -182,8 +186,8 @@ namespace NeteaseM2DServer.Src.UI {
         /// </summary>
         /// <returns>-1: 404</returns>
         private int checkContinueResult(SearchResult searchRet, Metadata trueRet) {
-            if (searchRet.Result.Songs.Count == 0) return -1;
-            for (int i = 0; i < 30; i++) { // <<< 不能用 searchRet.Result.SongCount
+            if (searchRet.Result == null || searchRet.Result.Songs == null || searchRet.Result.Songs.Count == 0) return -1;
+            for (int i = 0; i < searchRet.Result.Songs.Count; i++) { // <<< 不能用 searchRet.Result.SongCount
                 if (checkSearchResult(searchRet.Result.Songs.ElementAt(i), trueRet)) 
                     return i;
             }
@@ -240,6 +244,14 @@ namespace NeteaseM2DServer.Src.UI {
             this.Top = Properties.Settings.Default.Top;
             this.Left = Properties.Settings.Default.Left;
 
+            foreach (IPAddress ipa in Dns.GetHostAddresses(Dns.GetHostName())) {
+                if (ipa.AddressFamily == AddressFamily.InterNetwork) {
+                    Console.WriteLine(ipa.ToString());
+                    textBoxIP.Text = ipa.ToString();
+                }
+            }
+
+            
             labelSongDuration.Text = "未监听...";
             Global.MainFormTimer = timerSong_Tick;
         }
@@ -310,7 +322,11 @@ namespace NeteaseM2DServer.Src.UI {
                 DialogResult ret =
                     MessageBox.Show("未找到歌曲 \"" + Global.currentSong.title + "\"。", "错误", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                 if (ret == DialogResult.Retry) {
+
+                    // 阻塞
+                    LyricForm.getInstance().updateSongLyric(true);
                     Search();
+                    LyricForm.getInstance().updateSongLyric(false);
                     buttonOpenWeb_Click(sender, e);
                 }
             }
