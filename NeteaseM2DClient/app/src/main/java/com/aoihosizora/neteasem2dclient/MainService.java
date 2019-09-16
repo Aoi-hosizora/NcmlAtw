@@ -21,53 +21,73 @@ import java.util.List;
 
 public class MainService extends NotificationListenerService {
 
-    private MediaController mediaController = null;
-    private CallBack m_callBack;
-
     /**
      * 外部事件，没用广播
      */
     interface MainEvent {
 
+        /**
+         * Socket 断开连接
+         */
         @UiThread
         void onDisConnect();
+
+        /**
+         * 没有网易云会话
+         */
+        @UiThread
+        void onNoSession();
+
+        /**
+         * 网易云会话关闭
+         */
+        @UiThread
+        void onSessionDestroy();
     }
 
     public static MainEvent m_MainEvent;
+
+    /**
+     * 全局 媒体控制器，防止被 onDestroy 注销
+     */
+    public static MediaController mediaController = null;
+    public static CallBack m_callBack = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        m_callBack = new CallBack();
+        if (m_callBack == null)
+            m_callBack = new CallBack();
 
-        try {
-            MediaSessionManager msMgr = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
-            List<MediaController> controllers = msMgr.getActiveSessions(new ComponentName(this, MainService.class));
+        if (mediaController == null) {
+            try {
+                MediaSessionManager msMgr = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+                List<MediaController> controllers = msMgr.getActiveSessions(new ComponentName(this, MainService.class));
 
-            for (MediaController mediaController : controllers)
-                if (mediaController.getPackageName().contains("netease") && mediaController.getPackageName().contains("music"))
-                    this.mediaController = mediaController;
+                for (MediaController mc : controllers)
+                    if (mc.getPackageName().contains("netease") && mc.getPackageName().contains("music"))
+                        mediaController = mc;
 
-            if (mediaController != null) {
-                mediaController.registerCallback(m_callBack);
+                if (mediaController != null) {
+                    mediaController.registerCallback(m_callBack);
+                }
+                else {
+                    if (m_MainEvent != null)
+                        m_MainEvent.onNoSession();
+                }
             }
-        }
-        catch (Exception ex) {
-            Toast.makeText(this, getExceptionStr(ex), Toast.LENGTH_SHORT).show();
+            catch (Exception ex) {
+                Toast.makeText(this, getExceptionStr(ex), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     @Override
     public void onDestroy() {
+        // 会自动 destroy，不能把注销 MediaController 放在这里
         super.onDestroy();
         // Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show();
-        try {
-            mediaController.unregisterCallback(m_callBack);
-        }
-        catch (Exception ex) {
-            Toast.makeText(this, getExceptionStr(ex), Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -82,24 +102,23 @@ public class MainService extends NotificationListenerService {
             super.onPlaybackStateChanged(state);
             if (state == null) return;
 
-            /*
-                state: 3, stateChangeTimeMs: 2256786083, currentPosMs: 80807 <- Play
-                state: 2, stateChangeTimeMs: 2256797365, currentPosMs: 85887 <- Stop
-             */
+            int musicState = state.getState();
+            long pos = state.getPosition();
 
             final Model.PlaybackState m_playbackState = new Model.PlaybackState(
-                    state.getState() == PlaybackState.STATE_PLAYING,
-                    (double) state.getPosition() / 1000.0
+                    musicState == PlaybackState.STATE_PLAYING,
+                    (double) pos / 1000.0
             );
             final JSONObject obj = m_playbackState.toJson();
 
-            // if (obj != null)
-            //     Toast.makeText(MainService.this, obj.toString(), Toast.LENGTH_SHORT).show();
+            if (obj == null) return;
+
+            // Toast.makeText(MainService.this, obj.toString(), Toast.LENGTH_SHORT).show();
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    if (obj != null && !ClientSendUtil.sendMsg(obj.toString())) {
+                    if (!ClientSendUtil.sendMsg(obj.toString())) {
                         if (m_MainEvent != null)
                             m_MainEvent.onDisConnect();
                     }
@@ -120,18 +139,27 @@ public class MainService extends NotificationListenerService {
             final Model.Metadata m_metadata = new Model.Metadata(title, artist, album, (double) duration / 1000.0);
             final JSONObject obj = m_metadata.toJson();
 
-            // if (obj != null)
-            //     Toast.makeText(MainService.this, obj.toString(), Toast.LENGTH_SHORT).show();
+            if (obj == null) return;
+
+            // Toast.makeText(MainService.this, obj.toString(), Toast.LENGTH_SHORT).show();
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    if (obj != null && !ClientSendUtil.sendMsg(obj.toString())) {
+                    if (!ClientSendUtil.sendMsg(obj.toString())) {
                         if (m_MainEvent != null)
                             m_MainEvent.onDisConnect();
                     }
                 }
             }).start();
+        }
+
+        @Override
+        public void onSessionDestroyed() {
+            super.onSessionDestroyed();
+            // Toast.makeText(MainService.this, "onSessionDestroyed", Toast.LENGTH_SHORT).show();
+            if (m_MainEvent != null)
+                m_MainEvent.onSessionDestroy();
         }
     }
 

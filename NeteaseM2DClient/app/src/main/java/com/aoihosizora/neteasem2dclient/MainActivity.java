@@ -40,11 +40,29 @@ public class MainActivity extends AppCompatActivity {
 
         // 服务事件
         MainService.m_MainEvent = new MainService.MainEvent() {
+
             @Override
             @UiThread
             public void onDisConnect() {
                 showAlert(getString(R.string.alert_break_connect));
                 on_ui_stop();
+                on_controller_stop();
+            }
+
+            @Override
+            @UiThread
+            public void onNoSession() {
+                showAlert(getString(R.string.alert_no_session));
+                on_ui_stop();
+                on_controller_stop();
+            }
+
+            @Override
+            @UiThread
+            public void onSessionDestroy() {
+                showAlert(getString(R.string.alert_session_destroy));
+                on_ui_stop();
+                on_controller_stop();
             }
         };
 
@@ -154,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(MainActivity.this, R.string.tst_connect_success, Toast.LENGTH_SHORT).show();
 
                             try {
-                                stopService(ServiceIntent);
+                                on_controller_stop();
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
@@ -173,16 +191,7 @@ public class MainActivity extends AppCompatActivity {
     @UiThread
     private void disconnect() {
         on_ui_stop();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    stopService(ServiceIntent);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }).start();
+        on_controller_stop();
     }
 
     /**
@@ -205,10 +214,22 @@ public class MainActivity extends AppCompatActivity {
         m_edt_port.setEnabled(true);
     }
 
+    /**
+     * 主动注销通知，(不能写在 onDestroy)
+     */
+    private void on_controller_stop() {
+        if (MainService.mediaController != null)
+            MainService.mediaController.unregisterCallback(MainService.m_callBack);
+        MainService.mediaController = null;
+        MainService.m_callBack = null;
+
+        stopService(ServiceIntent);
+    }
+
     @Override
     protected void onDestroy() {
         try {
-            stopService(ServiceIntent);
+            on_controller_stop();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
