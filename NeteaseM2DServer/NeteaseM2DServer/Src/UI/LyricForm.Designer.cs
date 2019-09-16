@@ -48,6 +48,7 @@
             this.menuItemAllLyric = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.menuItemShowMain = new System.Windows.Forms.ToolStripMenuItem();
+            this.timerLabelText = new System.Windows.Forms.Timer(this.components);
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -80,7 +81,7 @@
             this.menuItemShowMain,
             this.menuItemExit});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(154, 242);
+            this.contextMenuStrip.Size = new System.Drawing.Size(154, 220);
             // 
             // menuItemLock
             // 
@@ -191,6 +192,11 @@
             this.menuItemShowMain.Text = "显示主界面(&M)";
             this.menuItemShowMain.Click += new System.EventHandler(this.menuItemShowMain_Click);
             // 
+            // timerLabelText
+            // 
+            this.timerLabelText.Interval = 1;
+            this.timerLabelText.Tick += new System.EventHandler(this.timerLabelText_Tick);
+            // 
             // LyricForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -236,5 +242,6 @@
         private System.Windows.Forms.ToolStripMenuItem menuItemAllLyric;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem menuItemShowMain;
+        private System.Windows.Forms.Timer timerLabelText;
     }
 }

@@ -278,6 +278,59 @@ namespace NeteaseM2DServer.Src.UI {
 
         #endregion // 弹出菜单
 
+        // timerLabelText_Tick labelLyric_TextChanged
+        #region 歌词动画
+
+        /// <summary>
+        /// 后歌词内容，timerLabelText_Tick 用
+        /// </summary>
+        public string currentToLyricContext = "";
+
+        /// <summary>
+        /// 变换前部
+        /// </summary>
+        bool isFront = true;
+
+        /// <summary>
+        /// 文字颜色变换速度
+        /// </summary>
+        int colorChangeRate = 20;
+
+        /// <summary>
+        /// 歌词文字变化动画
+        /// </summary>
+        private void timerLabelText_Tick(object sender, EventArgs e) {
+            int R = labelLyric.ForeColor.R;
+            int G = labelLyric.ForeColor.G;
+            int B = labelLyric.ForeColor.B;
+            Color dest = isFront ? this.BackColor : Properties.Settings.Default.LyricForeColor;
+            R = (R == dest.R) ? R : ((R > dest.R) ? (R - colorChangeRate <= 0 ? 0 : R - colorChangeRate) : (R + colorChangeRate >= 255 ? 255 : R + colorChangeRate));
+            G = (G == dest.G) ? G : ((G > dest.G) ? (G - colorChangeRate <= 0 ? 0 : G - colorChangeRate) : (G + colorChangeRate >= 255 ? 255 : G + colorChangeRate));
+            B = (B == dest.B) ? B : ((B > dest.B) ? (B - colorChangeRate <= 0 ? 0 : B - colorChangeRate) : (B + colorChangeRate >= 255 ? 255 : B + colorChangeRate));
+            labelLyric.ForeColor = Color.FromArgb(R, G, B);
+
+            if (R == this.BackColor.R && G == this.BackColor.G && B == this.BackColor.B) {
+                if (isFront) {
+                    isFront = false;
+                   labelLyric.Text = currentToLyricContext;
+                } else {
+                    timerLabelText.Enabled = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 文字变化
+        /// </summary>
+        /// <param name="to">变化为的文字</param>
+        private void changeText(string to) {
+            currentToLyricContext = to;
+            isFront = true;
+            timerLabelText.Enabled = true;
+        }
+
+        #endregion // 歌词动画
+
         /// <summary>
         /// 当前歌曲Id，updateSongLyric 用
         /// </summary>
@@ -293,15 +346,16 @@ namespace NeteaseM2DServer.Src.UI {
         /// </summary>
         public void updateSongLyric(bool isSearching) {
             if (isSearching) {
-                labelLyric.Text = "正在搜索歌词";
+                changeText("正在搜索歌词");
                 return;
             }
             if (currentSongId != Global.MusicId) {
                 currentSongId = Global.MusicId;
                 if (Global.MusicLyricPage == null)
-                    labelLyric.Text = "未找到歌词";
+                    changeText("未找到歌词");
             }
         }
+
 
         /// <summary>
         /// 主计时器，歌词和窗口
@@ -318,7 +372,7 @@ namespace NeteaseM2DServer.Src.UI {
             if (currentLineIdx == -1) {
                 // 正文前
                 if (Global.currentSong.title != labelLyric.Text)
-                    labelLyric.Text = Global.currentSong.title;
+                    changeText(Global.currentSong.title);
                 if (Global.currentPos >= Global.MusicLyricPage.Lines.ElementAt(0).timeDuration)
                     currentLineIdx++;
             } else {
@@ -327,14 +381,14 @@ namespace NeteaseM2DServer.Src.UI {
                 if (currentLineIdx == Global.MusicLyricPage.Lines.Count - 1) {
                     // 最后一行
                     if (currLyric.Lyric != labelLyric.Text)
-                        labelLyric.Text = currLyric.Lyric;
+                        changeText(currLyric.Lyric);
                 } else {
                     // 非最后一行
                     LyricLine nextLyric = Global.MusicLyricPage.Lines.ElementAt(currentLineIdx + 1);
                     if (Global.currentPos >= currLyric.timeDuration && Global.currentPos <= nextLyric.timeDuration) {
                         // 到达行内
                         if (currLyric.Lyric != labelLyric.Text)
-                            labelLyric.Text = currLyric.Lyric;
+                            changeText(currLyric.Lyric);
                     } else if (Global.currentPos >= nextLyric.timeDuration) {
                         // 下一行
                         currentLineIdx++;
