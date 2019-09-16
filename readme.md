@@ -8,6 +8,7 @@
     + `Android Studio 3.4.1`
 + Window
     + `Visual C# 2010`
+    + `.NET Framework 4.0`
 
 ### Usage Tips
 + Before start service you should open netease music first, for `MediaController` could not find the session.
@@ -16,13 +17,13 @@
 ### Screenshot
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/Aoi-hosizora/NeteaseLyric_Mobile2Desktop/blob/master/assets/Android.jpg"></img>
+<img src="https://raw.githubusercontent.com/Aoi-hosizora/NeteaseLyric_Mobile2Desktop/master/assets/Android.jpg"></img>
 </p>
 <p align="center">
-<img src="https://raw.githubusercontent.com/Aoi-hosizora/NeteaseLyric_Mobile2Desktop/blob/master/assets/Windows.jpg"></img>
+<img src="https://raw.githubusercontent.com/Aoi-hosizora/NeteaseLyric_Mobile2Desktop/master/assets/Windows.jpg"></img>
 </p>
 <p align="center">
-<img src="https://raw.githubusercontent.com/Aoi-hosizora//NeteaseLyric_Mobile2Desktop/blob/master/assets/Setting.jpg"></img>
+<img src="https://raw.githubusercontent.com/Aoi-hosizora/NeteaseLyric_Mobile2Desktop/master/assets/Setting.jpg"></img>
 </p>
 
 ### Delelopment Tips

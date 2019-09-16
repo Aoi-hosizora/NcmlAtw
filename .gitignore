@@ -21,4 +21,5 @@ Release/
 *.suo
 *.user
 
-NeteaseM2DServer_Tmp/
+build/
+build.zip
