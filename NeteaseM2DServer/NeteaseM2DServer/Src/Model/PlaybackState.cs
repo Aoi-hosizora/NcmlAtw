@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace NeteaseM2DServer.Src.Model
-{
+namespace NeteaseM2DServer.Src.Model {
+
     [JsonObject]
     class PlaybackState {
         public bool isPlay { get; set; }

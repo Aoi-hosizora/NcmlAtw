@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using NeteaseM2DServer.Src.Util;
 
 namespace NeteaseM2DServer.Src.UI {
+
     public partial class MainForm : Form {
 
         public MainForm() {

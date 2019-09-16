@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace NeteaseM2DServer.Src.Model {
+
     class LyricPage {
 
         public List<LyricLine> Lines { get; set; }

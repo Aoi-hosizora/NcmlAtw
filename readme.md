@@ -1,5 +1,5 @@
 # NeteaseLyric_Mobile2Desktop
 
 ### References
-+ [写一个APP控制第三方播放器播放，以及获取正在播放的歌曲信息](https://blog.csdn.net/Java_Grass/article/details/78668301)
++ [Using MediaController on Android 5](https://stackoverflow.com/questions/27107212/using-mediacontroller-on-android-5)
 + [NeteaseMuiscApi](https://github.com/GEEKiDoS/NeteaseMuiscApi)

@@ -8,8 +8,8 @@ using System.Runtime.CompilerServices;
 using NeteaseM2DServer.Src.Model;
 using System.Threading;
 
-namespace NeteaseM2DServer.Src.Service
-{
+namespace NeteaseM2DServer.Src.Service {
+
     class SocketService {
 
         public int port { get; set; }
@@ -46,8 +46,7 @@ namespace NeteaseM2DServer.Src.Service
             try {
                 serverListener.Start();
                 listenCb(true);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 // 监听失败
                 Console.WriteLine(ex.Message);
                 listenCb(false);
@@ -60,8 +59,7 @@ namespace NeteaseM2DServer.Src.Service
                 try {
                     // ブロック操作は WSACancelBlockingCall の呼び出しに割り込まれました。
                     remoteClient = serverListener.AcceptTcpClient();
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) {
                     Console.WriteLine(ex.Message);
                     break;
                 }
@@ -89,11 +87,9 @@ namespace NeteaseM2DServer.Src.Service
                             }
                         }
                     }
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) {
                     Console.WriteLine(ex.Message);
-                }
-                finally {
+                } finally {
                     remoteClient.Close();
                 }
                 Thread.Sleep(100);

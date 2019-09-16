@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace NeteaseM2DServer.Src.Model {
+
     class Global {
 
         public static bool isListening { get; set; }
