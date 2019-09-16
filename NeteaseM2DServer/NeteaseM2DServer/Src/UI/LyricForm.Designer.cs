@@ -30,9 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             this.labelLyric = new System.Windows.Forms.Label();
-            this.timerShow = new System.Windows.Forms.Timer(this.components);
-            this.timerHide = new System.Windows.Forms.Timer(this.components);
-            this.buttonOption = new System.Windows.Forms.Button();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuItemLock = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemOpacity = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,6 +40,9 @@
             this.menuItemRestoreColor = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.menuItemExit = new System.Windows.Forms.ToolStripMenuItem();
+            this.timerShow = new System.Windows.Forms.Timer(this.components);
+            this.timerHide = new System.Windows.Forms.Timer(this.components);
+            this.buttonOption = new System.Windows.Forms.Button();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.contextMenuStrip.SuspendLayout();
@@ -58,33 +58,8 @@
             this.labelLyric.Name = "labelLyric";
             this.labelLyric.Size = new System.Drawing.Size(1350, 103);
             this.labelLyric.TabIndex = 0;
-            this.labelLyric.Text = "もともとは VB で使用するものとして設計されましたが";
+            this.labelLyric.Text = "未找到歌词";
             this.labelLyric.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // timerShow
-            // 
-            this.timerShow.Interval = 1;
-            this.timerShow.Tick += new System.EventHandler(this.timerShow_Tick);
-            // 
-            // timerHide
-            // 
-            this.timerHide.Interval = 1;
-            this.timerHide.Tick += new System.EventHandler(this.timerHide_Tick);
-            // 
-            // buttonOption
-            // 
-            this.buttonOption.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonOption.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.buttonOption.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.buttonOption.ForeColor = System.Drawing.Color.White;
-            this.buttonOption.Image = global::NeteaseM2DServer.Properties.Resources.Option;
-            this.buttonOption.Location = new System.Drawing.Point(1314, 12);
-            this.buttonOption.Name = "buttonOption";
-            this.buttonOption.Size = new System.Drawing.Size(24, 24);
-            this.buttonOption.TabIndex = 1;
-            this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。");
-            this.buttonOption.UseVisualStyleBackColor = true;
-            this.buttonOption.Click += new System.EventHandler(this.buttonOption_Click);
             // 
             // contextMenuStrip
             // 
@@ -157,9 +132,34 @@
             // menuItemExit
             // 
             this.menuItemExit.Name = "menuItemExit";
-            this.menuItemExit.Size = new System.Drawing.Size(152, 22);
+            this.menuItemExit.Size = new System.Drawing.Size(137, 22);
             this.menuItemExit.Text = "关闭歌词(&X)";
             this.menuItemExit.Click += new System.EventHandler(this.menuItemExit_Click);
+            // 
+            // timerShow
+            // 
+            this.timerShow.Interval = 1;
+            this.timerShow.Tick += new System.EventHandler(this.timerShow_Tick);
+            // 
+            // timerHide
+            // 
+            this.timerHide.Interval = 1;
+            this.timerHide.Tick += new System.EventHandler(this.timerHide_Tick);
+            // 
+            // buttonOption
+            // 
+            this.buttonOption.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonOption.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonOption.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.buttonOption.ForeColor = System.Drawing.Color.White;
+            this.buttonOption.Image = global::NeteaseM2DServer.Properties.Resources.Option;
+            this.buttonOption.Location = new System.Drawing.Point(1314, 12);
+            this.buttonOption.Name = "buttonOption";
+            this.buttonOption.Size = new System.Drawing.Size(24, 24);
+            this.buttonOption.TabIndex = 1;
+            this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。");
+            this.buttonOption.UseVisualStyleBackColor = true;
+            this.buttonOption.Click += new System.EventHandler(this.buttonOption_Click);
             // 
             // colorDialog
             // 

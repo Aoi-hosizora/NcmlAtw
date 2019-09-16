@@ -11,11 +11,12 @@ using System.Runtime.InteropServices;
 using NeteaseM2DServer.Src.Model;
 using NeteaseM2DServer.Src.Util;
 
-namespace NeteaseM2DServer.Src.UI
-{
+namespace NeteaseM2DServer.Src.UI {
+
     public partial class LyricForm : Form {
 
         private static LyricForm Instance;
+
         public static LyricForm getInstance() {
             if (Instance == null)
                 Instance = new LyricForm();
@@ -84,9 +85,9 @@ namespace NeteaseM2DServer.Src.UI
         /// </summary>
         private void Object_MouseMove(object sender, MouseEventArgs e) {
             bool rn = e.Button == MouseButtons.Left;
-            if (sender.GetType().Equals(typeof(Button))) 
+            if (sender.GetType().Equals(typeof(Button)))
                 rn = e.Button == MouseButtons.Right;
-            if (rn) { 
+            if (rn) {
                 this.Top = MouseDownWinPosition.Y + Cursor.Position.Y - MouseDownMousePosition.Y;
                 this.Left = MouseDownWinPosition.X + Cursor.Position.X - MouseDownMousePosition.X;
             }
@@ -100,8 +101,7 @@ namespace NeteaseM2DServer.Src.UI
             if (this.Opacity < Global.LyricWinOpacity) {
                 this.Opacity += 0.05;
                 rn = this.Opacity >= Global.LyricWinOpacity;
-            }
-            else {
+            } else {
                 this.Opacity -= 0.05;
                 rn = this.Opacity <= Global.LyricWinOpacity;
             }
@@ -203,37 +203,65 @@ namespace NeteaseM2DServer.Src.UI
             );
         }
 
-        private long currentSongId = -1;
+        /// <summary>
+        /// 记录当前歌曲Id，用于更新歌词
+        /// </summary>
+        public long currentSongId = -1;
+
+        /// <summary>
+        /// 更新当前歌曲歌词
+        /// </summary>
+        public void updateSongLyric() {
+            if (currentSongId != Global.MusicId) {
+                currentSongId = Global.MusicId;
+                if (Global.MusicLyricPage == null)
+                    labelLyric.Text = "未找到歌词";
+                else {
+                    labelLyric.Text = Global.currentSong.title;
+                    Console.WriteLine(Global.MusicLyricPage.ToString());
+                }
+            }
+        }
+
+        public int currentLineIdx = -1;
 
         /// <summary>
         /// 主计时器，歌词和窗口
         /// </summary>
         private void timerLyric_Tick() {
-            // interval == 10
 
             // 窗口
             if (menuItemLock.Checked)
                 CommonUtil.setWindowCrossOver(this, this.Opacity, !CommonUtil.ControlInRange(this, buttonOption));
 
-            // 歌词转换
-            if (currentSongId != Global.MusicId) {
-                currentSongId = Global.MusicId;
-                if (Global.MusicLrc != "")
-                    Global.MusicLyricPage = LyricPage.parseLrc(Global.MusicLrc);
-                else
-                    Global.MusicLyricPage = null;
+            // 歌词显示
+            if (Global.MusicLyricPage == null) return;
+
+            if (currentLineIdx == -1) {
+                // 正文前
+                if (Global.currentPos >= Global.MusicLyricPage.Lines.ElementAt(0).timeDuration)
+                    currentLineIdx++;
+            } else {
+                // 正文
+                LyricLine currLyric = Global.MusicLyricPage.Lines.ElementAt(currentLineIdx);
+                if (currentLineIdx == Global.MusicLyricPage.Lines.Count - 1) {
+                    // 最后一行
+                    if (currLyric.Lyric != labelLyric.Text)
+                        labelLyric.Text = currLyric.Lyric;
+                } else {
+                    // 非最后一行
+                    LyricLine nextLyric = Global.MusicLyricPage.Lines.ElementAt(currentLineIdx + 1);
+                    if (Global.currentPos >= currLyric.timeDuration && Global.currentPos <= nextLyric.timeDuration) {
+                        // 到达行内
+                        if (currLyric.Lyric != labelLyric.Text)
+                            labelLyric.Text = currLyric.Lyric;
+                    } else
+                        // 出行内
+                        currentLineIdx++;
+                }
             }
 
-            // 歌词显示
-            // TODO
-            if (Global.MusicLrc == "") labelLyric.Text = "未找到歌词";
-            else if (Global.MusicLyricPage == null) labelLyric.Text = "歌词处理中";
-            else {
-                LyricLine currLine = CommonUtil.GetCurrentLine(Global.currentPos, Global.MusicLyricPage);
-                // Console.WriteLine("currentPos: " + Global.currentPos + " timeDuration: " + currLine.timeDuration + " lyric: " + currLine.ToString());
-                if (currLine.Lyric != labelLyric.Text)
-                    labelLyric.Text = currLine.Lyric;
-            }
         }
-    } 
+    }
 }
+

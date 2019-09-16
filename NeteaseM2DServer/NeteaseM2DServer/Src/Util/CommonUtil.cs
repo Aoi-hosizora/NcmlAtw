@@ -6,10 +6,8 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using NeteaseM2DServer.Src.Model;
 
-namespace NeteaseM2DServer.Src.Util
-{
-    class CommonUtil
-    {
+namespace NeteaseM2DServer.Src.Util {
+    class CommonUtil {
 
         #region 窗口穿透
 
@@ -66,21 +64,6 @@ namespace NeteaseM2DServer.Src.Util
                 Cursor.Position.X < parent.Left + ctrl.Left + ctrl.Width &&
                 Cursor.Position.Y > parent.Top + ctrl.Top &&
                 Cursor.Position.Y < parent.Top + ctrl.Top + ctrl.Height;
-        }
-
-        /// <summary>
-        /// 获取当前的歌词项
-        /// </summary>
-        /// <param name="currentPos">当前歌曲位置</param>
-        /// <param name="lyric">歌曲歌词 (已排序)</param>
-        /// <returns>当前歌词行</returns>
-        public static LyricLine GetCurrentLine(long currentPos, LyricPage lyric) {
-            foreach (LyricLine line in lyric.Lines)
-                if (line.timeDuration >= currentPos)
-                    return line;
-            LyricLine nullLine = new LyricLine();
-            nullLine.Lyric = "";
-            return nullLine;
         }
     }
 }

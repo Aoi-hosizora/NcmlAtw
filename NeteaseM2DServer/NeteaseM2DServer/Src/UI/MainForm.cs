@@ -13,8 +13,7 @@ using NeteaseM2DServer.Src.Api;
 using System.Text.RegularExpressions;
 using NeteaseM2DServer.Src.Util;
 
-namespace NeteaseM2DServer.Src.UI
-{
+namespace NeteaseM2DServer.Src.UI {
     public partial class MainForm : Form {
 
         public MainForm() {
@@ -46,8 +45,7 @@ namespace NeteaseM2DServer.Src.UI
                         labelSongTitle.Text = "未知歌曲";
                         labelSongArtist.Text = "未知歌手";
                         labelSongAlbum.Text = "未知专辑";
-                    }
-                    else {
+                    } else {
                         labelSongDuration.Text = "未监听...";
                         buttonListen.Text = "监听端口";
                         timerGlobal.Enabled = false;
@@ -88,8 +86,13 @@ namespace NeteaseM2DServer.Src.UI
                 toolTip.SetToolTip(labelSongArtist, labelSongArtist.Text.Substring(3));
                 toolTip.SetToolTip(labelSongAlbum, labelSongAlbum.Text.Substring(3));
 
+                // 搜索歌词
                 Search();
 
+                // 更新歌词
+                LyricForm.getInstance().updateSongLyric();
+
+                // 开始全局计时
                 timerGlobal.Enabled = true;
             }));
         }
@@ -130,7 +133,7 @@ namespace NeteaseM2DServer.Src.UI
             string currentPos = "未知", duration = "未知";
             if (Global.currentState != null) {
                 double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
-                Global.currentPos = (int) (s * 1000);
+                Global.currentPos = (int)(s * 1000);
                 currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
             }
             if (Global.currentSong != null) {
@@ -160,17 +163,14 @@ namespace NeteaseM2DServer.Src.UI
                 searchResult.Result != null && searchResult.Result.Songs != null &&
                 searchResult.Result.Songs.Count > 0) {
                 Global.MusicId = searchResult.Result.Songs.ElementAt(0).Id;
-                
+
                 // TODO 查找歌词
                 LyricResult lyricResult = api.Lyric(Global.MusicId);
-                if (lyricResult != null && lyricResult.Code == 200 &&
-                    lyricResult.Lrc != null) {
-                    Global.MusicLrc = lyricResult.Lrc.Lyric;
-                }
+                if (lyricResult != null && lyricResult.Code == 200 && lyricResult.Lrc != null)
+                    Global.MusicLyricPage = LyricPage.parseLrc(lyricResult.Lrc.Lyric);
                 else
-                    Global.MusicLrc = "";
-            }
-            else
+                    Global.MusicLyricPage = null;
+            } else
                 Global.MusicId = -1;
         }
 
@@ -193,8 +193,7 @@ namespace NeteaseM2DServer.Src.UI
         private void buttonListen_Click(object sender, EventArgs e) {
             if ((sender as Button).Text == "监听端口") {
                 StartThread(int.Parse(numericUpDownPort.Value.ToString()));
-            }
-            else {
+            } else {
                 StopThread();
                 labelSongDuration.Text = "未监听...";
                 buttonListen.Text = "监听端口";
@@ -230,13 +229,11 @@ namespace NeteaseM2DServer.Src.UI
         /// <summary>
         /// 打开网页
         /// </summary>
-        private void buttonOpenWeb_Click(object sender, EventArgs e)
-        {
+        private void buttonOpenWeb_Click(object sender, EventArgs e) {
             if (Global.MusicId != -1) {
                 string url = "https://music.163.com/#/song?id=" + Global.MusicId;
                 System.Diagnostics.Process.Start(url);
-            }
-            else {
+            } else {
                 DialogResult ret =
                     MessageBox.Show("未找到歌曲 \"" + Global.currentSong.title + "\"。", "错误", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error);
                 if (ret == DialogResult.Retry) {
@@ -256,8 +253,8 @@ namespace NeteaseM2DServer.Src.UI
         private void timerGlobal_Tick(object sender, EventArgs e) {
             if (Global.MainFormTimer != null)
                 Global.MainFormTimer();
-//             if (Global.LyricFormTimer != null)
-//                 Global.LyricFormTimer();
+            if (Global.LyricFormTimer != null)
+                Global.LyricFormTimer();
         }
 
     }

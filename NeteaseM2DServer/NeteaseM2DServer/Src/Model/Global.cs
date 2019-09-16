@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NeteaseM2DServer.Src.Model
-{
+namespace NeteaseM2DServer.Src.Model {
     class Global {
 
         public static bool isListening { get; set; }
@@ -18,7 +17,6 @@ namespace NeteaseM2DServer.Src.Model
 
         public static double LyricWinOpacity = 0.40;
 
-        public static string MusicLrc { get; set; }
         public static LyricPage MusicLyricPage { get; set; }
 
         public delegate void MainFormTimerDelegate();

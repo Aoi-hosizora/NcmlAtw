@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace NeteaseM2DServer.Src.Model
-{
+namespace NeteaseM2DServer.Src.Model {
     class LyricPage {
 
         public List<LyricLine> Lines { get; set; }
@@ -28,6 +27,13 @@ namespace NeteaseM2DServer.Src.Model
             ret.Lines.Sort();
             return ret;
         }
+
+        public override string ToString() {
+            StringBuilder sb = new StringBuilder();
+            foreach (LyricLine line in Lines)
+                sb.AppendLine(line.ToString());
+            return sb.ToString();
+        }
     }
 
     class LyricLine : IComparable<LyricLine> {
@@ -38,7 +44,7 @@ namespace NeteaseM2DServer.Src.Model
         public int timeSecond { get; set; }
         public int timeMilliSecond { get; set; }
 
-        public long timeDuration { 
+        public long timeDuration {
             get {
                 // 01:02.03 -> 3 * 10 + 2 * 1000 + 1 * 60000
                 return timeMilliSecond * 10 + timeSecond * 1000 + timeMinute * 60000;
@@ -65,9 +71,9 @@ namespace NeteaseM2DServer.Src.Model
             string[] sp = lrcLineString.Split(new string[] { "[", "]" }, StringSplitOptions.RemoveEmptyEntries);
 
             // Lyric
-            if (sp.Length == 1) 
+            if (sp.Length == 1)
                 ret.Lyric = "";
-            else if (sp.Length == 2) 
+            else if (sp.Length == 2)
                 ret.Lyric = sp[1].Trim();
             else
                 return null;
@@ -79,7 +85,7 @@ namespace NeteaseM2DServer.Src.Model
                 ret.timeMilliSecond = int.Parse(tis[2]);
             else if (tis.Length == 3)
                 ret.timeMilliSecond = int.Parse(tis[2].Substring(0, 2));
-            else 
+            else
                 return null;
 
             ret.timeMinute = int.Parse(tis[0]);
