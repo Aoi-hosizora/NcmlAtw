@@ -8,7 +8,7 @@
     <string name="txt_colon">：</string>
 
     <string name="edt_ip">127.0.0.1</string>
-    <string name="edt_port">8888</string>
+    <string name="edt_port">1212</string>
 
     <string name="progress_linking">连接中&#8230;</string>
 

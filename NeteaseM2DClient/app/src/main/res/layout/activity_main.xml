@@ -36,7 +36,7 @@
         app:layout_constraintTop_toBottomOf="@id/id_txt_label"
         app:layout_constraintLeft_toLeftOf="parent">
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/id_edt_ip"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:text="@string/txt_colon"/>
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/id_edt_port"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

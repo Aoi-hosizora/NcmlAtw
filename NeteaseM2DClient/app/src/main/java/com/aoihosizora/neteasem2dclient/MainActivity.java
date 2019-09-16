@@ -4,8 +4,10 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -14,9 +16,19 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     // public static String TAG = "MainActivity";
 
     public static int REQUEST_NETWORK_PERMISSION_CODE = 1;
+
+    private SharedPreferences ipSP, portSP;
 
     private Intent ServiceIntent;
 
@@ -77,6 +91,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+        ipSP = getSharedPreferences("ip", Context.MODE_PRIVATE);
+        portSP = getSharedPreferences("port", Context.MODE_PRIVATE);
+
+        // 自动完成输入框
+        initAutoCompleteEdit();
     }
 
     /**
@@ -100,9 +120,14 @@ public class MainActivity extends AppCompatActivity {
     Button m_btn_service;
 
     @BindView(R.id.id_edt_ip)
-    TextView m_edt_ip;
+    AutoCompleteTextView m_edt_ip;
     @BindView(R.id.id_edt_port)
-    TextView m_edt_port;
+    AutoCompleteTextView m_edt_port;
+
+    @OnClick({R.id.id_edt_ip, R.id.id_edt_port})
+    void on_edt_auto_completed_clicked(View view) {
+        ((AutoCompleteTextView) view).showDropDown();
+    }
 
     @OnClick(R.id.id_btn_service)
     @UiThread
@@ -127,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
             disconnect();
         }
     }
-
     /**
      * 格式正确，连接
      */
@@ -141,17 +165,28 @@ public class MainActivity extends AppCompatActivity {
             }, REQUEST_NETWORK_PERMISSION_CODE);
         }
 
+        final boolean[] isCanceled = new boolean[] {false};
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.progress_linking));
-        progressDialog.setCancelable(false);
+        progressDialog.setCancelable(true);
+        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                isCanceled[0] = true;
+            }
+        });
         progressDialog.show();
+
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                     ClientSendUtil.ip = m_edt_ip.getText().toString();
                     ClientSendUtil.port = Integer.parseInt(m_edt_port.getText().toString());
+
                     if (!ClientSendUtil.ping()) {
+
+                        if (isCanceled[0]) return;
 
                         // 连接不通
                         runOnUiThread(new Runnable() {
@@ -165,22 +200,29 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
+                    if (isCanceled[0]) return;
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             progressDialog.dismiss();
                             Toast.makeText(MainActivity.this, R.string.tst_connect_success, Toast.LENGTH_SHORT).show();
 
+                            // 保存
+                            saveIP(ClientSendUtil.ip);
+                            savePort(ClientSendUtil.port);
+                            initAutoCompleteEdit();
+
                             try {
                                 on_controller_stop();
-                            } catch (Exception ex) {
+                            }
+                            catch (Exception ex) {
                                 ex.printStackTrace();
                             }
                             startService(ServiceIntent);
                             on_ui_starting();
                         }
                     });
-
             }
         }).start();
     }
@@ -234,6 +276,91 @@ public class MainActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
         super.onDestroy();
+    }
+
+    /**
+     * 获得当前时间
+     * @return yyyy-MM-dd-HH-mm-ss
+     */
+    private String getCurrentTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.CHINA);
+        Date date = new Date(System.currentTimeMillis());
+        return simpleDateFormat.format(date);
+    }
+
+    /**
+     * 保存 IP 至 SharedPreferences
+     */
+    private void saveIP(String ip) {
+        boolean isSaved = false;
+        for (Map.Entry<String, ?> entry : ipSP.getAll().entrySet()) {
+            if (entry.getValue().equals(ip)) {
+                isSaved = true;
+                break;
+            }
+        }
+        if (!isSaved) {
+            SharedPreferences.Editor ipSPEdit = ipSP.edit();
+            ipSPEdit.putString(getCurrentTime(), ip);
+            ipSPEdit.apply();
+        }
+    }
+
+    /**
+     * 保存 Port 至 SharedPreferences
+     */
+    private void savePort(int port) {
+        boolean isSaved = false;
+        for (Map.Entry<String, ?> entry : portSP.getAll().entrySet()) {
+            try {
+                if (Integer.parseInt(entry.getValue().toString()) == port) {
+                    isSaved = true;
+                    break;
+                }
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (!isSaved) {
+            SharedPreferences.Editor ipSPEdit = portSP.edit();
+            ipSPEdit.putInt(getCurrentTime(), port);
+            ipSPEdit.apply();
+        }
+    }
+
+    /**
+     * 获取存储的 IP
+     */
+    private String[] getSavedIP() {
+        ArrayList<String> ret = new ArrayList<>();
+        for (Map.Entry<String, ?> entry : ipSP.getAll().entrySet()) {
+            ret.add(entry.getValue().toString());
+        }
+        return ret.toArray(new String[0]);
+    }
+
+    /**
+     * 获取存储的 Port
+     */
+    private String[] getSavedPort() {
+        ArrayList<String> ret = new ArrayList<>();
+        for (Map.Entry<String, ?> entry : portSP.getAll().entrySet()) {
+            ret.add(entry.getValue().toString());
+        }
+        return ret.toArray(new String[0]);
+    }
+
+    /**
+     * 初始化自动完成框
+     */
+    private void initAutoCompleteEdit() {
+        ArrayAdapter ipAda = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getSavedIP());
+        ArrayAdapter portAda = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getSavedPort());
+        m_edt_ip.setAdapter(ipAda);
+        m_edt_port.setAdapter(portAda);
+        ipAda.notifyDataSetChanged();
+        portAda.notifyDataSetChanged();
     }
 
     private void showAlert(String msg) {
