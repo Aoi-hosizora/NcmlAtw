@@ -10,6 +10,7 @@ namespace NeteaseM2DServer.Src.Model {
         public static bool isListening { get; set; }
         public static long stateUpdateMS { get; set; }
         public static long currentPos { get; set; }
+        public static string durationStr { get; set; }
 
         public static Metadata currentSong { get; set; }
         public static PlaybackState currentState { get; set; }

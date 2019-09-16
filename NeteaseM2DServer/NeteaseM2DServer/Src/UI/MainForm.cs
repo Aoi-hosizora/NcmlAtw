@@ -21,6 +21,7 @@ namespace NeteaseM2DServer.Src.UI {
             InitializeComponent();
         }
 
+        // StartThread SocketMetaDataCb SocketPlaybackStateCb StopThread
         #region 线程服务
 
         private Thread socketThread;
@@ -87,6 +88,9 @@ namespace NeteaseM2DServer.Src.UI {
                 toolTip.SetToolTip(labelSongArtist, labelSongArtist.Text.Substring(3));
                 toolTip.SetToolTip(labelSongAlbum, labelSongAlbum.Text.Substring(3));
 
+                double s = Global.currentSong.duration;
+                Global.durationStr = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
+
                 // 搜索歌词
                 Search();
 
@@ -124,30 +128,9 @@ namespace NeteaseM2DServer.Src.UI {
                 socketThread.Abort();
         }
 
-        /// <summary>
-        /// 时间更新
-        /// </summary>
-        private void timerSong_Tick() {
-            long now = CommonUtil.GetTimeStamp();
-
-            if (!Global.currentState.isPlay) return;
-            string currentPos = "未知", duration = "未知";
-            if (Global.currentState != null) {
-                double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
-                Global.currentPos = (int)(s * 1000);
-                currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
-            }
-            if (Global.currentSong != null) {
-                double s = Global.currentSong.duration;
-                duration = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
-            }
-
-            labelSongDuration.Text = currentPos + " / " + duration;
-        }
-
-
         #endregion // 线程服务
 
+        // Search
         #region 歌曲查找
 
         /// <summary>
@@ -177,6 +160,7 @@ namespace NeteaseM2DServer.Src.UI {
 
         #endregion // 歌曲查找
 
+        // MainForm_Load MainForm_FormClosed buttonListen_Click buttonExit_Click buttonShowLyric_Click buttonOpenWeb_Click
         #region 界面交互
 
         private void MainForm_Load(object sender, EventArgs e) {
@@ -245,6 +229,23 @@ namespace NeteaseM2DServer.Src.UI {
         }
 
         #endregion // 界面交互
+
+        /// <summary>
+        /// 时间更新
+        /// </summary>
+        private void timerSong_Tick() {
+            long now = CommonUtil.GetTimeStamp();
+
+            if (!Global.currentState.isPlay) return;
+            string currentPos = "未知";
+            if (Global.currentState != null) {
+                double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
+                Global.currentPos = (int)(s * 1000);
+                currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
+            }
+
+            labelSongDuration.Text = currentPos + " / " + (Global.durationStr == "" || Global.durationStr == null ? "未知" : Global.durationStr);
+        }
 
         /// <summary>
         /// 全局计时器

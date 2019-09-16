@@ -27,6 +27,9 @@ namespace NeteaseM2DServer.Src.UI {
             InitializeComponent();
         }
 
+        // LyricForm_Load LyricForm_FormClosing
+        #region 加载与退出
+
         private void LyricForm_Load(object sender, EventArgs e) {
             this.Opacity = 0;
 
@@ -67,6 +70,9 @@ namespace NeteaseM2DServer.Src.UI {
             Global.LyricFormTimer = null;
         }
 
+        #endregion // 加载与退出
+
+        // Object_MouseDown Object_MouseMove timerShow_Tick timerHide_Tick
         #region 窗口设置
 
         private Point MouseDownMousePosition;
@@ -130,7 +136,51 @@ namespace NeteaseM2DServer.Src.UI {
 
         #endregion // 窗口设置
 
+        // buttonOption_Click menuItemXXX_Click
         #region 弹出菜单
+
+        /// <summary>
+        /// 弹出菜单
+        /// </summary>
+        private void buttonOption_Click(object sender, EventArgs e) {
+            contextMenuStrip.Show(
+                this.Left + (sender as Button).Left,
+                this.Top + (sender as Button).Top - contextMenuStrip.Height
+            );
+        }
+
+        /// <summary>
+        /// 菜单，所有歌词
+        /// </summary>
+        private void menuItemAllLyric_Click(object sender, EventArgs e) {
+
+            if (Global.MusicLyricPage == null) {
+                MessageBox.Show("歌曲：\"" + Global.currentSong.artist + " - " + Global.currentSong.title + "\" 找不到歌词", 
+                    "所有歌词", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Form form = new Form();
+            form.Text = "所有歌词 - " + Global.currentSong.title;
+            form.Name = "LyricDialog";
+            form.StartPosition = FormStartPosition.CenterScreen;
+            form.Size = new System.Drawing.Size(750, 450);
+
+            TextBox textBox = new TextBox();
+            textBox.Name = "textBox";
+            textBox.Text = Global.MusicLyricPage.ToString();
+            textBox.Multiline = true;
+            textBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            textBox.WordWrap = false;
+            textBox.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top | AnchorStyles.Bottom;
+            textBox.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            textBox.Select(0, 0);
+
+            form.Controls.Add(textBox);
+            textBox.Dock = DockStyle.Fill;
+
+            form.Show();
+        }
 
         /// <summary>
         /// 菜单，关闭歌词
@@ -194,19 +244,14 @@ namespace NeteaseM2DServer.Src.UI {
         #endregion // 弹出菜单
 
         /// <summary>
-        /// 弹出菜单
-        /// </summary>
-        private void buttonOption_Click(object sender, EventArgs e) {
-            contextMenuStrip.Show(
-                this.Left + (sender as Button).Left,
-                this.Top + (sender as Button).Top - contextMenuStrip.Height
-            );
-        }
-
-        /// <summary>
-        /// 记录当前歌曲Id，用于更新歌词
+        /// 当前歌曲Id，updateSongLyric 用
         /// </summary>
         public long currentSongId = -1;
+
+        /// <summary>
+        /// 当前歌词行， timerLyric_Tick 用
+        /// </summary>
+        public int currentLineIdx = -1;
 
         /// <summary>
         /// 更新当前歌曲歌词
@@ -222,8 +267,6 @@ namespace NeteaseM2DServer.Src.UI {
                 }
             }
         }
-
-        public int currentLineIdx = -1;
 
         /// <summary>
         /// 主计时器，歌词和窗口
