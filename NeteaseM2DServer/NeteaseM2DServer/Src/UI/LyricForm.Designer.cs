@@ -31,6 +31,8 @@
             this.components = new System.ComponentModel.Container();
             this.labelLyric = new System.Windows.Forms.Label();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.menuItemAllLyric = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.menuItemLock = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemOpacity = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemPosition = new System.Windows.Forms.ToolStripMenuItem();
@@ -39,15 +41,13 @@
             this.menuForeBackColor = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemRestoreColor = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuItemShowMain = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemExit = new System.Windows.Forms.ToolStripMenuItem();
             this.timerShow = new System.Windows.Forms.Timer(this.components);
             this.timerHide = new System.Windows.Forms.Timer(this.components);
             this.buttonOption = new System.Windows.Forms.Button();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.menuItemAllLyric = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.menuItemShowMain = new System.Windows.Forms.ToolStripMenuItem();
             this.timerLabelText = new System.Windows.Forms.Timer(this.components);
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -82,6 +82,18 @@
             this.menuItemExit});
             this.contextMenuStrip.Name = "contextMenuStrip";
             this.contextMenuStrip.Size = new System.Drawing.Size(154, 220);
+            // 
+            // menuItemAllLyric
+            // 
+            this.menuItemAllLyric.Name = "menuItemAllLyric";
+            this.menuItemAllLyric.Size = new System.Drawing.Size(153, 22);
+            this.menuItemAllLyric.Text = "所有歌词(&L)";
+            this.menuItemAllLyric.Click += new System.EventHandler(this.menuItemAllLyric_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(150, 6);
             // 
             // menuItemLock
             // 
@@ -136,6 +148,13 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(150, 6);
             // 
+            // menuItemShowMain
+            // 
+            this.menuItemShowMain.Name = "menuItemShowMain";
+            this.menuItemShowMain.Size = new System.Drawing.Size(153, 22);
+            this.menuItemShowMain.Text = "显示主界面(&M)";
+            this.menuItemShowMain.Click += new System.EventHandler(this.menuItemShowMain_Click);
+            // 
             // menuItemExit
             // 
             this.menuItemExit.Name = "menuItemExit";
@@ -172,25 +191,6 @@
             // 
             this.colorDialog.AnyColor = true;
             this.colorDialog.FullOpen = true;
-            // 
-            // menuItemAllLyric
-            // 
-            this.menuItemAllLyric.Name = "menuItemAllLyric";
-            this.menuItemAllLyric.Size = new System.Drawing.Size(153, 22);
-            this.menuItemAllLyric.Text = "所有歌词(&L)";
-            this.menuItemAllLyric.Click += new System.EventHandler(this.menuItemAllLyric_Click);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(150, 6);
-            // 
-            // menuItemShowMain
-            // 
-            this.menuItemShowMain.Name = "menuItemShowMain";
-            this.menuItemShowMain.Size = new System.Drawing.Size(153, 22);
-            this.menuItemShowMain.Text = "显示主界面(&M)";
-            this.menuItemShowMain.Click += new System.EventHandler(this.menuItemShowMain_Click);
             // 
             // timerLabelText
             // 

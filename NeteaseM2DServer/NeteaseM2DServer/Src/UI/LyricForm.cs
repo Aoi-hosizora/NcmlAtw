@@ -349,13 +349,11 @@ namespace NeteaseM2DServer.Src.UI {
                 changeText("正在搜索歌词");
                 return;
             }
-            if (currentSongId != Global.MusicId) {
+            if (Global.MusicId == -1 || Global.MusicLyricPage == null)
+                changeText("未找到歌词");
+            else
                 currentSongId = Global.MusicId;
-                if (Global.MusicLyricPage == null)
-                    changeText("未找到歌词");
-            }
         }
-
 
         /// <summary>
         /// 主计时器，歌词和窗口
@@ -398,7 +396,6 @@ namespace NeteaseM2DServer.Src.UI {
                     }
                 }
             }
-
         }
     }
 }

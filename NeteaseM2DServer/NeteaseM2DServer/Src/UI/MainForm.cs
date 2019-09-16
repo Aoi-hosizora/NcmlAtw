@@ -150,25 +150,77 @@ namespace NeteaseM2DServer.Src.UI {
         #region 歌曲查找
 
         /// <summary>
+        /// 判断搜索到的结果是否正确，先查专辑再查歌名
+        /// </summary>
+        private bool checkSearchResult(Song searchRet, Metadata trueRet) {
+            Console.WriteLine(searchRet.Name + ", " + trueRet.title);
+            Console.WriteLine(searchRet.Al.Name + ", " + trueRet.album);
+
+            if (!searchRet.Al.Name.Equals(trueRet.album)) return false;
+            if (searchRet.Name.IndexOf("(") != -1) {
+                // 存在括号
+                if (trueRet.title.IndexOf("(") == -1) return false;
+
+                string[] searchToken = searchRet.Name.Split(new string[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] trueToken = trueRet.title.Split(new string[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries);
+
+                // (
+                if (!searchToken[0].Equals(trueToken[0])) return false;
+                // )
+                if (!searchToken[1].Equals(trueToken[1])) return false;
+
+                else return true;
+            } else {
+                // 不存在括号
+                Console.WriteLine(searchRet.Name.Trim().Equals(new Regex("\\(.*\\)").Replace(trueRet.title, "").Trim()));
+                return searchRet.Name.Trim().Equals(new Regex("\\(.*\\)").Replace(trueRet.title, "").Trim());
+            }
+        }
+
+        /// <summary>
+        /// 列表内搜索
+        /// </summary>
+        /// <returns>-1: 404</returns>
+        private int checkContinueResult(SearchResult searchRet, Metadata trueRet) {
+            if (searchRet.Result.Songs.Count == 0) return -1;
+            for (int i = 0; i < 30; i++) { // <<< 不能用 searchRet.Result.SongCount
+                if (checkSearchResult(searchRet.Result.Songs.ElementAt(i), trueRet)) 
+                    return i;
+            }
+            return -1;
+        }
+
+        /// <summary>
         /// 查找歌曲 Id 和 歌词
         /// </summary>
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Search() {
             var api = new NeteaseMusicAPI();
 
-            Regex reg = new Regex("(.*)");
-            string searchStr = reg.Replace(Global.currentSong.title, " ") + " " + Global.currentSong.artist + " " + Global.currentSong.album;
+            // 匹配歌曲
+            Song resultSong = null;
+            // 匹配歌曲索引
+            int id = -1;
 
-            SearchResult searchResult = api.Search(searchStr);
-            if (searchResult != null && searchResult.Code == 200 &&
-                searchResult.Result != null && searchResult.Result.Songs != null &&
-                searchResult.Result.Songs.Count > 0) {
+            // 几种方案搜索
+            SearchResult searchResult = api.Search(Global.currentSong.title);
+            if (searchResult.Code == 200 && ((id = checkContinueResult(searchResult, Global.currentSong)) == -1)) {
+                searchResult = api.Search(Global.currentSong.title + " " + Global.currentSong.artist);
+                if (searchResult.Code == 200 && ((id = checkContinueResult(searchResult, Global.currentSong)) == -1)) {
+                    searchResult = api.Search(Global.currentSong.title + " " + Global.currentSong.artist + " " + Global.currentSong.album);
+                    if (searchResult.Code == 200 && ((id = checkContinueResult(searchResult, Global.currentSong)) == -1)) {
+                        resultSong = null;
+                    }
+                }
+            }
+            if (id != -1) 
+                resultSong = searchResult.Result.Songs.ElementAt(id);
 
-                Global.MusicId = searchResult.Result.Songs.ElementAt(0).Id;
+            if (resultSong != null) {
+                Global.MusicId = resultSong.Id;
 
-                // TODO 查找歌词
                 LyricResult lyricResult = api.Lyric(Global.MusicId);
-                if (lyricResult != null && lyricResult.Code == 200 && lyricResult.Lrc != null)
+                if (lyricResult.Code == 200 && lyricResult.Lrc != null && lyricResult.Lrc.Lyric != null && lyricResult.Lrc.Lyric != "")
                     Global.MusicLyricPage = LyricPage.parseLrc(lyricResult.Lrc.Lyric);
                 else
                     Global.MusicLyricPage = null;

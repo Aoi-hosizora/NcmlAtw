@@ -84,9 +84,12 @@ namespace NeteaseM2DServer.Src.Model {
 
             if (tis.Length == 2)
                 ret.timeMilliSecond = int.Parse(tis[2]);
-            else if (tis.Length == 3)
-                ret.timeMilliSecond = int.Parse(tis[2].Substring(0, 2));
-            else
+            else if (tis.Length == 3) {
+                if (tis[2].Length == 1)
+                    ret.timeMilliSecond = int.Parse(tis[2] + "0");
+                else
+                    ret.timeMilliSecond = int.Parse(tis[2].Substring(0, 2));
+            } else
                 return null;
 
             ret.timeMinute = int.Parse(tis[0]);
