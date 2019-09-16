@@ -47,6 +47,7 @@
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.menuItemAllLyric = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuItemShowMain = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -76,67 +77,68 @@
             this.menuForeBackColor,
             this.menuItemRestoreColor,
             this.toolStripSeparator1,
+            this.menuItemShowMain,
             this.menuItemExit});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(153, 220);
+            this.contextMenuStrip.Size = new System.Drawing.Size(154, 242);
             // 
             // menuItemLock
             // 
             this.menuItemLock.Checked = true;
             this.menuItemLock.CheckState = System.Windows.Forms.CheckState.Checked;
             this.menuItemLock.Name = "menuItemLock";
-            this.menuItemLock.Size = new System.Drawing.Size(152, 22);
+            this.menuItemLock.Size = new System.Drawing.Size(153, 22);
             this.menuItemLock.Text = "锁定(&L)";
             this.menuItemLock.Click += new System.EventHandler(this.menuItemLock_Click);
             // 
             // menuItemOpacity
             // 
             this.menuItemOpacity.Name = "menuItemOpacity";
-            this.menuItemOpacity.Size = new System.Drawing.Size(152, 22);
+            this.menuItemOpacity.Size = new System.Drawing.Size(153, 22);
             this.menuItemOpacity.Text = "透明度(&S)";
             // 
             // menuItemPosition
             // 
             this.menuItemPosition.Name = "menuItemPosition";
-            this.menuItemPosition.Size = new System.Drawing.Size(152, 22);
+            this.menuItemPosition.Size = new System.Drawing.Size(153, 22);
             this.menuItemPosition.Text = "原位置(&P)";
             this.menuItemPosition.Click += new System.EventHandler(this.menuItemPosition_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(150, 6);
             // 
             // menuItemForeColor
             // 
             this.menuItemForeColor.Name = "menuItemForeColor";
-            this.menuItemForeColor.Size = new System.Drawing.Size(152, 22);
+            this.menuItemForeColor.Size = new System.Drawing.Size(153, 22);
             this.menuItemForeColor.Text = "文字颜色(&F)";
             this.menuItemForeColor.Click += new System.EventHandler(this.menuItemForeColor_Click);
             // 
             // menuForeBackColor
             // 
             this.menuForeBackColor.Name = "menuForeBackColor";
-            this.menuForeBackColor.Size = new System.Drawing.Size(152, 22);
+            this.menuForeBackColor.Size = new System.Drawing.Size(153, 22);
             this.menuForeBackColor.Text = "背景颜色(&B)";
             this.menuForeBackColor.Click += new System.EventHandler(this.menuForeBackColor_Click);
             // 
             // menuItemRestoreColor
             // 
             this.menuItemRestoreColor.Name = "menuItemRestoreColor";
-            this.menuItemRestoreColor.Size = new System.Drawing.Size(152, 22);
+            this.menuItemRestoreColor.Size = new System.Drawing.Size(153, 22);
             this.menuItemRestoreColor.Text = "恢复颜色(&C)";
             this.menuItemRestoreColor.Click += new System.EventHandler(this.menuItemRestoreColor_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(150, 6);
             // 
             // menuItemExit
             // 
             this.menuItemExit.Name = "menuItemExit";
-            this.menuItemExit.Size = new System.Drawing.Size(152, 22);
+            this.menuItemExit.Size = new System.Drawing.Size(153, 22);
             this.menuItemExit.Text = "关闭歌词(&X)";
             this.menuItemExit.Click += new System.EventHandler(this.menuItemExit_Click);
             // 
@@ -173,14 +175,21 @@
             // menuItemAllLyric
             // 
             this.menuItemAllLyric.Name = "menuItemAllLyric";
-            this.menuItemAllLyric.Size = new System.Drawing.Size(152, 22);
+            this.menuItemAllLyric.Size = new System.Drawing.Size(153, 22);
             this.menuItemAllLyric.Text = "所有歌词(&L)";
             this.menuItemAllLyric.Click += new System.EventHandler(this.menuItemAllLyric_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(150, 6);
+            // 
+            // menuItemShowMain
+            // 
+            this.menuItemShowMain.Name = "menuItemShowMain";
+            this.menuItemShowMain.Size = new System.Drawing.Size(153, 22);
+            this.menuItemShowMain.Text = "显示主界面(&M)";
+            this.menuItemShowMain.Click += new System.EventHandler(this.menuItemShowMain_Click);
             // 
             // LyricForm
             // 
@@ -226,5 +235,6 @@
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.ToolStripMenuItem menuItemAllLyric;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem menuItemShowMain;
     }
 }

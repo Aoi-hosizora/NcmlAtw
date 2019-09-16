@@ -32,6 +32,8 @@ namespace NeteaseM2DServer.Src.UI {
 
         private void LyricForm_Load(object sender, EventArgs e) {
             this.Opacity = 0;
+            this.BackColor = Properties.Settings.Default.LyricBackColor;
+            labelLyric.ForeColor = Properties.Settings.Default.LyricForeColor;
 
             // 窗口位置
             menuItemPosition_Click(menuItemPosition, e);
@@ -52,6 +54,8 @@ namespace NeteaseM2DServer.Src.UI {
                 menuItemOpacitySubItem.Text = (i != 10) ? "&" + i + "0%" : "1&00%";
                 menuItemOpacitySubItem.Click += new System.EventHandler(this.menuItemOpacitySubItem_Click);
                 menuItemOpacity.DropDownItems.Add(menuItemOpacitySubItem);
+                if (Properties.Settings.Default.Opacity == (double)i / 10.0)
+                    menuItemOpacitySubItem.Checked = true;
             }
 
             // 显示窗口 & 歌词
@@ -96,6 +100,9 @@ namespace NeteaseM2DServer.Src.UI {
             if (rn) {
                 this.Top = MouseDownWinPosition.Y + Cursor.Position.Y - MouseDownMousePosition.Y;
                 this.Left = MouseDownWinPosition.X + Cursor.Position.X - MouseDownMousePosition.X;
+                (sender as Control).Cursor = System.Windows.Forms.Cursors.SizeAll;
+            } else {
+                (sender as Control).Cursor = System.Windows.Forms.Cursors.Default;
             }
         }
 
@@ -104,16 +111,16 @@ namespace NeteaseM2DServer.Src.UI {
         /// </summary>
         private void timerShow_Tick(object sender, EventArgs e) {
             bool rn;
-            if (this.Opacity < Global.LyricWinOpacity) {
+            if (this.Opacity < Properties.Settings.Default.Opacity) {
                 this.Opacity += 0.05;
-                rn = this.Opacity >= Global.LyricWinOpacity;
+                rn = this.Opacity >= Properties.Settings.Default.Opacity;
             } else {
                 this.Opacity -= 0.05;
-                rn = this.Opacity <= Global.LyricWinOpacity;
+                rn = this.Opacity <= Properties.Settings.Default.Opacity;
             }
 
             if (rn) {
-                this.Opacity = Global.LyricWinOpacity;
+                this.Opacity = Properties.Settings.Default.Opacity;
                 timerShow.Enabled = false;
 
                 CommonUtil.setWindowCrossOver(this, this.Opacity, true);
@@ -143,10 +150,17 @@ namespace NeteaseM2DServer.Src.UI {
         /// 弹出菜单
         /// </summary>
         private void buttonOption_Click(object sender, EventArgs e) {
-            contextMenuStrip.Show(
-                this.Left + (sender as Button).Left,
-                this.Top + (sender as Button).Top - contextMenuStrip.Height
-            );
+            Computer My = new Computer();
+            if (My.Screen.WorkingArea.Height - this.Top - (sender as Button).Top - (sender as Button).Height < contextMenuStrip.Height)
+                contextMenuStrip.Show(
+                    this.Left + (sender as Button).Left,
+                    this.Top + (sender as Button).Top - contextMenuStrip.Height
+                );
+            else
+                contextMenuStrip.Show(
+                    this.Left + (sender as Button).Left,
+                    this.Top + (sender as Button).Top + (sender as Button).Height
+                );
         }
 
         /// <summary>
@@ -211,7 +225,13 @@ namespace NeteaseM2DServer.Src.UI {
         /// 菜单，透明度修改
         /// </summary>
         private void menuItemOpacitySubItem_Click(object sender, EventArgs e) {
-            Global.LyricWinOpacity = (double)(sender as ToolStripMenuItem).Tag;
+
+            foreach (ToolStripMenuItem item in menuItemOpacity.DropDownItems)
+                item.Checked = false;
+            (sender as ToolStripMenuItem).Checked = true;
+
+            Properties.Settings.Default.Opacity = (double)(sender as ToolStripMenuItem).Tag;
+            Properties.Settings.Default.Save();
             timerShow.Enabled = true;
         }
 
@@ -222,6 +242,8 @@ namespace NeteaseM2DServer.Src.UI {
             colorDialog.Color = labelLyric.ForeColor;
             colorDialog.ShowDialog();
             labelLyric.ForeColor = colorDialog.Color;
+            Properties.Settings.Default.LyricForeColor = labelLyric.ForeColor;
+            Properties.Settings.Default.Save();
         }
 
         /// <summary>
@@ -231,6 +253,8 @@ namespace NeteaseM2DServer.Src.UI {
             colorDialog.Color = this.BackColor;
             colorDialog.ShowDialog();
             this.BackColor = colorDialog.Color;
+            Properties.Settings.Default.LyricBackColor = labelLyric.BackColor;
+            Properties.Settings.Default.Save();
         }
 
         /// <summary>
@@ -239,6 +263,17 @@ namespace NeteaseM2DServer.Src.UI {
         private void menuItemRestoreColor_Click(object sender, EventArgs e) {
             labelLyric.ForeColor = Color.White;
             this.BackColor = Color.Black;
+            Properties.Settings.Default.LyricForeColor = labelLyric.ForeColor;
+            Properties.Settings.Default.LyricBackColor = labelLyric.BackColor;
+            Properties.Settings.Default.Save();
+        }
+
+        /// <summary>
+        /// 显示主界面
+        /// </summary>
+        private void menuItemShowMain_Click(object sender, EventArgs e) {
+            MainForm.GetInstance().Show();
+            MainForm.GetInstance().Activate();
         }
 
         #endregion // 弹出菜单
@@ -256,15 +291,15 @@ namespace NeteaseM2DServer.Src.UI {
         /// <summary>
         /// 更新当前歌曲歌词
         /// </summary>
-        public void updateSongLyric() {
+        public void updateSongLyric(bool isSearching) {
+            if (isSearching) {
+                labelLyric.Text = "正在搜索歌词";
+                return;
+            }
             if (currentSongId != Global.MusicId) {
                 currentSongId = Global.MusicId;
                 if (Global.MusicLyricPage == null)
                     labelLyric.Text = "未找到歌词";
-                else {
-                    labelLyric.Text = Global.currentSong.title;
-                    Console.WriteLine(Global.MusicLyricPage.ToString());
-                }
             }
         }
 
@@ -282,6 +317,8 @@ namespace NeteaseM2DServer.Src.UI {
 
             if (currentLineIdx == -1) {
                 // 正文前
+                if (Global.currentSong.title != labelLyric.Text)
+                    labelLyric.Text = Global.currentSong.title;
                 if (Global.currentPos >= Global.MusicLyricPage.Lines.ElementAt(0).timeDuration)
                     currentLineIdx++;
             } else {
@@ -298,9 +335,13 @@ namespace NeteaseM2DServer.Src.UI {
                         // 到达行内
                         if (currLyric.Lyric != labelLyric.Text)
                             labelLyric.Text = currLyric.Lyric;
-                    } else
-                        // 出行内
+                    } else if (Global.currentPos >= nextLyric.timeDuration) {
+                        // 下一行
                         currentLineIdx++;
+                    } else if (Global.currentPos <= currLyric.timeDuration) {
+                        // 时间过快，上一行
+                        currentLineIdx--;
+                    }
                 }
             }
 

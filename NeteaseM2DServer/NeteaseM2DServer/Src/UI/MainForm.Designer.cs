@@ -42,7 +42,17 @@
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.timerGlobal = new System.Windows.Forms.Timer(this.components);
             this.buttonOpenWeb = new System.Windows.Forms.Button();
+            this.buttonTimeAdjust = new System.Windows.Forms.Button();
+            this.timeAdjustContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.menuItemFaster05 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItemSlower05 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItemFaster1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItemSlow1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.menuItemCopy = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).BeginInit();
+            this.timeAdjustContextMenu.SuspendLayout();
+            this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -79,7 +89,8 @@
             // buttonListen
             // 
             this.buttonListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonListen.Location = new System.Drawing.Point(12, 134);
+            this.buttonListen.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.buttonListen.Location = new System.Drawing.Point(12, 132);
             this.buttonListen.Name = "buttonListen";
             this.buttonListen.Size = new System.Drawing.Size(75, 25);
             this.buttonListen.TabIndex = 7;
@@ -91,7 +102,8 @@
             // 
             this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonShowLyric.Enabled = false;
-            this.buttonShowLyric.Location = new System.Drawing.Point(93, 134);
+            this.buttonShowLyric.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.buttonShowLyric.Location = new System.Drawing.Point(93, 132);
             this.buttonShowLyric.Name = "buttonShowLyric";
             this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
             this.buttonShowLyric.TabIndex = 8;
@@ -111,9 +123,10 @@
             // labelSongTitle
             // 
             this.labelSongTitle.AutoEllipsis = true;
-            this.labelSongTitle.Location = new System.Drawing.Point(12, 63);
+            this.labelSongTitle.ContextMenuStrip = this.contextMenuStrip;
+            this.labelSongTitle.Location = new System.Drawing.Point(12, 61);
             this.labelSongTitle.Name = "labelSongTitle";
-            this.labelSongTitle.Size = new System.Drawing.Size(347, 17);
+            this.labelSongTitle.Size = new System.Drawing.Size(338, 17);
             this.labelSongTitle.TabIndex = 4;
             this.labelSongTitle.Text = "Title";
             this.toolTip.SetToolTip(this.labelSongTitle, "Title");
@@ -122,9 +135,10 @@
             // labelSongAlbum
             // 
             this.labelSongAlbum.AutoEllipsis = true;
-            this.labelSongAlbum.Location = new System.Drawing.Point(12, 85);
+            this.labelSongAlbum.ContextMenuStrip = this.contextMenuStrip;
+            this.labelSongAlbum.Location = new System.Drawing.Point(12, 84);
             this.labelSongAlbum.Name = "labelSongAlbum";
-            this.labelSongAlbum.Size = new System.Drawing.Size(344, 17);
+            this.labelSongAlbum.Size = new System.Drawing.Size(338, 17);
             this.labelSongAlbum.TabIndex = 5;
             this.labelSongAlbum.Text = "Album";
             this.labelSongAlbum.Visible = false;
@@ -132,9 +146,10 @@
             // labelSongArtist
             // 
             this.labelSongArtist.AutoEllipsis = true;
+            this.labelSongArtist.ContextMenuStrip = this.contextMenuStrip;
             this.labelSongArtist.Location = new System.Drawing.Point(12, 107);
             this.labelSongArtist.Name = "labelSongArtist";
-            this.labelSongArtist.Size = new System.Drawing.Size(344, 17);
+            this.labelSongArtist.Size = new System.Drawing.Size(338, 17);
             this.labelSongArtist.TabIndex = 6;
             this.labelSongArtist.Text = "Artist";
             this.labelSongArtist.Visible = false;
@@ -152,7 +167,8 @@
             // 
             this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonExit.Location = new System.Drawing.Point(275, 134);
+            this.buttonExit.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.buttonExit.Location = new System.Drawing.Point(275, 132);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(75, 25);
             this.buttonExit.TabIndex = 10;
@@ -162,20 +178,88 @@
             // 
             // timerGlobal
             // 
-            this.timerGlobal.Interval = 200;
             this.timerGlobal.Tick += new System.EventHandler(this.timerGlobal_Tick);
             // 
             // buttonOpenWeb
             // 
             this.buttonOpenWeb.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonOpenWeb.Enabled = false;
-            this.buttonOpenWeb.Location = new System.Drawing.Point(194, 134);
+            this.buttonOpenWeb.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.buttonOpenWeb.Location = new System.Drawing.Point(194, 132);
             this.buttonOpenWeb.Name = "buttonOpenWeb";
             this.buttonOpenWeb.Size = new System.Drawing.Size(75, 25);
             this.buttonOpenWeb.TabIndex = 9;
             this.buttonOpenWeb.Text = "打开网页";
             this.buttonOpenWeb.UseVisualStyleBackColor = true;
             this.buttonOpenWeb.Click += new System.EventHandler(this.buttonOpenWeb_Click);
+            // 
+            // buttonTimeAdjust
+            // 
+            this.buttonTimeAdjust.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.buttonTimeAdjust.Location = new System.Drawing.Point(275, 36);
+            this.buttonTimeAdjust.Name = "buttonTimeAdjust";
+            this.buttonTimeAdjust.Size = new System.Drawing.Size(75, 25);
+            this.buttonTimeAdjust.TabIndex = 11;
+            this.buttonTimeAdjust.Text = "时间调整";
+            this.buttonTimeAdjust.UseVisualStyleBackColor = true;
+            this.buttonTimeAdjust.Click += new System.EventHandler(this.buttonTimeAdjust_Click);
+            // 
+            // timeAdjustContextMenu
+            // 
+            this.timeAdjustContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuItemFaster05,
+            this.menuItemSlower05,
+            this.menuItemFaster1,
+            this.menuItemSlow1});
+            this.timeAdjustContextMenu.Name = "contextMenuStrip";
+            this.timeAdjustContextMenu.Size = new System.Drawing.Size(137, 92);
+            // 
+            // menuItemFaster05
+            // 
+            this.menuItemFaster05.Name = "menuItemFaster05";
+            this.menuItemFaster05.Size = new System.Drawing.Size(136, 22);
+            this.menuItemFaster05.Tag = "+0.5";
+            this.menuItemFaster05.Text = "快 0.5 秒 (&1)";
+            this.menuItemFaster05.Click += new System.EventHandler(this.menuItemFasterSlower_Click);
+            // 
+            // menuItemSlower05
+            // 
+            this.menuItemSlower05.Name = "menuItemSlower05";
+            this.menuItemSlower05.Size = new System.Drawing.Size(136, 22);
+            this.menuItemSlower05.Tag = "-0.5";
+            this.menuItemSlower05.Text = "慢 0.5 秒 (&2)";
+            this.menuItemSlower05.Click += new System.EventHandler(this.menuItemFasterSlower_Click);
+            // 
+            // menuItemFaster1
+            // 
+            this.menuItemFaster1.Name = "menuItemFaster1";
+            this.menuItemFaster1.Size = new System.Drawing.Size(136, 22);
+            this.menuItemFaster1.Tag = "+1";
+            this.menuItemFaster1.Text = "快 1 秒 (&3)";
+            this.menuItemFaster1.Click += new System.EventHandler(this.menuItemFasterSlower_Click);
+            // 
+            // menuItemSlow1
+            // 
+            this.menuItemSlow1.Name = "menuItemSlow1";
+            this.menuItemSlow1.Size = new System.Drawing.Size(136, 22);
+            this.menuItemSlow1.Tag = "-1";
+            this.menuItemSlow1.Text = "慢 1 秒 (&4)";
+            this.menuItemSlow1.Click += new System.EventHandler(this.menuItemFasterSlower_Click);
+            // 
+            // contextMenuStrip
+            // 
+            this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.menuItemCopy});
+            this.contextMenuStrip.Name = "contextMenuStrip";
+            this.contextMenuStrip.Size = new System.Drawing.Size(114, 26);
+            this.contextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_Opening);
+            // 
+            // menuItemCopy
+            // 
+            this.menuItemCopy.Name = "menuItemCopy";
+            this.menuItemCopy.Size = new System.Drawing.Size(152, 22);
+            this.menuItemCopy.Text = "复制(&C)";
+            this.menuItemCopy.Click += new System.EventHandler(this.menuItemCopy_Click);
             // 
             // MainForm
             // 
@@ -184,7 +268,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.buttonExit;
-            this.ClientSize = new System.Drawing.Size(362, 171);
+            this.ClientSize = new System.Drawing.Size(362, 169);
+            this.Controls.Add(this.buttonTimeAdjust);
             this.Controls.Add(this.buttonOpenWeb);
             this.Controls.Add(this.buttonExit);
             this.Controls.Add(this.buttonShowLyric);
@@ -202,9 +287,12 @@
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "NeteaseM2D Setting";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPort)).EndInit();
+            this.timeAdjustContextMenu.ResumeLayout(false);
+            this.contextMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -225,6 +313,14 @@
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.Timer timerGlobal;
         private System.Windows.Forms.Button buttonOpenWeb;
+        private System.Windows.Forms.Button buttonTimeAdjust;
+        private System.Windows.Forms.ContextMenuStrip timeAdjustContextMenu;
+        private System.Windows.Forms.ToolStripMenuItem menuItemFaster05;
+        private System.Windows.Forms.ToolStripMenuItem menuItemSlower05;
+        private System.Windows.Forms.ToolStripMenuItem menuItemFaster1;
+        private System.Windows.Forms.ToolStripMenuItem menuItemSlow1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem menuItemCopy;
     }
 }
 

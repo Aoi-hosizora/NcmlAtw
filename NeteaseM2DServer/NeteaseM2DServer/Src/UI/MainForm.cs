@@ -12,12 +12,21 @@ using NeteaseM2DServer.Src.Model;
 using NeteaseM2DServer.Src.Api;
 using System.Text.RegularExpressions;
 using NeteaseM2DServer.Src.Util;
+using System.Runtime.CompilerServices;
 
 namespace NeteaseM2DServer.Src.UI {
 
     public partial class MainForm : Form {
 
-        public MainForm() {
+        private static MainForm Instance;
+
+        public static MainForm GetInstance() {
+            if (Instance == null)
+                Instance = new MainForm();
+            return Instance;
+        }
+
+        private MainForm() {
             InitializeComponent();
         }
 
@@ -91,11 +100,18 @@ namespace NeteaseM2DServer.Src.UI {
                 double s = Global.currentSong.duration;
                 Global.durationStr = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
 
-                // 搜索歌词
-                Search();
-
-                // 更新歌词
-                LyricForm.getInstance().updateSongLyric();
+                // 搜索更新歌词
+                new Thread(() => {
+                    this.Invoke(new Action(() => {
+                        // 正在搜索
+                        LyricForm.getInstance().updateSongLyric(true);
+                    }));
+                    Search();
+                    this.Invoke(new Action(() => {
+                        // 搜索完成
+                        LyricForm.getInstance().updateSongLyric(false);
+                    }));
+                }).Start();
 
                 // 开始全局计时
                 timerGlobal.Enabled = true;
@@ -136,16 +152,18 @@ namespace NeteaseM2DServer.Src.UI {
         /// <summary>
         /// 查找歌曲 Id 和 歌词
         /// </summary>
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Search() {
             var api = new NeteaseMusicAPI();
 
             Regex reg = new Regex("(.*)");
-            string searchStr = reg.Replace(Global.currentSong.title, "") + " " + Global.currentSong.artist + " " + Global.currentSong.album;
+            string searchStr = reg.Replace(Global.currentSong.title, " ") + " " + Global.currentSong.artist + " " + Global.currentSong.album;
 
             SearchResult searchResult = api.Search(searchStr);
             if (searchResult != null && searchResult.Code == 200 &&
                 searchResult.Result != null && searchResult.Result.Songs != null &&
                 searchResult.Result.Songs.Count > 0) {
+
                 Global.MusicId = searchResult.Result.Songs.ElementAt(0).Id;
 
                 // TODO 查找歌词
@@ -154,8 +172,10 @@ namespace NeteaseM2DServer.Src.UI {
                     Global.MusicLyricPage = LyricPage.parseLrc(lyricResult.Lrc.Lyric);
                 else
                     Global.MusicLyricPage = null;
-            } else
+            } else {
                 Global.MusicId = -1;
+                Global.MusicLyricPage = null;
+            }
         }
 
         #endregion // 歌曲查找
@@ -164,12 +184,28 @@ namespace NeteaseM2DServer.Src.UI {
         #region 界面交互
 
         private void MainForm_Load(object sender, EventArgs e) {
+            // Load Setting
+            this.Top = Properties.Settings.Default.Top;
+            this.Left = Properties.Settings.Default.Left;
+
             labelSongDuration.Text = "未监听...";
             Global.MainFormTimer = timerSong_Tick;
         }
 
+        /// <summary>
+        /// 关闭线程
+        /// </summary>
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e) {
             StopThread();
+        }
+
+        /// <summary>
+        /// 保存设置
+        /// </summary>
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
+            Properties.Settings.Default.Top = this.Top;
+            Properties.Settings.Default.Left = this.Left;
+            Properties.Settings.Default.Save();
         }
 
         /// <summary>
@@ -230,13 +266,62 @@ namespace NeteaseM2DServer.Src.UI {
 
         #endregion // 界面交互
 
+        // buttonTimeAdjust_Click menuItemFasterSlower_Click contextMenuStrip_Opening
+        #region 弹出菜单
+
+        /// <summary>
+        /// 时间调整 弹出菜单
+        /// </summary>
+        private void buttonTimeAdjust_Click(object sender, EventArgs e) {
+            timeAdjustContextMenu.Show(
+                this.Left + (sender as Button).Left,
+                this.Top + (sender as Button).Top + (sender as Button).Height
+            );
+        }
+
+        /// <summary>
+        /// 菜单，时间调整
+        /// </summary>
+        private void menuItemFasterSlower_Click(object sender, EventArgs e) {
+            string tag = (sender as ToolStripMenuItem).Tag.ToString();
+            bool isFaster = tag.Substring(0, 1) == "+";
+            double it = double.Parse(tag.Substring(1));
+            if (isFaster)
+                Global.stateUpdateMS -= (long)(it * 1000);
+            else
+                Global.stateUpdateMS += (long)(it * 1000);
+        }
+
+        Control rightClickControl = null;
+
+        /// <summary>
+        /// 弹出右键菜单
+        /// </summary>
+        private void contextMenuStrip_Opening(object sender, CancelEventArgs e) {
+            rightClickControl = (sender as ContextMenuStrip).SourceControl;
+        }
+
+        /// <summary>
+        /// 右键复制
+        /// </summary>
+        private void menuItemCopy_Click(object sender, EventArgs e) {
+            if (rightClickControl != null)
+                Clipboard.SetText(rightClickControl.Text.Substring(3));
+        }
+
+        #endregion // 弹出菜单
+
         /// <summary>
         /// 时间更新
         /// </summary>
         private void timerSong_Tick() {
             long now = CommonUtil.GetTimeStamp();
+            if (Global.currentState == null) return;
+            // 暂停 或 超过
+            if (!Global.currentState.isPlay ||
+                (Global.currentSong != null && Global.currentState.currentPosSecond >= Global.currentSong.duration)) 
+                return;
 
-            if (!Global.currentState.isPlay) return;
             string currentPos = "未知";
             if (Global.currentState != null) {
                 double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
@@ -258,6 +343,5 @@ namespace NeteaseM2DServer.Src.UI {
             if (Global.LyricFormTimer != null)
                 Global.LyricFormTimer();
         }
-
     }
 }

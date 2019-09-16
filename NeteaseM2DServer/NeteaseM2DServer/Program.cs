@@ -14,7 +14,7 @@ namespace NeteaseM2DServer
         static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Src.UI.MainForm());
+            Application.Run(Src.UI.MainForm.GetInstance());
         }
     }
 }
