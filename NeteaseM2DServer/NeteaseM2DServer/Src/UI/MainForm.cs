@@ -426,17 +426,17 @@ namespace NeteaseM2DServer.Src.UI {
         private void timerSong_Tick() {
             long now = CommonUtil.GetTimeStamp();
             if (Global.currentState == null) return;
+
+            // 当前时间
+            double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
+
             // 暂停 或 超过
-            if (!Global.currentState.isPlay ||
-                (Global.currentSong != null && Global.currentState.currentPosSecond >= Global.currentSong.duration)) 
+            if (!Global.currentState.isPlay || (Global.currentSong != null && s >= Global.currentSong.duration))
                 return;
 
-            string currentPos = "未知";
-            if (Global.currentState != null) {
-                double s = Global.currentState.currentPosSecond + (double)((now - Global.stateUpdateMS) / 1000.0);
-                Global.currentPos = (int)(s * 1000);
-                currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
-            }
+            Global.currentPos = (int)(s * 1000);
+            string currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
+            
 
             labelSongDuration.Text = currentPos + " / " + (Global.durationStr == "" || Global.durationStr == null ? "未知" : Global.durationStr);
         }

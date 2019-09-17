@@ -297,7 +297,7 @@ namespace NeteaseM2DServer.Src.UI {
         /// 菜单，修改文字颜色
         /// </summary>
         private void menuItemForeColor_Click(object sender, EventArgs e) {
-            colorDialog.Color = labelLyric.ForeColor;
+            colorDialog.Color = Properties.Settings.Default.LyricForeColor;
             colorDialog.ShowDialog();
             labelLyric.ForeColor = colorDialog.Color;
             Properties.Settings.Default.LyricForeColor = labelLyric.ForeColor;
@@ -308,7 +308,7 @@ namespace NeteaseM2DServer.Src.UI {
         /// 菜单，修改背景颜色
         /// </summary>
         private void menuForeBackColor_Click(object sender, EventArgs e) {
-            colorDialog.Color = this.BackColor;
+            colorDialog.Color = Properties.Settings.Default.LyricBackColor;
             colorDialog.ShowDialog();
             this.BackColor = colorDialog.Color;
             Properties.Settings.Default.LyricBackColor = labelLyric.BackColor;

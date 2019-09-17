@@ -308,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
         m_btn_service.setText(getString(R.string.btn_stop));
         m_edt_ip.setEnabled(false);
         m_edt_port.setEnabled(false);
+        m_btn_qrCode.setEnabled(false);
     }
 
     /**
@@ -318,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
         m_btn_service.setText(getString(R.string.btn_start));
         m_edt_ip.setEnabled(true);
         m_edt_port.setEnabled(true);
+        m_btn_qrCode.setEnabled(true);
     }
 
     /**
