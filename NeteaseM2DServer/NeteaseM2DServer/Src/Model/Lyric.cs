@@ -73,10 +73,12 @@ namespace NeteaseM2DServer.Src.Model {
 
             // Lyric
             if (sp.Length == 1)
-                ret.Lyric = "";
-            else if (sp.Length == 2)
+                return null;
+            else if (sp.Length == 2) {
                 ret.Lyric = sp[1].Trim();
-            else
+                if (ret.Lyric == "") 
+                    return null;
+            } else
                 return null;
 
             // Time

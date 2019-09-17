@@ -126,13 +126,40 @@
   <metadata name="timerHide.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>127, 17</value>
   </metadata>
-  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>496, 17</value>
-  </metadata>
   <metadata name="colorDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>382, 17</value>
   </metadata>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>496, 17</value>
+  </metadata>
   <metadata name="timerLabelText.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>586, 17</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="buttonSlower.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
+        EgAACxIB0t1+/AAAAB90RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgOLVo0ngAAAEVSURB
+        VEhLtZMLDQJBDAVPAhKQgAQkIAEJSEACEpCABCQgAQk4ODpke+l23yWQlCaT0En3070yzfP8V6SsRMpK
+        pKxEykqkFJyNu+BoqPoFKQVspuJkqPoFKSuRshIpK5GyEikbG2NvbIP7GSkNxu9leKyNY6whGOeupksa
+        3JyFh5ZfW47PtQSH0ykMNV3SYLYfIeeJCD8w++gGlOTG/LGio4PcPjcm8CC/1SAMNs+bKbcz8ODfIne5
+        esAtOZ4sHxDh7VkXn/ZDlzQuRi4keJLoMlyATjrfJQ2mguAJyNk4LnSfJ4au+X7RyQOADgh/X39bJozg
+        t9+YmqfBmq/GFChkMzaJ08Ht/TC819D1sDkMohop65inN7Iw+kgwEc6GAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="buttonFaster.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
+        EgAACxIB0t1+/AAAAB90RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgOLVo0ngAAAEuSURB
+        VEhL1ZQBDQIxDEWRgAQkIAEJSEACEpCABCQgAQlIQAIORt9lTbrusxzJQUKTl6P/unbtdqxKKV9Fiksi
+        xQFbA9sZ6n2HFAeQGPuvAoyFhHA0MJ6uDYtJMTHH1LoJKSbiTlUHdKjWTUhxAAkxnup9hxQH/KzAcCwR
+        KVbWBgk3QfsYKRoH42m44au4GIOdjCamcSrsnIX76l+qj55jMYrTKXQxjVPhCt6Dz4gwL5j1qHUokR3f
+        kkYHuX0/cHSQZ9UJBslzMqVxk9DBzyJ3+bbANWmMLBeIMHvWxdFONE7lbORAjJFELcMG6KTRG6fCrcD8
+        YyJxXOh6vjF0zflFTRYAOsB8vj5b/7Pjt++YmIfBmlnXFAgkGUni7WD3XgzdY+i6Sw6dsDRSXI6yegE0
+        vwf7BggHtgAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <metadata name="fontDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>718, 17</value>
   </metadata>
 </root>

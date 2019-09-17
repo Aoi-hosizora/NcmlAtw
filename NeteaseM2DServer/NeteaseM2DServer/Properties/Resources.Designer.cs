@@ -63,9 +63,29 @@ namespace NeteaseM2DServer.Properties {
         /// <summary>
         ///   查找 System.Drawing.Bitmap 类型的本地化资源。
         /// </summary>
+        internal static System.Drawing.Bitmap Faster {
+            get {
+                object obj = ResourceManager.GetObject("Faster", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
         internal static System.Drawing.Bitmap Option {
             get {
                 object obj = ResourceManager.GetObject("Option", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   查找 System.Drawing.Bitmap 类型的本地化资源。
+        /// </summary>
+        internal static System.Drawing.Bitmap Slower {
+            get {
+                object obj = ResourceManager.GetObject("Slower", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

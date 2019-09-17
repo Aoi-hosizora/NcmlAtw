@@ -121,4 +121,10 @@
   <data name="Option" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Option.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Faster" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Faster.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Slower" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Slower.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

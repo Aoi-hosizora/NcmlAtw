@@ -29,14 +29,17 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LyricForm));
             this.labelLyric = new System.Windows.Forms.Label();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuItemAllLyric = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItemAdjust = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.menuItemLock = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemOpacity = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemPosition = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuItemFont = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemForeColor = new System.Windows.Forms.ToolStripMenuItem();
             this.menuForeBackColor = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemRestoreColor = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,10 +48,13 @@
             this.menuItemExit = new System.Windows.Forms.ToolStripMenuItem();
             this.timerShow = new System.Windows.Forms.Timer(this.components);
             this.timerHide = new System.Windows.Forms.Timer(this.components);
-            this.buttonOption = new System.Windows.Forms.Button();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.buttonOption = new System.Windows.Forms.Button();
             this.timerLabelText = new System.Windows.Forms.Timer(this.components);
+            this.buttonSlower = new System.Windows.Forms.Button();
+            this.buttonFaster = new System.Windows.Forms.Button();
+            this.fontDialog = new System.Windows.Forms.FontDialog();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -60,20 +66,23 @@
             this.labelLyric.ForeColor = System.Drawing.Color.White;
             this.labelLyric.Location = new System.Drawing.Point(0, 0);
             this.labelLyric.Name = "labelLyric";
-            this.labelLyric.Size = new System.Drawing.Size(1350, 103);
+            this.labelLyric.Size = new System.Drawing.Size(1350, 100);
             this.labelLyric.TabIndex = 0;
             this.labelLyric.Text = "未找到歌词";
             this.labelLyric.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelLyric.FontChanged += new System.EventHandler(this.labelLyric_FontChanged);
             // 
             // contextMenuStrip
             // 
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuItemAllLyric,
+            this.menuItemAdjust,
             this.toolStripSeparator3,
             this.menuItemLock,
             this.menuItemOpacity,
             this.menuItemPosition,
             this.toolStripSeparator2,
+            this.menuItemFont,
             this.menuItemForeColor,
             this.menuForeBackColor,
             this.menuItemRestoreColor,
@@ -81,7 +90,7 @@
             this.menuItemShowMain,
             this.menuItemExit});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(154, 220);
+            this.contextMenuStrip.Size = new System.Drawing.Size(154, 264);
             // 
             // menuItemAllLyric
             // 
@@ -89,6 +98,13 @@
             this.menuItemAllLyric.Size = new System.Drawing.Size(153, 22);
             this.menuItemAllLyric.Text = "所有歌词(&L)";
             this.menuItemAllLyric.Click += new System.EventHandler(this.menuItemAllLyric_Click);
+            // 
+            // menuItemAdjust
+            // 
+            this.menuItemAdjust.Name = "menuItemAdjust";
+            this.menuItemAdjust.Size = new System.Drawing.Size(153, 22);
+            this.menuItemAdjust.Text = "调整快慢(&D)";
+            this.menuItemAdjust.Click += new System.EventHandler(this.menuItemAdjust_Click);
             // 
             // toolStripSeparator3
             // 
@@ -121,6 +137,13 @@
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(150, 6);
+            // 
+            // menuItemFont
+            // 
+            this.menuItemFont.Name = "menuItemFont";
+            this.menuItemFont.Size = new System.Drawing.Size(153, 22);
+            this.menuItemFont.Text = "修改字体(&F)";
+            this.menuItemFont.Click += new System.EventHandler(this.menuItemFont_Click);
             // 
             // menuItemForeColor
             // 
@@ -172,6 +195,11 @@
             this.timerHide.Interval = 1;
             this.timerHide.Tick += new System.EventHandler(this.timerHide_Tick);
             // 
+            // colorDialog
+            // 
+            this.colorDialog.AnyColor = true;
+            this.colorDialog.FullOpen = true;
+            // 
             // buttonOption
             // 
             this.buttonOption.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -181,27 +209,63 @@
             this.buttonOption.Image = global::NeteaseM2DServer.Properties.Resources.Option;
             this.buttonOption.Location = new System.Drawing.Point(1314, 12);
             this.buttonOption.Name = "buttonOption";
-            this.buttonOption.Size = new System.Drawing.Size(24, 24);
+            this.buttonOption.Size = new System.Drawing.Size(24, 21);
             this.buttonOption.TabIndex = 1;
             this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。");
             this.buttonOption.UseVisualStyleBackColor = true;
             this.buttonOption.Click += new System.EventHandler(this.buttonOption_Click);
-            // 
-            // colorDialog
-            // 
-            this.colorDialog.AnyColor = true;
-            this.colorDialog.FullOpen = true;
             // 
             // timerLabelText
             // 
             this.timerLabelText.Interval = 1;
             this.timerLabelText.Tick += new System.EventHandler(this.timerLabelText_Tick);
             // 
+            // buttonSlower
+            // 
+            this.buttonSlower.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSlower.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonSlower.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.buttonSlower.ForeColor = System.Drawing.Color.White;
+            this.buttonSlower.Image = ((System.Drawing.Image)(resources.GetObject("buttonSlower.Image")));
+            this.buttonSlower.Location = new System.Drawing.Point(1284, 64);
+            this.buttonSlower.Name = "buttonSlower";
+            this.buttonSlower.Size = new System.Drawing.Size(24, 24);
+            this.buttonSlower.TabIndex = 3;
+            this.buttonSlower.UseVisualStyleBackColor = true;
+            this.buttonSlower.Visible = false;
+            this.buttonSlower.Click += new System.EventHandler(this.buttonSlower_Click);
+            // 
+            // buttonFaster
+            // 
+            this.buttonFaster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonFaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.buttonFaster.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.buttonFaster.ForeColor = System.Drawing.Color.White;
+            this.buttonFaster.Image = ((System.Drawing.Image)(resources.GetObject("buttonFaster.Image")));
+            this.buttonFaster.Location = new System.Drawing.Point(1314, 64);
+            this.buttonFaster.Name = "buttonFaster";
+            this.buttonFaster.Size = new System.Drawing.Size(24, 24);
+            this.buttonFaster.TabIndex = 2;
+            this.buttonFaster.UseVisualStyleBackColor = true;
+            this.buttonFaster.Visible = false;
+            this.buttonFaster.Click += new System.EventHandler(this.buttonFaster_Click);
+            // 
+            // fontDialog
+            // 
+            this.fontDialog.AllowScriptChange = false;
+            this.fontDialog.AllowSimulations = false;
+            this.fontDialog.AllowVectorFonts = false;
+            this.fontDialog.AllowVerticalFonts = false;
+            this.fontDialog.Font = new System.Drawing.Font("Yu Gothic UI", 48F);
+            this.fontDialog.ShowEffects = false;
+            // 
             // LyricForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(1350, 103);
+            this.ClientSize = new System.Drawing.Size(1350, 100);
+            this.Controls.Add(this.buttonSlower);
+            this.Controls.Add(this.buttonFaster);
             this.Controls.Add(this.buttonOption);
             this.Controls.Add(this.labelLyric);
             this.Font = new System.Drawing.Font("Yu Gothic UI", 72F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
@@ -227,21 +291,26 @@
         private System.Windows.Forms.Timer timerShow;
         private System.Windows.Forms.Timer timerHide;
         private System.Windows.Forms.Button buttonOption;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem menuItemLock;
-        private System.Windows.Forms.ToolStripMenuItem menuItemExit;
-        private System.Windows.Forms.ToolStripMenuItem menuItemOpacity;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem menuItemPosition;
-        private System.Windows.Forms.ToolStripMenuItem menuItemForeColor;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripMenuItem menuForeBackColor;
         private System.Windows.Forms.ColorDialog colorDialog;
-        private System.Windows.Forms.ToolStripMenuItem menuItemRestoreColor;
         private System.Windows.Forms.ToolTip toolTip;
-        private System.Windows.Forms.ToolStripMenuItem menuItemAllLyric;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripMenuItem menuItemShowMain;
         private System.Windows.Forms.Timer timerLabelText;
+        private System.Windows.Forms.Button buttonFaster;
+        private System.Windows.Forms.Button buttonSlower;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem menuItemAllLyric;
+        private System.Windows.Forms.ToolStripMenuItem menuItemAdjust;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem menuItemLock;
+        private System.Windows.Forms.ToolStripMenuItem menuItemOpacity;
+        private System.Windows.Forms.ToolStripMenuItem menuItemPosition;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem menuItemForeColor;
+        private System.Windows.Forms.ToolStripMenuItem menuForeBackColor;
+        private System.Windows.Forms.ToolStripMenuItem menuItemRestoreColor;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem menuItemShowMain;
+        private System.Windows.Forms.ToolStripMenuItem menuItemExit;
+        private System.Windows.Forms.ToolStripMenuItem menuItemFont;
+        private System.Windows.Forms.FontDialog fontDialog;
     }
 }

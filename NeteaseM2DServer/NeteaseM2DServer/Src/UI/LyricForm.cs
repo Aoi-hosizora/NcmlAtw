@@ -35,8 +35,20 @@ namespace NeteaseM2DServer.Src.UI {
             this.BackColor = Properties.Settings.Default.LyricBackColor;
             labelLyric.ForeColor = Properties.Settings.Default.LyricForeColor;
 
+            menuItemAdjust.Checked = !Properties.Settings.Default.isAdjustLyric;
+            menuItemAdjust_Click(menuItemAdjust, new EventArgs());
+
+            menuItemLock.Checked = !Properties.Settings.Default.isLock;
+            menuItemLock_Click(menuItemLock, new EventArgs());
+
+            labelLyric.Font = Properties.Settings.Default.LyricFont;
+
             // 窗口位置
             menuItemPosition_Click(menuItemPosition, e);
+            if (Properties.Settings.Default.LyricTop != -1)
+                this.Top = Properties.Settings.Default.LyricTop;
+            if (Properties.Settings.Default.LyricLeft != -1)
+                this.Left = Properties.Settings.Default.LyricLeft;
 
             // 订阅移动窗口事件
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Object_MouseDown);
@@ -67,11 +79,21 @@ namespace NeteaseM2DServer.Src.UI {
         /// 检查退出条件
         /// </summary>
         private void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
+            Properties.Settings.Default.LyricTop = this.Top;
+            Properties.Settings.Default.LyricLeft = this.Left;
+
             e.Cancel = this.Opacity != 0;
             if (timerShow.Enabled) timerShow.Enabled = false;
-            // if (timerLyric.Enabled) timerLyric.Enabled = false;
             timerHide.Enabled = true;
             Global.LyricFormTimer = null;
+        }
+
+        /// <summary>
+        /// 窗口高度
+        /// </summary>
+        private void labelLyric_FontChanged(object sender, EventArgs e) {
+            // 48 -> 100
+            this.Height = (int)((100.0 * labelLyric.Font.Size) / 48.0);
         }
 
         #endregion // 加载与退出
@@ -166,6 +188,20 @@ namespace NeteaseM2DServer.Src.UI {
         }
 
         /// <summary>
+        /// 快 0.5 秒
+        /// </summary>
+        private void buttonFaster_Click(object sender, EventArgs e) {
+            Global.stateUpdateMS -= 500;
+        }
+
+        /// <summary>
+        /// 慢 0.5 秒
+        /// </summary>
+        private void buttonSlower_Click(object sender, EventArgs e) {
+            Global.stateUpdateMS += 500;
+        }
+
+        /// <summary>
         /// 菜单，所有歌词
         /// </summary>
         private void menuItemAllLyric_Click(object sender, EventArgs e) {
@@ -206,11 +242,21 @@ namespace NeteaseM2DServer.Src.UI {
         }
 
         /// <summary>
+        /// 调整快慢
+        /// </summary>
+        private void menuItemAdjust_Click(object sender, EventArgs e) {
+            menuItemAdjust.Checked = !menuItemAdjust.Checked;
+            buttonFaster.Visible = buttonSlower.Visible = menuItemAdjust.Checked;
+            Properties.Settings.Default.isAdjustLyric = menuItemAdjust.Checked;
+        }
+
+        /// <summary>
         /// 菜单，锁定
         /// </summary>
         private void menuItemLock_Click(object sender, EventArgs e) {
             menuItemLock.Checked = !menuItemLock.Checked;
             CommonUtil.setWindowCrossOver(this, this.Opacity, menuItemLock.Checked);
+            Properties.Settings.Default.isLock = menuItemLock.Checked;
         }
 
         /// <summary>
@@ -220,7 +266,7 @@ namespace NeteaseM2DServer.Src.UI {
             Computer My = new Computer();
             this.Width = (int)(My.Screen.WorkingArea.Width * 0.8);
             this.Left = (My.Screen.Bounds.Width - this.Width) / 2;
-            this.Top = My.Screen.WorkingArea.Height - this.Height * 1;
+            this.Top = My.Screen.WorkingArea.Height - this.Height;
         }
 
         /// <summary>
@@ -235,6 +281,16 @@ namespace NeteaseM2DServer.Src.UI {
             Properties.Settings.Default.Opacity = (double)(sender as ToolStripMenuItem).Tag;
             Properties.Settings.Default.Save();
             timerShow.Enabled = true;
+        }
+
+        /// <summary>
+        /// 菜单，字体修改
+        /// </summary>
+        private void menuItemFont_Click(object sender, EventArgs e) {
+            fontDialog.Font = labelLyric.Font;
+            fontDialog.ShowDialog();
+            Font newFont = new Font(fontDialog.Font.Name, 48F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            Properties.Settings.Default.LyricFont = labelLyric.Font = newFont;
         }
 
         /// <summary>
@@ -347,6 +403,7 @@ namespace NeteaseM2DServer.Src.UI {
         /// 更新当前歌曲歌词
         /// </summary>
         public void updateSongLyric(bool isSearching) {
+            currentLineIdx = -1;
             if (isSearching) {
                 changeText("正在搜索歌词");
                 return;
@@ -364,10 +421,17 @@ namespace NeteaseM2DServer.Src.UI {
 
             // 窗口
             if (menuItemLock.Checked)
-                CommonUtil.setWindowCrossOver(this, this.Opacity, !CommonUtil.ControlInRange(this, buttonOption));
+                CommonUtil.setWindowCrossOver(this, this.Opacity, !(
+                    CommonUtil.ControlInRange(this, buttonOption) ||
+                    (buttonFaster.Visible && CommonUtil.ControlInRange(this, buttonFaster)) ||
+                    (buttonSlower.Visible && CommonUtil.ControlInRange(this, buttonSlower))));
+            else
+                CommonUtil.setWindowCrossOver(this, this.Opacity, false);
 
             // 歌词显示
             if (Global.MusicLyricPage == null) return;
+
+            // label1.Text = currentLineIdx.ToString();
 
             if (currentLineIdx == -1) {
                 // 正文前
@@ -377,31 +441,34 @@ namespace NeteaseM2DServer.Src.UI {
                     currentLineIdx++;
             } else {
 
-                // 已经超过
+                // 正文，已经超过
                 if (currentLineIdx > Global.MusicLyricPage.Lines.Count - 1) {
                     currentLineIdx--;
                     return;
                 }
 
-                // 不超过，获取正文
+                // 正文，不超过
                 LyricLine currLyric = Global.MusicLyricPage.Lines.ElementAt(currentLineIdx);
                 if (currentLineIdx == Global.MusicLyricPage.Lines.Count - 1) {
                     // 最后一行
-                    if (currLyric.Lyric != labelLyric.Text)
-                        changeText(currLyric.Lyric);
+                    if (Global.currentPos <= currLyric.timeDuration) {
+                        // 时间过快，上一行
+                        currentLineIdx--;
+                    } else {
+                        if (currLyric.Lyric != labelLyric.Text) 
+                            // 最后一行刚好
+                            changeText(currLyric.Lyric);
+                    }
                 } else {
                     // 非最后一行
                     LyricLine nextLyric = Global.MusicLyricPage.Lines.ElementAt(currentLineIdx + 1);
                     if (Global.currentPos >= currLyric.timeDuration && Global.currentPos <= nextLyric.timeDuration) {
-                        // 到达行内
-                        if (currLyric.Lyric != labelLyric.Text)
+                        if (currLyric.Lyric != labelLyric.Text) // 到达行内
                             changeText(currLyric.Lyric);
                     } else if (Global.currentPos >= nextLyric.timeDuration) {
-                        // 下一行
-                        currentLineIdx++;
+                        currentLineIdx++; // 下一行
                     } else if (Global.currentPos <= currLyric.timeDuration) {
-                        // 时间过快，上一行
-                        currentLineIdx--;
+                        currentLineIdx--; // 上一行
                     }
                 }
             }

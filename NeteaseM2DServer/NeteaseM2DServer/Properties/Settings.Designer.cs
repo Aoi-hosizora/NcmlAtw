@@ -82,5 +82,65 @@ namespace NeteaseM2DServer.Properties {
                 this["Opacity"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool isLock {
+            get {
+                return ((bool)(this["isLock"]));
+            }
+            set {
+                this["isLock"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool isAdjustLyric {
+            get {
+                return ((bool)(this["isAdjustLyric"]));
+            }
+            set {
+                this["isAdjustLyric"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public int LyricTop {
+            get {
+                return ((int)(this["LyricTop"]));
+            }
+            set {
+                this["LyricTop"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public int LyricLeft {
+            get {
+                return ((int)(this["LyricLeft"]));
+            }
+            set {
+                this["LyricLeft"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Yu Gothic UI, 48pt")]
+        public global::System.Drawing.Font LyricFont {
+            get {
+                return ((global::System.Drawing.Font)(this["LyricFont"]));
+            }
+            set {
+                this["LyricFont"] = value;
+            }
+        }
     }
 }

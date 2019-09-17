@@ -93,7 +93,7 @@
             // 
             this.buttonListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonListen.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonListen.Location = new System.Drawing.Point(12, 175);
+            this.buttonListen.Location = new System.Drawing.Point(12, 161);
             this.buttonListen.Name = "buttonListen";
             this.buttonListen.Size = new System.Drawing.Size(75, 25);
             this.buttonListen.TabIndex = 12;
@@ -106,7 +106,7 @@
             this.buttonShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonShowLyric.Enabled = false;
             this.buttonShowLyric.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonShowLyric.Location = new System.Drawing.Point(93, 175);
+            this.buttonShowLyric.Location = new System.Drawing.Point(93, 161);
             this.buttonShowLyric.Name = "buttonShowLyric";
             this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
             this.buttonShowLyric.TabIndex = 13;
@@ -186,7 +186,7 @@
             this.buttonExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonExit.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonExit.Location = new System.Drawing.Point(275, 175);
+            this.buttonExit.Location = new System.Drawing.Point(275, 161);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(75, 25);
             this.buttonExit.TabIndex = 15;
@@ -196,6 +196,7 @@
             // 
             // timerGlobal
             // 
+            this.timerGlobal.Interval = 20;
             this.timerGlobal.Tick += new System.EventHandler(this.timerGlobal_Tick);
             // 
             // buttonOpenWeb
@@ -203,7 +204,7 @@
             this.buttonOpenWeb.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonOpenWeb.Enabled = false;
             this.buttonOpenWeb.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonOpenWeb.Location = new System.Drawing.Point(194, 175);
+            this.buttonOpenWeb.Location = new System.Drawing.Point(194, 161);
             this.buttonOpenWeb.Name = "buttonOpenWeb";
             this.buttonOpenWeb.Size = new System.Drawing.Size(75, 25);
             this.buttonOpenWeb.TabIndex = 14;
@@ -300,7 +301,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.buttonExit;
-            this.ClientSize = new System.Drawing.Size(362, 209);
+            this.ClientSize = new System.Drawing.Size(362, 195);
             this.Controls.Add(this.buttonQrCode);
             this.Controls.Add(this.textBoxIP);
             this.Controls.Add(this.label3);
