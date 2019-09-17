@@ -151,15 +151,17 @@ namespace NeteaseM2DServer.Src.UI {
         /// </summary>
         private void buttonOption_Click(object sender, EventArgs e) {
             Computer My = new Computer();
+            Point senderPnt = PointToScreen((sender as Button).Location);
+
             if (My.Screen.WorkingArea.Height - this.Top - (sender as Button).Top - (sender as Button).Height < contextMenuStrip.Height)
                 contextMenuStrip.Show(
-                    this.Left + (sender as Button).Left,
-                    this.Top + (sender as Button).Top - contextMenuStrip.Height
+                    senderPnt.X,
+                    senderPnt.Y - contextMenuStrip.Height
                 );
             else
                 contextMenuStrip.Show(
-                    this.Left + (sender as Button).Left,
-                    this.Top + (sender as Button).Top + (sender as Button).Height
+                    senderPnt.X,
+                    senderPnt.Y + (sender as Button).Height
                 );
         }
 
@@ -374,7 +376,14 @@ namespace NeteaseM2DServer.Src.UI {
                 if (Global.currentPos >= Global.MusicLyricPage.Lines.ElementAt(0).timeDuration)
                     currentLineIdx++;
             } else {
-                // 正文
+
+                // 已经超过
+                if (currentLineIdx > Global.MusicLyricPage.Lines.Count - 1) {
+                    currentLineIdx--;
+                    return;
+                }
+
+                // 不超过，获取正文
                 LyricLine currLyric = Global.MusicLyricPage.Lines.ElementAt(currentLineIdx);
                 if (currentLineIdx == Global.MusicLyricPage.Lines.Count - 1) {
                     // 最后一行

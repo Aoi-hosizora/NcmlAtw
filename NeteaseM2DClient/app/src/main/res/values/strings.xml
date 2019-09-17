@@ -3,6 +3,7 @@
 
     <string name="btn_start">启动服务</string>
     <string name="btn_stop">暂停服务</string>
+    <string name="btn_qrCode">扫描二维码</string>
 
     <string name="txt_title">请打开 PC 端软件并输入 PC 端的局域网地址和监听端口：</string>
     <string name="txt_colon">：</string>
@@ -26,4 +27,6 @@
 
     <string name="tst_connect_success">连接成功</string>
     <string name="tst_auth_failed">授权失败</string>
+    <string name="tst_qr_failed">二维码读取失败</string>
+    <string name="tst_qr_error">二维码错误</string>
 </resources>

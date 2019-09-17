@@ -15,6 +15,7 @@ using NeteaseM2DServer.Src.Util;
 using System.Runtime.CompilerServices;
 using System.Net;
 using System.Net.Sockets;
+using QRCoder;
 
 namespace NeteaseM2DServer.Src.UI {
 
@@ -52,6 +53,15 @@ namespace NeteaseM2DServer.Src.UI {
                     Global.isListening = ok;
                     numericUpDownPort.Enabled = !ok;
                     if (ok) {
+                        // 监听成功
+
+                        QRCodeGenerator qrGenerator = new QRCodeGenerator();
+                        QRCodeData qrCodeData = qrGenerator.CreateQrCode(Global.qrCodeMagic + "://" +
+                            textBoxIP.Text + ":" + socketService.port, QRCodeGenerator.ECCLevel.Q);
+                        QRCode qrCode = new QRCode(qrCodeData);
+                        Global.qrCodeImage = qrCode.GetGraphic(7);
+                        buttonQrCode.Visible = true;
+
                         labelSongDuration.Text = "正在等待歌曲...";
                         buttonListen.Text = "取消监听";
 
@@ -133,6 +143,7 @@ namespace NeteaseM2DServer.Src.UI {
             if (!Global.isListening) return;
 
             this.Invoke(new Action(() => {
+                labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = true;
                 timerGlobal.Enabled = true;
                 Global.currentState = obj;
             }));
@@ -157,9 +168,6 @@ namespace NeteaseM2DServer.Src.UI {
         /// 判断搜索到的结果是否正确，先查专辑再查歌名
         /// </summary>
         private bool checkSearchResult(Song searchRet, Metadata trueRet) {
-            Console.WriteLine(searchRet.Name + ", " + trueRet.title);
-            Console.WriteLine(searchRet.Al.Name + ", " + trueRet.album);
-
             if (!searchRet.Al.Name.Equals(trueRet.album)) return false;
             if (searchRet.Name.IndexOf("(") != -1) {
                 // 存在括号
@@ -176,7 +184,6 @@ namespace NeteaseM2DServer.Src.UI {
                 else return true;
             } else {
                 // 不存在括号
-                Console.WriteLine(searchRet.Name.Trim().Equals(new Regex("\\(.*\\)").Replace(trueRet.title, "").Trim()));
                 return searchRet.Name.Trim().Equals(new Regex("\\(.*\\)").Replace(trueRet.title, "").Trim());
             }
         }
@@ -244,14 +251,13 @@ namespace NeteaseM2DServer.Src.UI {
             this.Top = Properties.Settings.Default.Top;
             this.Left = Properties.Settings.Default.Left;
 
-            foreach (IPAddress ipa in Dns.GetHostAddresses(Dns.GetHostName())) {
-                if (ipa.AddressFamily == AddressFamily.InterNetwork) {
-                    Console.WriteLine(ipa.ToString());
-                    textBoxIP.Text = ipa.ToString();
-                }
-            }
+            string ip = "";
+            foreach (IPAddress ipa in Dns.GetHostAddresses(Dns.GetHostName()))
+                if (ipa.AddressFamily == AddressFamily.InterNetwork)
+                    ip = ipa.ToString();
 
-            
+            textBoxIP.Text = ip;
+
             labelSongDuration.Text = "未监听...";
             Global.MainFormTimer = timerSong_Tick;
         }
@@ -280,6 +286,7 @@ namespace NeteaseM2DServer.Src.UI {
                 StartThread(int.Parse(numericUpDownPort.Value.ToString()));
             } else {
                 StopThread();
+
                 labelSongDuration.Text = "未监听...";
                 buttonListen.Text = "监听端口";
 
@@ -287,11 +294,13 @@ namespace NeteaseM2DServer.Src.UI {
                 timerGlobal.Enabled = false;
                 labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = false;
 
+                buttonQrCode.Visible = false;
                 Global.isListening = buttonShowLyric.Enabled = buttonOpenWeb.Enabled = false;
                 Global.currentSong = null;
                 Global.currentState = null;
                 Global.isListening = false;
                 Global.MusicId = -1;
+                Global.qrCodeImage = null;
             }
         }
 
@@ -332,6 +341,37 @@ namespace NeteaseM2DServer.Src.UI {
             }
         }
 
+        /// <summary>
+        /// 显示二维码
+        /// </summary>
+        private void buttonQrCode_Click(object sender, EventArgs e) {
+
+            if (Global.qrCodeImage == null) {
+                MessageBox.Show("不存在二维码。", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Form form = new Form();
+            form.Text = "连接二维码";
+            form.Name = "QrCodeForm";
+            form.FormBorderStyle = FormBorderStyle.FixedDialog;
+            form.MaximizeBox = false;
+            form.MinimizeBox = false;
+            form.ShowInTaskbar = false;
+            form.StartPosition = FormStartPosition.CenterScreen;
+            form.Size = Global.qrCodeImage.Size;
+
+            PictureBox pictureBox = new PictureBox();
+            pictureBox.Name = "pictureBox";
+            pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox.Image = Global.qrCodeImage;
+
+            form.Controls.Add(pictureBox);
+            pictureBox.Dock = DockStyle.Fill;
+
+            form.Show(this);
+        }
+
         #endregion // 界面交互
 
         // buttonTimeAdjust_Click menuItemFasterSlower_Click contextMenuStrip_Opening
@@ -341,9 +381,10 @@ namespace NeteaseM2DServer.Src.UI {
         /// 时间调整 弹出菜单
         /// </summary>
         private void buttonTimeAdjust_Click(object sender, EventArgs e) {
+            Point senderPnt = PointToScreen((sender as Button).Location);
             timeAdjustContextMenu.Show(
-                this.Left + (sender as Button).Left,
-                this.Top + (sender as Button).Top + (sender as Button).Height
+                senderPnt.X,
+                senderPnt.Y + (sender as Button).Height
             );
         }
 

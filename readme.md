@@ -10,6 +10,14 @@
     + `Visual C# 2010`
     + `.NET Framework 4.0`
 
+### Depedencies
++ Android
+    + `butterknife 8.8.1`
+    + `LibZXing v1.1.2`
++ Windows
+    + `Newtonsoft.Json 12.0.0.0`
+    + `QRCoder 1.3.6.0`
+
 ### Usage Tips
 + Before start service you should open netease music first, for `MediaController` could not find the session.
 + Before start service you should listen the currect port in windows first, for the socket in android will ping the port in LAN when starting service.

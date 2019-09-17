@@ -28,5 +28,9 @@ namespace NeteaseM2DServer.Src.Model {
                 album.Equals((obj as Metadata).album) &&
                 duration == (obj as Metadata).duration;
         }
+
+        public override int GetHashCode() {
+            return this.title.GetHashCode() ^ this.artist.GetHashCode() ^ this.album.GetHashCode() ^ this.duration.GetHashCode();
+        }
     }
 }

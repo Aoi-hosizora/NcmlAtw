@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 
 namespace NeteaseM2DServer.Src.Model {
 
     class Global {
+
+        public static Bitmap qrCodeImage { get; set; }
+        public const string qrCodeMagic = "NETEASEM2D";
 
         public static bool isListening { get; set; }
         public static long stateUpdateMS { get; set; }

@@ -6,18 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/id_btn_service"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/btn_start"
-        android:textAllCaps="false"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/id_txt_label"
         android:layout_width="match_parent"
@@ -29,6 +17,7 @@
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <LinearLayout
+        android:id="@+id/id_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 
@@ -58,5 +47,26 @@
             android:hint="@string/edt_port"/>
     </LinearLayout>
 
+    <Button
+        android:id="@+id/id_btn_qrCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_qrCode"
+        android:layout_marginTop="@dimen/widget_margin"
+
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/id_ll" />
+
+    <Button
+        android:id="@+id/id_btn_service"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_start"
+        android:layout_marginTop="@dimen/widget_margin"
+
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/id_btn_qrCode" />
 
 </android.support.constraint.ConstraintLayout>

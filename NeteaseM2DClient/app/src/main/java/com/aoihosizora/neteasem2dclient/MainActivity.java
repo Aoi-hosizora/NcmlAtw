@@ -22,8 +22,9 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import com.jwsd.libzxing.OnQRCodeScanCallback;
+import com.jwsd.libzxing.QRCodeManager;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,7 +39,10 @@ public class MainActivity extends AppCompatActivity {
 
     // public static String TAG = "MainActivity";
 
-    public static int REQUEST_NETWORK_PERMISSION_CODE = 1;
+    public static final int REQUEST_NETWORK_PERMISSION_CODE = 1;
+    public static final int REQUEST_CAMERA_PERMISSION_CODE = 2;
+
+    public static final String QRCODE_MAGIC = "NETEASEM2D://";
 
     private SharedPreferences ipSP, portSP;
 
@@ -118,17 +122,25 @@ public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.id_btn_service)
     Button m_btn_service;
+    @BindView(R.id.id_btn_qrCode)
+    Button m_btn_qrCode;
 
     @BindView(R.id.id_edt_ip)
     AutoCompleteTextView m_edt_ip;
     @BindView(R.id.id_edt_port)
     AutoCompleteTextView m_edt_port;
 
+    /**
+     * 自动补全文本框 弹出
+     */
     @OnClick({R.id.id_edt_ip, R.id.id_edt_port})
     void on_edt_auto_completed_clicked(View view) {
         ((AutoCompleteTextView) view).showDropDown();
     }
 
+    /**
+     * 开始结束服务
+     */
     @OnClick(R.id.id_btn_service)
     @UiThread
     void on_btn_service_clicked() {
@@ -152,6 +164,58 @@ public class MainActivity extends AppCompatActivity {
             disconnect();
         }
     }
+
+    /**
+     * 扫描二维码
+     */
+    @OnClick(R.id.id_btn_qrCode)
+    void on_btn_qrCode_clicked() {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }, REQUEST_CAMERA_PERMISSION_CODE);
+            return;
+        }
+
+        QRCodeManager.getInstance()
+            .with(this)
+            .scanningQRCode(new OnQRCodeScanCallback() {
+                @Override
+                public void onCompleted(String result) {
+                    try {
+                        // 无 MAGIC
+                        if (!result.startsWith(QRCODE_MAGIC))
+                            throw new Exception();
+                        result = result.substring(QRCODE_MAGIC.length());
+                        // 无端口
+                        if (!result.contains(":"))
+                            throw new Exception();
+
+                        // 分割
+                        String[] sp = result.split(":");
+                        m_edt_ip.setText(sp[0]);
+                        m_edt_port.setText(sp[1]);
+                    }
+                    catch (Exception ex) {
+                        ex.printStackTrace();
+                        Toast.makeText(MainActivity.this, getString(R.string.tst_qr_error), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onError(Throwable errorMsg) {
+                    Toast.makeText(MainActivity.this, getString(R.string.tst_qr_failed), Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onCancel() {
+
+                }
+            });
+    }
+
     /**
      * 格式正确，连接
      */
@@ -361,6 +425,8 @@ public class MainActivity extends AppCompatActivity {
         m_edt_port.setAdapter(portAda);
         ipAda.notifyDataSetChanged();
         portAda.notifyDataSetChanged();
+
+
     }
 
     private void showAlert(String msg) {
@@ -378,9 +444,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_NETWORK_PERMISSION_CODE) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
-                Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
+        switch (requestCode) {
+            case REQUEST_NETWORK_PERMISSION_CODE:
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
+                break;
+            case REQUEST_CAMERA_PERMISSION_CODE:
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
+                else
+                    on_btn_qrCode_clicked();
+                break;
         }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        QRCodeManager.getInstance().with(this).onActivityResult(requestCode, resultCode, data);
     }
 }
