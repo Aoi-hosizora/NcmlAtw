@@ -59,6 +59,8 @@ namespace NeteaseM2DServer.Src.Api
         public bool Sgc { get; set; }
         public bool Sfy { get; set; }
         public bool Qfy { get; set; }
+        public bool Nolyric { get; set; }
+        public bool Uncollected { get; set; }
         public LyricUser TransUser { get; set; }
         public LyricUser LyricUser { get; set; }
         public Lrc Lrc { get; set; }

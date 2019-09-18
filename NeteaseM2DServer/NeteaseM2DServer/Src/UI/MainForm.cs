@@ -226,19 +226,26 @@ namespace NeteaseM2DServer.Src.UI {
             }
             if (id != -1) 
                 resultSong = searchResult.Result.Songs.ElementAt(id);
-
+            
             if (resultSong != null) {
                 Global.MusicId = resultSong.Id;
-
                 LyricResult lyricResult = api.Lyric(Global.MusicId);
+
                 if (lyricResult.Code == 200 && lyricResult.Lrc != null && lyricResult.Lrc.Lyric != null && lyricResult.Lrc.Lyric != "") {
                     Global.MusicLyricPage = LyricPage.parseLrc(lyricResult.Lrc.Lyric);
-                    Console.WriteLine(lyricResult.Lrc.Lyric);
-                } else
+                    // Console.WriteLine(lyricResult.Lrc.Lyric);
+                    Global.MusicLyricState = Global.LyricState.Found;
+                } else {
                     Global.MusicLyricPage = null;
+                    if (lyricResult.Nolyric == true)
+                        Global.MusicLyricState = Global.LyricState.PureMusic;
+                    else
+                        Global.MusicLyricState = Global.LyricState.NotFound;
+                }
             } else {
                 Global.MusicId = -1;
                 Global.MusicLyricPage = null;
+                Global.MusicLyricState = Global.LyricState.NotFound;
             }
         }
 

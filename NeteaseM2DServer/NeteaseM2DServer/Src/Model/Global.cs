@@ -22,11 +22,16 @@ namespace NeteaseM2DServer.Src.Model {
         public static long MusicId { get; set; }
 
         public static LyricPage MusicLyricPage { get; set; }
+        public static LyricState MusicLyricState { get; set; }
 
         public delegate void MainFormTimerDelegate();
         public delegate void LyricFormTimerDelegate();
 
         public static MainFormTimerDelegate MainFormTimer;
         public static LyricFormTimerDelegate LyricFormTimer;
+
+        public enum LyricState {
+            Found, NotFound, PureMusic
+        }
     }
 }

@@ -390,11 +390,6 @@ namespace NeteaseM2DServer.Src.UI {
         #endregion // 歌词动画
 
         /// <summary>
-        /// 当前歌曲Id，updateSongLyric 用
-        /// </summary>
-        public long currentSongId = -1;
-
-        /// <summary>
         /// 当前歌词行， timerLyric_Tick 用
         /// </summary>
         public int currentLineIdx = -1;
@@ -405,13 +400,17 @@ namespace NeteaseM2DServer.Src.UI {
         public void updateSongLyric(bool isSearching) {
             currentLineIdx = -1;
             if (isSearching) {
-                changeText("正在搜索歌词");
+                changeText("正在搜索歌詞");
                 return;
             }
-            if (Global.MusicId == -1 || Global.MusicLyricPage == null)
-                changeText("未找到歌词");
-            else
-                currentSongId = Global.MusicId;
+            if (Global.MusicId == -1) {
+                changeText("未找到歌曲");
+            } else {
+                if (Global.MusicLyricState == Global.LyricState.NotFound)
+                    changeText("未找到歌詞");
+                else if (Global.MusicLyricState == Global.LyricState.PureMusic)
+                    changeText("純音樂，請欣賞");
+            }
         }
 
         /// <summary>
