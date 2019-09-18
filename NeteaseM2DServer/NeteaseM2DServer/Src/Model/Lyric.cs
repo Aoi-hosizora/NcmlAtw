@@ -17,7 +17,9 @@ namespace NeteaseM2DServer.Src.Model {
             LyricPage ret = new LyricPage();
             ret.Lines = new List<LyricLine>();
             foreach (String line in lrcString.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries)) {
-                Regex reg = new Regex("\\[\\d{1,2}:\\d{1,2}.\\d{1,3}\\].*");
+                // \[\d{1,2}:\d{1,2}.\d{1,3}\].*
+                // \[\d{1,2}:\d{1,2}\].*
+                Regex reg = new Regex("\\[\\d{1,2}:\\d{1,2}(.\\d{1,3})*\\].*");
                 if (!reg.IsMatch(line)) continue;
 
                 LyricLine l = LyricLine.parseLyricLine(line);
@@ -67,36 +69,44 @@ namespace NeteaseM2DServer.Src.Model {
         /// LrcLine -> LyricLine
         /// </summary>
         public static LyricLine parseLyricLine(string lrcLineString) {
-            LyricLine ret = new LyricLine();
 
-            string[] sp = lrcLineString.Split(new string[] { "[", "]" }, StringSplitOptions.RemoveEmptyEntries);
+            try {
+                LyricLine ret = new LyricLine();
 
-            // Lyric
-            if (sp.Length == 1)
-                return null;
-            else if (sp.Length == 2) {
-                ret.Lyric = sp[1].Trim();
-                if (ret.Lyric == "") 
+                string[] sp = lrcLineString.Split(new string[] { "[", "]" }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Lyric Content
+                if (sp.Length == 1)
                     return null;
-            } else
+                else if (sp.Length == 2) {
+                    ret.Lyric = sp[1].Trim();
+                    if (ret.Lyric == "")
+                        return null;
+                } else
+                    return null;
+
+                // Time
+                string[] tis = sp[0].Split(new string[] { ":", "." }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (tis.Length == 2) // [00:00]
+                    ret.timeMilliSecond = 0;
+                else if (tis.Length == 3) { // [00:00.00]
+                    if (tis[2].Length == 1)
+                        ret.timeMilliSecond = int.Parse(tis[2] + "0"); // [00:00.0]
+                    else
+                        ret.timeMilliSecond = int.Parse(tis[2].Substring(0, 2));  // [00:00.00] [00:00.000]
+                } else
+                    return null;
+
+                ret.timeMinute = int.Parse(tis[0]);
+                ret.timeSecond = int.Parse(tis[1]);
+                return ret;
+
+            } catch (Exception ex) {
+                // Error
+                Console.WriteLine(ex.Message);
                 return null;
-
-            // Time
-            string[] tis = sp[0].Split(new string[] { ":", "." }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (tis.Length == 2)
-                ret.timeMilliSecond = int.Parse(tis[2]);
-            else if (tis.Length == 3) {
-                if (tis[2].Length == 1)
-                    ret.timeMilliSecond = int.Parse(tis[2] + "0");
-                else
-                    ret.timeMilliSecond = int.Parse(tis[2].Substring(0, 2));
-            } else
-                return null;
-
-            ret.timeMinute = int.Parse(tis[0]);
-            ret.timeSecond = int.Parse(tis[1]);
-            return ret;
+            }
         }
     }
 }

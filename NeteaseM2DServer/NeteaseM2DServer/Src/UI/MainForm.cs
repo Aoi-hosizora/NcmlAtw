@@ -231,9 +231,10 @@ namespace NeteaseM2DServer.Src.UI {
                 Global.MusicId = resultSong.Id;
 
                 LyricResult lyricResult = api.Lyric(Global.MusicId);
-                if (lyricResult.Code == 200 && lyricResult.Lrc != null && lyricResult.Lrc.Lyric != null && lyricResult.Lrc.Lyric != "")
+                if (lyricResult.Code == 200 && lyricResult.Lrc != null && lyricResult.Lrc.Lyric != null && lyricResult.Lrc.Lyric != "") {
                     Global.MusicLyricPage = LyricPage.parseLrc(lyricResult.Lrc.Lyric);
-                else
+                    Console.WriteLine(lyricResult.Lrc.Lyric);
+                } else
                     Global.MusicLyricPage = null;
             } else {
                 Global.MusicId = -1;
