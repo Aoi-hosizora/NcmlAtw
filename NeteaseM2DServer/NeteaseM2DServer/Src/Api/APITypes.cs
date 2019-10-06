@@ -387,6 +387,14 @@ namespace NeteaseM2DServer.Src.Api
     {
         public List<Song> Songs { get; set; }
         public long SongCount { get; set; }
+        public List<Album> Albums { get; set; }
+        public long AlbumCount { get; set; }
+        public List<Artist> Artists { get; set; }
+        public long ArtistCount { get; set; }
+        public List<Playlist> Playlists { get; set; }
+        public long PlaylistCount { get; set; }
+        public List<User> Userprofiles { get; set; }
+        public long UserprofileCount { get; set; }
     }
 
     public class Song

@@ -79,6 +79,9 @@ namespace NeteaseM2DServer.Src.UI {
 
             socketService.pingCb = (ok) => {
                 Console.WriteLine("ping");
+                this.Invoke(new Action(() => {
+                    QrCodeform.Close();
+                }));
             };
 
             socketService.metaDataCb = SocketMetaDataCb;
@@ -175,10 +178,12 @@ namespace NeteaseM2DServer.Src.UI {
 
                 string[] searchToken = searchRet.Name.Split(new string[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries);
                 string[] trueToken = trueRet.title.Split(new string[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries);
+                
+                // xxx1 (xxx2)
 
-                // (
+                // xxx1
                 if (!searchToken[0].Trim().Equals(trueToken[0].Trim())) return false;
-                // )
+                // xxx2
                 if (!searchToken[1].Trim().Equals(trueToken[1].Trim())) return false;
 
                 else return true;
@@ -214,19 +219,30 @@ namespace NeteaseM2DServer.Src.UI {
             int id = -1;
 
             // 几种方案搜索
-            SearchResult searchResult = api.Search(Global.currentSong.title);
-            if (searchResult.Code == 200 && ((id = checkContinueResult(searchResult, Global.currentSong)) == -1)) {
-                searchResult = api.Search(Global.currentSong.title + " " + Global.currentSong.artist);
-                if (searchResult.Code == 200 && ((id = checkContinueResult(searchResult, Global.currentSong)) == -1)) {
-                    searchResult = api.Search(Global.currentSong.title + " " + Global.currentSong.artist + " " + Global.currentSong.album);
-                    if (searchResult.Code == 200 && ((id = checkContinueResult(searchResult, Global.currentSong)) == -1)) {
-                        resultSong = null;
-                    }
-                }
+            string titleOfPh = Global.currentSong.title;
+            string titleOfNoPh = new Regex("\\(.*\\)").Replace(titleOfPh, "");
+            string[] searchToken = {
+                titleOfPh,                                                                          // 标题
+                titleOfPh + " " + Global.currentSong.artist,                                        // 标题 + 歌手
+                titleOfPh + " " + Global.currentSong.artist + " " + Global.currentSong.album,       // 标题 + 歌手 + 专辑
+                titleOfNoPh,                                                                        // 去括号标题
+                titleOfNoPh + " " + Global.currentSong.artist,                                      // 去括号标题 + 歌手
+                titleOfNoPh + " " + Global.currentSong.artist + " " + Global.currentSong.album      // 去括号标题 + 歌手 + 专辑
+            };
+
+            SearchResult sRet = null;
+            foreach (var stk in searchToken) {
+                Console.WriteLine(stk);
+                sRet = api.Search(stk);
+                if (sRet.Code == 200 && ((id = checkContinueResult(sRet, Global.currentSong)) != -1))
+                    break;
+                else
+                    sRet = null;
             }
-            if (id != -1) 
-                resultSong = searchResult.Result.Songs.ElementAt(id);
-            
+            if (sRet != null && id != -1) 
+                resultSong = sRet.Result.Songs.ElementAt(id);
+
+            // 搜索结束
             if (resultSong != null) {
                 Global.MusicId = resultSong.Id;
                 LyricResult lyricResult = api.Lyric(Global.MusicId);
@@ -350,6 +366,11 @@ namespace NeteaseM2DServer.Src.UI {
         }
 
         /// <summary>
+        /// 二维码窗体
+        /// </summary>
+        private Form QrCodeform;
+
+        /// <summary>
         /// 显示二维码
         /// </summary>
         private void buttonQrCode_Click(object sender, EventArgs e) {
@@ -359,25 +380,25 @@ namespace NeteaseM2DServer.Src.UI {
                 return;
             }
 
-            Form form = new Form();
-            form.Text = "连接二维码";
-            form.Name = "QrCodeForm";
-            form.FormBorderStyle = FormBorderStyle.FixedDialog;
-            form.MaximizeBox = false;
-            form.MinimizeBox = false;
-            form.ShowInTaskbar = false;
-            form.StartPosition = FormStartPosition.CenterScreen;
-            form.Size = Global.qrCodeImage.Size;
+            QrCodeform = new Form();
+            QrCodeform.Text = "连接二维码";
+            QrCodeform.Name = "QrCodeForm";
+            QrCodeform.FormBorderStyle = FormBorderStyle.FixedDialog;
+            QrCodeform.MaximizeBox = false;
+            QrCodeform.MinimizeBox = false;
+            QrCodeform.ShowInTaskbar = false;
+            QrCodeform.StartPosition = FormStartPosition.CenterScreen;
+            QrCodeform.Size = Global.qrCodeImage.Size;
 
             PictureBox pictureBox = new PictureBox();
             pictureBox.Name = "pictureBox";
             pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox.Image = Global.qrCodeImage;
 
-            form.Controls.Add(pictureBox);
+            QrCodeform.Controls.Add(pictureBox);
             pictureBox.Dock = DockStyle.Fill;
 
-            form.Show(this);
+            QrCodeform.Show(this);
         }
 
         #endregion // 界面交互
