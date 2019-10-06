@@ -271,6 +271,10 @@ namespace NeteaseM2DServer.Src.UI {
         #region 界面交互
 
         private void MainForm_Load(object sender, EventArgs e) {
+
+            timeAdjustContextMenu.Renderer = new NativeRenderer(NativeRenderer.ToolbarTheme.MediaToolbar);
+            contextMenuStrip.Renderer = new NativeRenderer(NativeRenderer.ToolbarTheme.MediaToolbar);
+
             // Load Setting
             this.Top = Properties.Settings.Default.Top;
             this.Left = Properties.Settings.Default.Left;

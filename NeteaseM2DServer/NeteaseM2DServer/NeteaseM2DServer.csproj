@@ -76,6 +76,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Src\Api\APITypes.cs" />
     <Compile Include="Src\Api\NeteaseCloudMuiscApi.cs" />
+    <Compile Include="Src\UI\NativeRenderer.cs" />
     <Compile Include="Src\Util\CommonUtil.cs" />
     <EmbeddedResource Include="Src\UI\LyricForm.resx">
       <DependentUpon>LyricForm.cs</DependentUpon>

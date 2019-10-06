@@ -31,6 +31,9 @@ namespace NeteaseM2DServer.Src.UI {
         #region 加载与退出
 
         private void LyricForm_Load(object sender, EventArgs e) {
+
+            contextMenuStrip.Renderer = new NativeRenderer(NativeRenderer.ToolbarTheme.MediaToolbar);
+
             this.Opacity = 0;
             this.BackColor = Properties.Settings.Default.LyricBackColor;
             labelLyric.ForeColor = Properties.Settings.Default.LyricForeColor;
