@@ -231,12 +231,12 @@
             this.menuItemFaster1,
             this.menuItemSlow1});
             this.timeAdjustContextMenu.Name = "contextMenuStrip";
-            this.timeAdjustContextMenu.Size = new System.Drawing.Size(153, 114);
+            this.timeAdjustContextMenu.Size = new System.Drawing.Size(137, 92);
             // 
             // menuItemFaster05
             // 
             this.menuItemFaster05.Name = "menuItemFaster05";
-            this.menuItemFaster05.Size = new System.Drawing.Size(127, 22);
+            this.menuItemFaster05.Size = new System.Drawing.Size(136, 22);
             this.menuItemFaster05.Tag = "+0.5";
             this.menuItemFaster05.Text = "快 0.5 秒 (&1)";
             this.menuItemFaster05.Click += new System.EventHandler(this.menuItemFasterSlower_Click);
@@ -244,7 +244,7 @@
             // menuItemSlower05
             // 
             this.menuItemSlower05.Name = "menuItemSlower05";
-            this.menuItemSlower05.Size = new System.Drawing.Size(127, 22);
+            this.menuItemSlower05.Size = new System.Drawing.Size(136, 22);
             this.menuItemSlower05.Tag = "-0.5";
             this.menuItemSlower05.Text = "慢 0.5 秒 (&2)";
             this.menuItemSlower05.Click += new System.EventHandler(this.menuItemFasterSlower_Click);
@@ -252,7 +252,7 @@
             // menuItemFaster1
             // 
             this.menuItemFaster1.Name = "menuItemFaster1";
-            this.menuItemFaster1.Size = new System.Drawing.Size(127, 22);
+            this.menuItemFaster1.Size = new System.Drawing.Size(136, 22);
             this.menuItemFaster1.Tag = "+1";
             this.menuItemFaster1.Text = "快 1 秒 (&3)";
             this.menuItemFaster1.Click += new System.EventHandler(this.menuItemFasterSlower_Click);
@@ -260,7 +260,7 @@
             // menuItemSlow1
             // 
             this.menuItemSlow1.Name = "menuItemSlow1";
-            this.menuItemSlow1.Size = new System.Drawing.Size(127, 22);
+            this.menuItemSlow1.Size = new System.Drawing.Size(136, 22);
             this.menuItemSlow1.Tag = "-1";
             this.menuItemSlow1.Text = "慢 1 秒 (&4)";
             this.menuItemSlow1.Click += new System.EventHandler(this.menuItemFasterSlower_Click);

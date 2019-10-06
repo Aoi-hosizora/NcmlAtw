@@ -57,3 +57,4 @@
 ### References
 + [Using MediaController on Android 5](https://stackoverflow.com/questions/27107212/using-mediacontroller-on-android-5)
 + [NeteaseMuiscApi](https://github.com/GEEKiDoS/NeteaseMuiscApi)
++ [Standard Windows menu bars in Windows Forms](https://stackoverflow.com/questions/2778109/standard-windows-menu-bars-in-windows-forms)

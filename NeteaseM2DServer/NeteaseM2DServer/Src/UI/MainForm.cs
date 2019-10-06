@@ -80,7 +80,8 @@ namespace NeteaseM2DServer.Src.UI {
             socketService.pingCb = (ok) => {
                 Console.WriteLine("ping");
                 this.Invoke(new Action(() => {
-                    QrCodeform.Close();
+                    if (QrCodeform != null)
+                        QrCodeform.Close();
                 }));
             };
 
