@@ -38,6 +38,7 @@
             this.menuItemLock = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemOpacity = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemPosition = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuItemSize = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.menuItemFont = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemForeColor = new System.Windows.Forms.ToolStripMenuItem();
@@ -81,6 +82,7 @@
             this.menuItemLock,
             this.menuItemOpacity,
             this.menuItemPosition,
+            this.menuItemSize,
             this.toolStripSeparator2,
             this.menuItemFont,
             this.menuItemForeColor,
@@ -90,7 +92,7 @@
             this.menuItemShowMain,
             this.menuItemExit});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(154, 264);
+            this.contextMenuStrip.Size = new System.Drawing.Size(154, 286);
             // 
             // menuItemAllLyric
             // 
@@ -124,7 +126,7 @@
             // 
             this.menuItemOpacity.Name = "menuItemOpacity";
             this.menuItemOpacity.Size = new System.Drawing.Size(153, 22);
-            this.menuItemOpacity.Text = "透明度(&S)";
+            this.menuItemOpacity.Text = "透明度(&I)";
             // 
             // menuItemPosition
             // 
@@ -132,6 +134,13 @@
             this.menuItemPosition.Size = new System.Drawing.Size(153, 22);
             this.menuItemPosition.Text = "原位置(&P)";
             this.menuItemPosition.Click += new System.EventHandler(this.menuItemPosition_Click);
+            // 
+            // menuItemSize
+            // 
+            this.menuItemSize.Name = "menuItemSize";
+            this.menuItemSize.Size = new System.Drawing.Size(153, 22);
+            this.menuItemSize.Text = "原大小(&S)";
+            this.menuItemSize.Click += new System.EventHandler(this.menuItemSize_Click);
             // 
             // toolStripSeparator2
             // 
@@ -149,7 +158,7 @@
             // 
             this.menuItemForeColor.Name = "menuItemForeColor";
             this.menuItemForeColor.Size = new System.Drawing.Size(153, 22);
-            this.menuItemForeColor.Text = "文字颜色(&F)";
+            this.menuItemForeColor.Text = "文字颜色(&O)";
             this.menuItemForeColor.Click += new System.EventHandler(this.menuItemForeColor_Click);
             // 
             // menuForeBackColor
@@ -207,11 +216,11 @@
             this.buttonOption.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.buttonOption.ForeColor = System.Drawing.Color.White;
             this.buttonOption.Image = global::NeteaseM2DServer.Properties.Resources.Option;
-            this.buttonOption.Location = new System.Drawing.Point(1314, 12);
+            this.buttonOption.Location = new System.Drawing.Point(1318, 8);
             this.buttonOption.Name = "buttonOption";
             this.buttonOption.Size = new System.Drawing.Size(24, 21);
             this.buttonOption.TabIndex = 1;
-            this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。");
+            this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。\r\n注意：仅当接触锁定时才能够移动窗口和调整大小。");
             this.buttonOption.UseVisualStyleBackColor = true;
             this.buttonOption.Click += new System.EventHandler(this.buttonOption_Click);
             // 
@@ -227,7 +236,7 @@
             this.buttonSlower.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.buttonSlower.ForeColor = System.Drawing.Color.White;
             this.buttonSlower.Image = ((System.Drawing.Image)(resources.GetObject("buttonSlower.Image")));
-            this.buttonSlower.Location = new System.Drawing.Point(1284, 64);
+            this.buttonSlower.Location = new System.Drawing.Point(1292, 68);
             this.buttonSlower.Name = "buttonSlower";
             this.buttonSlower.Size = new System.Drawing.Size(24, 24);
             this.buttonSlower.TabIndex = 3;
@@ -242,7 +251,7 @@
             this.buttonFaster.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.buttonFaster.ForeColor = System.Drawing.Color.White;
             this.buttonFaster.Image = ((System.Drawing.Image)(resources.GetObject("buttonFaster.Image")));
-            this.buttonFaster.Location = new System.Drawing.Point(1314, 64);
+            this.buttonFaster.Location = new System.Drawing.Point(1318, 68);
             this.buttonFaster.Name = "buttonFaster";
             this.buttonFaster.Size = new System.Drawing.Size(24, 24);
             this.buttonFaster.TabIndex = 2;
@@ -273,6 +282,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(500, 67);
             this.Name = "LyricForm";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
@@ -289,7 +299,6 @@
 
         private System.Windows.Forms.Label labelLyric;
         private System.Windows.Forms.Timer timerShow;
-        private System.Windows.Forms.Timer timerHide;
         private System.Windows.Forms.Button buttonOption;
         private System.Windows.Forms.ColorDialog colorDialog;
         private System.Windows.Forms.ToolTip toolTip;
@@ -312,5 +321,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuItemExit;
         private System.Windows.Forms.ToolStripMenuItem menuItemFont;
         private System.Windows.Forms.FontDialog fontDialog;
+        private System.Windows.Forms.ToolStripMenuItem menuItemSize;
+        private System.Windows.Forms.Timer timerHide;
     }
 }

@@ -121,18 +121,6 @@ namespace NeteaseM2DServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
-        public int LyricLeft {
-            get {
-                return ((int)(this["LyricLeft"]));
-            }
-            set {
-                this["LyricLeft"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Yu Gothic UI, 48pt")]
         public global::System.Drawing.Font LyricFont {
             get {
@@ -140,6 +128,30 @@ namespace NeteaseM2DServer.Properties {
             }
             set {
                 this["LyricFont"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1, -1")]
+        public global::System.Drawing.Size LyricSize {
+            get {
+                return ((global::System.Drawing.Size)(this["LyricSize"]));
+            }
+            set {
+                this["LyricSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public int LyricLeft {
+            get {
+                return ((int)(this["LyricLeft"]));
+            }
+            set {
+                this["LyricLeft"] = value;
             }
         }
     }

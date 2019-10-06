@@ -25,6 +25,7 @@ namespace NeteaseM2DServer.Src.UI {
 
         private LyricForm() {
             InitializeComponent();
+            this.Opacity = 0;
         }
 
         // LyricForm_Load LyricForm_FormClosing
@@ -34,7 +35,6 @@ namespace NeteaseM2DServer.Src.UI {
 
             contextMenuStrip.Renderer = new NativeRenderer(NativeRenderer.ToolbarTheme.MediaToolbar);
 
-            this.Opacity = 0;
             this.BackColor = Properties.Settings.Default.LyricBackColor;
             labelLyric.ForeColor = Properties.Settings.Default.LyricForeColor;
 
@@ -52,6 +52,8 @@ namespace NeteaseM2DServer.Src.UI {
                 this.Top = Properties.Settings.Default.LyricTop;
             if (Properties.Settings.Default.LyricLeft != -1)
                 this.Left = Properties.Settings.Default.LyricLeft;
+            if (!Properties.Settings.Default.LyricSize.Equals(new Size(-1, -1)))
+                this.Size = Properties.Settings.Default.LyricSize;
 
             // 订阅移动窗口事件
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Object_MouseDown);
@@ -83,9 +85,10 @@ namespace NeteaseM2DServer.Src.UI {
         /// <summary>
         /// 检查退出条件
         /// </summary>
-        private void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
+        public void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
             Properties.Settings.Default.LyricTop = this.Top;
             Properties.Settings.Default.LyricLeft = this.Left;
+            Properties.Settings.Default.LyricSize = this.Size;
 
             e.Cancel = this.Opacity != 0;
             if (timerShow.Enabled) timerShow.Enabled = false;
@@ -367,16 +370,30 @@ namespace NeteaseM2DServer.Src.UI {
         /// </summary>
         private void menuItemPosition_Click(object sender, EventArgs e) {
             Computer My = new Computer();
-            this.Width = (int)(My.Screen.WorkingArea.Width * 0.8);
             this.Left = (My.Screen.Bounds.Width - this.Width) / 2;
             this.Top = My.Screen.WorkingArea.Height - this.Height;
+        }
+
+        /// <summary>
+        /// 菜单，原大小
+        /// </summary>
+        private void menuItemSize_Click(object sender, EventArgs e) {
+            Computer My = new Computer();
+            int left = this.Left;
+            int width = this.Width;
+            this.Width = (int)(My.Screen.WorkingArea.Width * 0.8);
+            this.Height = 100;
+            this.Left = left + width - this.Width;
+
+            Font newFont = new Font(labelLyric.Font.Name, 48F, labelLyric.Font.Style, System.Drawing.GraphicsUnit.Point);
+            labelLyric.Font = newFont;
+            Properties.Settings.Default.LyricFont = labelLyric.Font;
         }
 
         /// <summary>
         /// 菜单，透明度修改
         /// </summary>
         private void menuItemOpacitySubItem_Click(object sender, EventArgs e) {
-
             foreach (ToolStripMenuItem item in menuItemOpacity.DropDownItems)
                 item.Checked = false;
             (sender as ToolStripMenuItem).Checked = true;
@@ -393,7 +410,6 @@ namespace NeteaseM2DServer.Src.UI {
             fontDialog.Font = labelLyric.Font;
             fontDialog.ShowDialog();
             Console.WriteLine(fontDialog.Font.Name);
-            // Font newFont = new Font(fontDialog.Font.Name, fontDialog.Font.Size, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             Properties.Settings.Default.LyricFont = labelLyric.Font = fontDialog.Font;
         }
 

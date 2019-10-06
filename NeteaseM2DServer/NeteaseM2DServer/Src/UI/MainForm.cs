@@ -305,6 +305,21 @@ namespace NeteaseM2DServer.Src.UI {
             Properties.Settings.Default.Top = this.Top;
             Properties.Settings.Default.Left = this.Left;
             Properties.Settings.Default.Save();
+
+            if (LyricForm.getInstance().Opacity != 0) {
+                e.Cancel = true;
+                LyricForm.getInstance().Close();
+                new Thread(new ThreadStart(() => {
+                    while (true) {
+                        if (LyricForm.getInstance().Opacity == 0) {
+                            this.Invoke(new Action(() => {
+                                this.Close();
+                            }));
+                            break;
+                        }
+                    }
+                })).Start();
+            }
         }
 
         /// <summary>
