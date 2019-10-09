@@ -520,7 +520,7 @@ namespace NeteaseM2DServer.Src.UI {
         public void updateSongLyric(bool isSearching) {
             currentLineIdx = -1;
             if (isSearching) {
-                changeText("正在搜索歌詞");
+                changeText("正在搜索歌詞...");
                 return;
             }
             if (Global.MusicId == -1) {
@@ -529,7 +529,7 @@ namespace NeteaseM2DServer.Src.UI {
                 if (Global.MusicLyricState == Global.LyricState.NotFound)
                     changeText("未找到歌詞");
                 else if (Global.MusicLyricState == Global.LyricState.PureMusic)
-                    changeText("純音樂，請欣賞");
+                    changeText("純音樂 請欣賞");
             }
         }
 

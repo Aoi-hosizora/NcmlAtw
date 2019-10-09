@@ -69,7 +69,7 @@
             this.labelLyric.Name = "labelLyric";
             this.labelLyric.Size = new System.Drawing.Size(1350, 100);
             this.labelLyric.TabIndex = 0;
-            this.labelLyric.Text = "未找到歌词";
+            this.labelLyric.Text = "未找到歌詞";
             this.labelLyric.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.labelLyric.FontChanged += new System.EventHandler(this.labelLyric_FontChanged);
             // 
@@ -216,11 +216,11 @@
             this.buttonOption.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.buttonOption.ForeColor = System.Drawing.Color.White;
             this.buttonOption.Image = global::NeteaseM2DServer.Properties.Resources.Option;
-            this.buttonOption.Location = new System.Drawing.Point(1318, 8);
+            this.buttonOption.Location = new System.Drawing.Point(1320, 5);
             this.buttonOption.Name = "buttonOption";
             this.buttonOption.Size = new System.Drawing.Size(24, 21);
             this.buttonOption.TabIndex = 1;
-            this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。\r\n注意：仅当接触锁定时才能够移动窗口和调整大小。");
+            this.toolTip.SetToolTip(this.buttonOption, "左键弹出菜单，右键移动歌词。\r\n注意：仅当解除锁定时才能够移动窗口和调整大小。");
             this.buttonOption.UseVisualStyleBackColor = true;
             this.buttonOption.Click += new System.EventHandler(this.buttonOption_Click);
             // 
@@ -236,10 +236,11 @@
             this.buttonSlower.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.buttonSlower.ForeColor = System.Drawing.Color.White;
             this.buttonSlower.Image = ((System.Drawing.Image)(resources.GetObject("buttonSlower.Image")));
-            this.buttonSlower.Location = new System.Drawing.Point(1292, 68);
+            this.buttonSlower.Location = new System.Drawing.Point(1293, 70);
             this.buttonSlower.Name = "buttonSlower";
             this.buttonSlower.Size = new System.Drawing.Size(24, 24);
             this.buttonSlower.TabIndex = 3;
+            this.toolTip.SetToolTip(this.buttonSlower, "歌词放慢 0.5 秒");
             this.buttonSlower.UseVisualStyleBackColor = true;
             this.buttonSlower.Visible = false;
             this.buttonSlower.Click += new System.EventHandler(this.buttonSlower_Click);
@@ -251,10 +252,11 @@
             this.buttonFaster.Font = new System.Drawing.Font("Yu Gothic UI", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.buttonFaster.ForeColor = System.Drawing.Color.White;
             this.buttonFaster.Image = ((System.Drawing.Image)(resources.GetObject("buttonFaster.Image")));
-            this.buttonFaster.Location = new System.Drawing.Point(1318, 68);
+            this.buttonFaster.Location = new System.Drawing.Point(1320, 70);
             this.buttonFaster.Name = "buttonFaster";
             this.buttonFaster.Size = new System.Drawing.Size(24, 24);
             this.buttonFaster.TabIndex = 2;
+            this.toolTip.SetToolTip(this.buttonFaster, "歌词加快 0.5 秒");
             this.buttonFaster.UseVisualStyleBackColor = true;
             this.buttonFaster.Visible = false;
             this.buttonFaster.Click += new System.EventHandler(this.buttonFaster_Click);
@@ -282,7 +284,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(500, 67);
+            this.MinimumSize = new System.Drawing.Size(500, 62);
             this.Name = "LyricForm";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;

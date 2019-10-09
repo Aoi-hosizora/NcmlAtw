@@ -78,6 +78,7 @@
     <Compile Include="Src\Api\NeteaseCloudMuiscApi.cs" />
     <Compile Include="Src\UI\NativeRenderer.cs" />
     <Compile Include="Src\Util\CommonUtil.cs" />
+    <Compile Include="Src\Util\MessageBoxEx.cs" />
     <EmbeddedResource Include="Src\UI\LyricForm.resx">
       <DependentUpon>LyricForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -113,6 +114,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Slower.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\NotifyIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

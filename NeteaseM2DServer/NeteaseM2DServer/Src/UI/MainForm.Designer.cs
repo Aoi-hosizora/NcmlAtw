@@ -108,7 +108,7 @@
             this.buttonShowLyric.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.buttonShowLyric.Location = new System.Drawing.Point(93, 161);
             this.buttonShowLyric.Name = "buttonShowLyric";
-            this.buttonShowLyric.Size = new System.Drawing.Size(95, 25);
+            this.buttonShowLyric.Size = new System.Drawing.Size(94, 25);
             this.buttonShowLyric.TabIndex = 13;
             this.buttonShowLyric.Text = "打开桌面歌词";
             this.buttonShowLyric.UseVisualStyleBackColor = true;
@@ -268,7 +268,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 9);
+            this.label3.Location = new System.Drawing.Point(12, 8);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(110, 17);
             this.label3.TabIndex = 1;
@@ -279,13 +279,13 @@
             this.textBoxIP.Location = new System.Drawing.Point(128, 6);
             this.textBoxIP.Name = "textBoxIP";
             this.textBoxIP.ReadOnly = true;
-            this.textBoxIP.Size = new System.Drawing.Size(141, 23);
+            this.textBoxIP.Size = new System.Drawing.Size(140, 23);
             this.textBoxIP.TabIndex = 2;
             // 
             // buttonQrCode
             // 
             this.buttonQrCode.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonQrCode.Location = new System.Drawing.Point(275, 5);
+            this.buttonQrCode.Location = new System.Drawing.Point(275, 6);
             this.buttonQrCode.Name = "buttonQrCode";
             this.buttonQrCode.Size = new System.Drawing.Size(75, 25);
             this.buttonQrCode.TabIndex = 3;
@@ -297,8 +297,7 @@
             // MainForm
             // 
             this.AcceptButton = this.buttonListen;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.buttonExit;
             this.ClientSize = new System.Drawing.Size(362, 195);

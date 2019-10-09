@@ -31,6 +31,7 @@ namespace NeteaseM2DServer.Src.UI {
 
         private MainForm() {
             InitializeComponent();
+            // this.Font = System.Drawing.SystemFonts.MessageBoxFont;
         }
 
         // StartThread SocketMetaDataCb SocketPlaybackStateCb StopThread
@@ -220,20 +221,26 @@ namespace NeteaseM2DServer.Src.UI {
             int id = -1;
 
             // 几种方案搜索
-            string titleOfPh = Global.currentSong.title;
-            string titleOfNoPh = new Regex("\\(.*\\)").Replace(titleOfPh, "");
+            string title_WithPh = Global.currentSong.title;
+            string title_WithoutPh = new Regex("\\(.*\\)").Replace(title_WithPh, " ");
+            string title_WithoutPh_WithToken = new Regex("\\(|\\)").Replace(title_WithPh, " ");
             string[] searchToken = {
-                titleOfPh,                                                                          // 标题
-                titleOfPh + " " + Global.currentSong.artist,                                        // 标题 + 歌手
-                titleOfPh + " " + Global.currentSong.artist + " " + Global.currentSong.album,       // 标题 + 歌手 + 专辑
-                titleOfNoPh,                                                                        // 去括号标题
-                titleOfNoPh + " " + Global.currentSong.artist,                                      // 去括号标题 + 歌手
-                titleOfNoPh + " " + Global.currentSong.artist + " " + Global.currentSong.album      // 去括号标题 + 歌手 + 专辑
+                title_WithPh,                                                                                       // 标题
+                title_WithoutPh,                                                                                    // 去括号标题
+                title_WithoutPh_WithToken,                                                                          // 去括号标题保留内容
+
+                title_WithPh + " " + Global.currentSong.artist,                                                     // 标题 + 歌手
+                title_WithoutPh + " " + Global.currentSong.artist,                                                  // 去括号标题 + 歌手
+                title_WithoutPh_WithToken + " " + Global.currentSong.artist,                                        // 去括号标题保留内容 + 歌手
+
+                title_WithPh + " " + Global.currentSong.artist + " " + Global.currentSong.album,                    // 标题 + 歌手 + 专辑
+                title_WithoutPh + " " + Global.currentSong.artist + " " + Global.currentSong.album,                 // 去括号标题 + 歌手 + 专辑
+                title_WithoutPh_WithToken + " " + Global.currentSong.artist + " " + Global.currentSong.album        // 去括号标题保留内容 + 歌手 + 专辑
             };
 
             SearchResult sRet = null;
             foreach (var stk in searchToken) {
-                Console.WriteLine(stk);
+                Console.WriteLine("Search: " + stk);
                 sRet = api.Search(stk);
                 if (sRet.Code == 200 && ((id = checkContinueResult(sRet, Global.currentSong)) != -1))
                     break;
@@ -272,7 +279,6 @@ namespace NeteaseM2DServer.Src.UI {
         #region 界面交互
 
         private void MainForm_Load(object sender, EventArgs e) {
-
             timeAdjustContextMenu.Renderer = new NativeRenderer(NativeRenderer.ToolbarTheme.MediaToolbar);
             contextMenuStrip.Renderer = new NativeRenderer(NativeRenderer.ToolbarTheme.MediaToolbar);
 
@@ -302,6 +308,23 @@ namespace NeteaseM2DServer.Src.UI {
         /// 保存设置
         /// </summary>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
+            e.Cancel = true;
+            DialogResult ok = MessageBoxEx.Show(
+                "确定关闭监听并退出程序？",
+                "退出",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information,
+                MessageBoxDefaultButton.Button1,
+                new string[] { "退出(&E)", "不退出(&C)" });
+
+            if (ok == DialogResult.No) {
+                e.Cancel = true;
+                return;
+            }
+            e.Cancel = false;
+
+            // Save setting
+
             Properties.Settings.Default.Top = this.Top;
             Properties.Settings.Default.Left = this.Left;
             Properties.Settings.Default.Save();
@@ -326,7 +349,7 @@ namespace NeteaseM2DServer.Src.UI {
         /// 监听 / 取消监听
         /// </summary>
         private void buttonListen_Click(object sender, EventArgs e) {
-            if ((sender as Button).Text == "监听端口") {
+            if (buttonListen.Text == "监听端口") {
                 StartThread(int.Parse(numericUpDownPort.Value.ToString()));
             } else {
                 StopThread();
@@ -469,6 +492,9 @@ namespace NeteaseM2DServer.Src.UI {
 
         #endregion // 弹出菜单
 
+        // timerSong_Tick timerGlobal_Tick
+        #region 计时处理
+
         /// <summary>
         /// 时间更新
         /// </summary>
@@ -485,7 +511,7 @@ namespace NeteaseM2DServer.Src.UI {
 
             Global.currentPos = (int)(s * 1000);
             string currentPos = ((int)(s / 60.0)).ToString("00") + ":" + ((int)(s % 60.0)).ToString("00");
-            
+
 
             labelSongDuration.Text = currentPos + " / " + (Global.durationStr == "" || Global.durationStr == null ? "未知" : Global.durationStr);
         }
@@ -501,5 +527,8 @@ namespace NeteaseM2DServer.Src.UI {
             if (Global.LyricFormTimer != null)
                 Global.LyricFormTimer();
         }
+
+        #endregion
+        
     }
 }

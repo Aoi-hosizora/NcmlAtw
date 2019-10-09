@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 using NeteaseM2DServer.Src.Model;
 
 namespace NeteaseM2DServer.Src.Util {
-    class CommonUtil {
+
+    public class CommonUtil {
 
         #region 窗口穿透
 
