@@ -76,7 +76,7 @@ namespace NeteaseM2DServer.Src.Model {
                 List<LyricLine> ret = new List<LyricLine>();
                 List<string> timeStrs = new List<string>();
 
-                string[] sp = lrcLineString.Split(new string[] { "[", "]" }, StringSplitOptions.RemoveEmptyEntries);
+                string[] sp = (lrcLineString + " ").Split(new string[] { "[", "]" }, StringSplitOptions.RemoveEmptyEntries);
 
                 // Lyric Content
                 if (sp.Length == 1)

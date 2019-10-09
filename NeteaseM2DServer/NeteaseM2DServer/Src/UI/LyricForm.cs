@@ -89,6 +89,7 @@ namespace NeteaseM2DServer.Src.UI {
             Properties.Settings.Default.LyricTop = this.Top;
             Properties.Settings.Default.LyricLeft = this.Left;
             Properties.Settings.Default.LyricSize = this.Size;
+            Properties.Settings.Default.Save();
 
             e.Cancel = this.Opacity != 0;
             if (timerShow.Enabled) timerShow.Enabled = false;
@@ -428,6 +429,7 @@ namespace NeteaseM2DServer.Src.UI {
             fontDialog.ShowDialog();
             Console.WriteLine(fontDialog.Font.Name);
             Properties.Settings.Default.LyricFont = labelLyric.Font = fontDialog.Font;
+            Properties.Settings.Default.Save();
         }
 
         /// <summary>
