@@ -52,9 +52,9 @@
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.buttonOption = new System.Windows.Forms.Button();
-            this.timerLabelText = new System.Windows.Forms.Timer(this.components);
             this.buttonSlower = new System.Windows.Forms.Button();
             this.buttonFaster = new System.Windows.Forms.Button();
+            this.timerLabelText = new System.Windows.Forms.Timer(this.components);
             this.fontDialog = new System.Windows.Forms.FontDialog();
             this.contextMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -224,11 +224,6 @@
             this.buttonOption.UseVisualStyleBackColor = true;
             this.buttonOption.Click += new System.EventHandler(this.buttonOption_Click);
             // 
-            // timerLabelText
-            // 
-            this.timerLabelText.Interval = 1;
-            this.timerLabelText.Tick += new System.EventHandler(this.timerLabelText_Tick);
-            // 
             // buttonSlower
             // 
             this.buttonSlower.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -260,6 +255,11 @@
             this.buttonFaster.UseVisualStyleBackColor = true;
             this.buttonFaster.Visible = false;
             this.buttonFaster.Click += new System.EventHandler(this.buttonFaster_Click);
+            // 
+            // timerLabelText
+            // 
+            this.timerLabelText.Interval = 1;
+            this.timerLabelText.Tick += new System.EventHandler(this.timerLabelText_Tick);
             // 
             // fontDialog
             // 

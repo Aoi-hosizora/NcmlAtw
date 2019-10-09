@@ -123,9 +123,6 @@ namespace NeteaseM2DServer.Src.UI {
             None
         }
 
-        /// <summary>
-        /// 按下，记录位置用于移动
-        /// </summary>
         private void Object_MouseDown(object sender, MouseEventArgs e) {
             MouseDownMousePosition = Cursor.Position;
             MouseDownWinPosition = new Point(this.Left, this.Top);
@@ -135,15 +132,20 @@ namespace NeteaseM2DServer.Src.UI {
             isBorderSizing = false;
         }
 
+        private void Object_MouseUp(object sender, MouseEventArgs e) {
+            isBorderSizing = false;
+            (sender as Control).Cursor = System.Windows.Forms.Cursors.Default;
+        }
+
         /// <summary>
-        /// 按钮右键移动，其他左键移动
+        /// 按钮右键移动，其他左键移动和调整大小
         /// </summary>
         private void Object_MouseMove(object sender, MouseEventArgs e) {
             bool rn = e.Button == MouseButtons.Left;
             if (sender.GetType().Equals(typeof(Button)))
                 rn = e.Button == MouseButtons.Right;
 
-            if (!isBorderSizing) {
+            if (!isBorderSizing && !sender.GetType().Equals(typeof(Button))) {
                 bool N = Cursor.Position.Y >= this.Top - BorderSizing && Cursor.Position.Y <= this.Top + BorderSizing;
                 bool S = Cursor.Position.Y >= this.Top + this.Height - BorderSizing  && Cursor.Position.Y <= this.Top + this.Height + BorderSizing;
                 bool E = Cursor.Position.X >= this.Left - BorderSizing && Cursor.Position.X <= this.Left + BorderSizing;
@@ -186,7 +188,6 @@ namespace NeteaseM2DServer.Src.UI {
             }
 
             if (rn) {
-                isBorderSizing = MouseDownBorder != MouseBorder.None;
 
                 int newTop = MouseDownWinPosition.Y + Cursor.Position.Y - MouseDownMousePosition.Y;
                 int newLeft = MouseDownWinPosition.X + Cursor.Position.X - MouseDownMousePosition.X;
@@ -196,42 +197,58 @@ namespace NeteaseM2DServer.Src.UI {
                 int newW_W = MouseDownWinSize.Width - MouseDownMousePosition.X + Cursor.Position.X;
                 int newW_E = MouseDownWinSize.Width + MouseDownMousePosition.X - Cursor.Position.X;
 
-                if (MouseDownBorder == MouseBorder.NE) {
-                    this.Top = newTop;
-                    this.Left = newLeft;
-                    this.Height = newH_N;
-                    this.Width = newW_E;
-                } else if (MouseDownBorder == MouseBorder.SW) {
-                    this.Height = newH_S;
-                    this.Width = newW_W;
-                } else if (MouseDownBorder == MouseBorder.NW) {
-                    this.Top = newTop;
-                    this.Height = newH_N;
-                    this.Width = newW_W;
-                } else if (MouseDownBorder == MouseBorder.SE) {
-                    this.Left = newLeft;
-                    this.Height = newH_S;
-                    this.Width = newW_E;
-                } else if (MouseDownBorder == MouseBorder.N) {
-                    this.Top = newTop;
-                    this.Height = newH_N;
-                } else if (MouseDownBorder == MouseBorder.S) {
-                    this.Height = newH_S;
-                } else if (MouseDownBorder == MouseBorder.E) {
-                    this.Left = newLeft;
-                    this.Width = newW_E;
-                } else if (MouseDownBorder == MouseBorder.W) {
-                    this.Width = newW_W;
-                } else if (MouseDownBorder == MouseBorder.None) {
+                if (MouseDownBorder == MouseBorder.None) {
                     this.Top = newTop;
                     this.Left = newLeft;
                     (sender as Control).Cursor = System.Windows.Forms.Cursors.SizeAll;
+                } else if (!sender.GetType().Equals(typeof(Button))) {
+
+                    isBorderSizing = MouseDownBorder != MouseBorder.None;
+
+                    int MinH = MinimumSize.Height, MaxH = MaximumSize.Height;
+                    int MinW = MinimumSize.Width, MaxW = MaximumSize.Width;
+
+                    if (MouseDownBorder == MouseBorder.NE) {
+                        if ((MinH == 0 || newH_N > MinH) && (MaxH == 0 || newH_N < MaxH)) {
+                            this.Top = newTop;
+                            this.Height = newH_N;
+                        }
+                        if ((MinW == 0 || newW_E > MinW) && (MaxW == 0 || newW_E < MaxW)) {
+                            this.Left = newLeft;
+                            this.Width = newW_E;
+                        }
+                    } else if (MouseDownBorder == MouseBorder.SW) {
+                        this.Height = newH_S;
+                        this.Width = newW_W;
+                    } else if (MouseDownBorder == MouseBorder.NW) {
+                        if ((MinH == 0 || newH_N > MinH) && (MaxH == 0 || newH_N < MaxH)) {
+                            this.Top = newTop;
+                            this.Height = newH_N;
+                        }
+                        this.Width = newW_W;
+                    } else if (MouseDownBorder == MouseBorder.SE) {
+                        if ((MinW == 0 || newW_E > MinW) && (MaxW == 0 || newW_E < MaxW)) {
+                            this.Left = newLeft;
+                            this.Width = newW_E;
+                        }
+                        this.Height = newH_S;
+                    } else if (MouseDownBorder == MouseBorder.N) {
+                        if ((MinH == 0 || newH_N > MinH) && (MaxH == 0 || newH_N < MaxH)) {
+                            this.Top = newTop;
+                            this.Height = newH_N;
+                        }
+                    } else if (MouseDownBorder == MouseBorder.S) {
+                        this.Height = newH_S;
+                    } else if (MouseDownBorder == MouseBorder.E) {
+                        if ((MinW == 0 || newW_E > MinW) && (MaxW == 0 || newW_E < MaxW)) {
+                            this.Left = newLeft;
+                            this.Width = newW_E;
+                        }
+                    } else if (MouseDownBorder == MouseBorder.W) {
+                        this.Width = newW_W;
+                    }
                 }
             }
-        }
-
-        private void Object_MouseUp(object sender, MouseEventArgs e) {
-            isBorderSizing = false;
         }
 
         /// <summary>

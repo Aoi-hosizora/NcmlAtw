@@ -305,10 +305,20 @@ namespace NeteaseM2DServer.Src.UI {
         }
 
         /// <summary>
+        /// 判断是否可以退出
+        /// 防止多次弹出判断和保存设置
+        /// </summary>
+        private bool CanExist = false;
+
+        /// <summary>
         /// 保存设置
         /// </summary>
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
-            e.Cancel = true;
+            if (CanExist)
+                return;
+            else
+                e.Cancel = true;
+            
             DialogResult ok = MessageBoxEx.Show(
                 "确定关闭监听并退出程序？",
                 "退出",
@@ -317,24 +327,27 @@ namespace NeteaseM2DServer.Src.UI {
                 MessageBoxDefaultButton.Button1,
                 new string[] { "退出(&E)", "不退出(&C)" });
 
-            if (ok == DialogResult.No) {
-                e.Cancel = true;
+            if (ok == DialogResult.No)
                 return;
-            }
+
+            // Exit
+            CanExist = true;
             e.Cancel = false;
 
             // Save setting
-
             Properties.Settings.Default.Top = this.Top;
             Properties.Settings.Default.Left = this.Left;
             Properties.Settings.Default.Save();
 
+            // Lyric Form Not Close
             if (LyricForm.getInstance().Opacity != 0) {
-                e.Cancel = true;
                 LyricForm.getInstance().Close();
+
+                // Wait to Close
+                e.Cancel = true;
                 new Thread(new ThreadStart(() => {
                     while (true) {
-                        if (LyricForm.getInstance().Opacity == 0) {
+                        if (LyricForm.getInstance().Opacity <= 0) {
                             this.Invoke(new Action(() => {
                                 this.Close();
                             }));
