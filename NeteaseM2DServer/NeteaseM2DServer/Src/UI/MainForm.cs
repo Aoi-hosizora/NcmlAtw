@@ -173,7 +173,23 @@ namespace NeteaseM2DServer.Src.UI {
         /// 判断搜索到的结果是否正确，先查专辑再查歌名
         /// </summary>
         private bool checkSearchResult(Song searchRet, Metadata trueRet) {
+
+            // 专辑
             if (!searchRet.Al.Name.Equals(trueRet.album)) return false;
+
+            // 歌手
+            List<string> searchArs = new List<string>();
+            foreach (Api.Ar ar in searchRet.Ar) 
+                searchArs.Add(ar.Name);
+            List<string> trueArs = trueRet.artist.Split(new String[] { "/", "|", "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            foreach (string trueAr in trueArs) {
+                // trueAr 不在 searchArs 内
+                if (searchArs.IndexOf(trueAr.Trim()) == -1)
+                    return false;
+            }
+
+            // 标题
             if (searchRet.Name.IndexOf("(") != -1) {
                 // 存在括号
                 if (trueRet.title.IndexOf("(") == -1) return false;
@@ -199,11 +215,42 @@ namespace NeteaseM2DServer.Src.UI {
         /// 列表内搜索
         /// </summary>
         /// <returns>-1: 404</returns>
-        private int checkContinueResult(SearchResult searchRet, Metadata trueRet) {
-            if (searchRet.Result == null || searchRet.Result.Songs == null || searchRet.Result.Songs.Count == 0) return -1;
-            for (int i = 0; i < searchRet.Result.Songs.Count; i++) { // <<< 不能用 searchRet.Result.SongCount
-                if (checkSearchResult(searchRet.Result.Songs.ElementAt(i), trueRet)) 
+        private int checkContinueResult(SearchResult searchRet, Metadata trueRet, bool isSong) {
+
+            if (isSong) {
+                // 搜歌曲列表
+                if (searchRet.Result == null || searchRet.Result.Songs == null || searchRet.Result.Songs.Count == 0) return -1;
+                for (int i = 0; i < searchRet.Result.Songs.Count; i++) { // <<< 不能用 searchRet.Result.SongCount
+                    if (checkSearchResult(searchRet.Result.Songs.ElementAt(i), trueRet))
+                        return i;
+                }
+            } else {
+                // 搜专辑列表
+                List<string> searchArs = new List<string>();
+                List<string> trueArs = trueRet.artist.Split(new String[] { "/", "|", "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                trueArs.ForEach(ar => {
+                    Console.WriteLine(ar);
+                });
+                for (int i = 0; i < searchRet.Result.Albums.Count; i++) {
+
+                    Api.Album searchAlbum = searchRet.Result.Albums.ElementAt(i);
+                    Console.WriteLine("> Search Album: " + searchAlbum.Name);
+
+                    // 专辑名
+                    if (!searchAlbum.Name.Trim().Equals(trueRet.album.Trim())) continue;
+
+                    // 专辑歌手
+                    searchArs.Clear();
+                    foreach (Api.Artist ar in searchAlbum.Artists)
+                        searchArs.Add(ar.Name);
+
+                    foreach (string trueAr in trueArs)
+                        if (searchArs.IndexOf(trueAr) == -1)
+                            continue;
+
                     return i;
+                }
             }
             return -1;
         }
@@ -221,34 +268,53 @@ namespace NeteaseM2DServer.Src.UI {
             int id = -1;
 
             // 几种方案搜索
-            string title_WithPh = Global.currentSong.title;
-            string title_WithoutPh = new Regex("\\(.*\\)").Replace(title_WithPh, " ");
-            string title_WithoutPh_WithToken = new Regex("\\(|\\)").Replace(title_WithPh, " ");
+            string title_WithPh = Global.currentSong.title;                                                         // 标题
+            string title_WithoutPh = new Regex("\\(|\\)").Replace(title_WithPh, " ");                               // 去括号的标题保留内容
+            string title_WithoutPh_WithoutToken = new Regex("\\(.*\\)").Replace(title_WithPh, " ");                 // 去括号和括号内容的标题
             string[] searchToken = {
                 title_WithPh,                                                                                       // 标题
-                title_WithoutPh,                                                                                    // 去括号标题
-                title_WithoutPh_WithToken,                                                                          // 去括号标题保留内容
+                title_WithoutPh,
+                title_WithoutPh_WithoutToken,
 
                 title_WithPh + " " + Global.currentSong.artist,                                                     // 标题 + 歌手
-                title_WithoutPh + " " + Global.currentSong.artist,                                                  // 去括号标题 + 歌手
-                title_WithoutPh_WithToken + " " + Global.currentSong.artist,                                        // 去括号标题保留内容 + 歌手
+                title_WithoutPh + " " + Global.currentSong.artist,
+                title_WithoutPh_WithoutToken + " " + Global.currentSong.artist,
 
                 title_WithPh + " " + Global.currentSong.artist + " " + Global.currentSong.album,                    // 标题 + 歌手 + 专辑
-                title_WithoutPh + " " + Global.currentSong.artist + " " + Global.currentSong.album,                 // 去括号标题 + 歌手 + 专辑
-                title_WithoutPh_WithToken + " " + Global.currentSong.artist + " " + Global.currentSong.album        // 去括号标题保留内容 + 歌手 + 专辑
+                title_WithoutPh + " " + Global.currentSong.artist + " " + Global.currentSong.album,
+                title_WithoutPh_WithoutToken + " " + Global.currentSong.artist + " " + Global.currentSong.album
             };
+
+            // 去重
+            searchToken = searchToken.GroupBy(p => p).Select(p => p.Key).ToArray();
+
+            // 存在问题歌曲：
+            //      笑顔 (映画「劇場版ポケットモンスター ベストウィッシュ-最終章- 神速のゲノセクト ミュウツー覚醒」EDテーマ) いきものがかり 笑顔
 
             SearchResult sRet = null;
             foreach (var stk in searchToken) {
-                Console.WriteLine("Search: " + stk);
+                Console.WriteLine("> Search Song: " + stk);
                 sRet = api.Search(stk);
-                if (sRet.Code == 200 && ((id = checkContinueResult(sRet, Global.currentSong)) != -1))
+                if (sRet.Code == 200 && ((id = checkContinueResult(sRet, Global.currentSong, true)) != -1)) {
+                    Console.WriteLine("> Search Song ID: " + id);
                     break;
-                else
+                } else
                     sRet = null;
             }
+
             if (sRet != null && id != -1) 
                 resultSong = sRet.Result.Songs.ElementAt(id);
+            else {
+                // 搜歌曲搜索不到，使用专辑搜索
+
+                sRet = api.Search(Global.currentSong.album, NeteaseMusicAPI.SearchType.Album);
+                
+                if (sRet.Code == 200 && ((id = checkContinueResult(sRet, Global.currentSong, false)) != -1)) {
+                    Console.WriteLine("Song Album Id: " + id);
+                } else
+                    sRet = null;
+
+            }
 
             // 搜索结束
             if (resultSong != null) {

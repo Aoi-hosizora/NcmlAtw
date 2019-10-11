@@ -150,7 +150,7 @@ namespace NeteaseM2DServer.Src.Api
             Radio = 1009,
         }
 
-        public SearchResult Search(string keyword, int limit = 30, int offset = 0, SearchType type = SearchType.Song)
+        public SearchResult Search(string keyword, SearchType type = SearchType.Song, int limit = 30, int offset = 0)
         {
             var url = "http://music.163.com/weapi/cloudsearch/get/web";
             var data = new SearchJson
