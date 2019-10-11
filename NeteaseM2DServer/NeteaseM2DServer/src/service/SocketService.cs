@@ -79,7 +79,7 @@ namespace NeteaseM2DServer.Src.Service {
                                 byte[] retBuffer = new byte[bytesRead - 1];
                                 Buffer.BlockCopy(srcBuffer, 0, retBuffer, 0, bytesRead - 1);
                                 ret = System.Text.Encoding.UTF8.GetString(retBuffer);
-
+                                Console.WriteLine(ret);
                                 if (ret.StartsWith("{\"isPlay\":"))
                                     playbackStateCb(PlaybackState.parseJson(ret)); // PlaybackState
                                 else
