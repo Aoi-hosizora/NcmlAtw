@@ -79,6 +79,7 @@
     <Compile Include="Src\UI\NativeRenderer.cs" />
     <Compile Include="Src\Util\CommonUtil.cs" />
     <Compile Include="Src\Util\MessageBoxEx.cs" />
+    <Compile Include="Src\Util\SearchHelper.cs" />
     <EmbeddedResource Include="Src\UI\LyricForm.resx">
       <DependentUpon>LyricForm.cs</DependentUpon>
     </EmbeddedResource>
