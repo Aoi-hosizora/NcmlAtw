@@ -5,7 +5,7 @@ import android.support.annotation.WorkerThread;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-class ClientSendUtil {
+class SendServer {
 
     static String ip;
     static int port;

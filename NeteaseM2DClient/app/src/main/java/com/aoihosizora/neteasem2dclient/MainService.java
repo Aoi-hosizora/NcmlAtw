@@ -63,22 +63,33 @@ public class MainService extends NotificationListenerService {
         if (mediaController == null) {
             try {
                 MediaSessionManager msMgr = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
-                List<MediaController> controllers = msMgr.getActiveSessions(new ComponentName(this, MainService.class));
+                if (msMgr == null) {
+                    if (m_MainEvent != null)
+                        m_MainEvent.onNoSession();
+                    return;
+                }
 
+                List<MediaController> controllers = msMgr.getActiveSessions(new ComponentName(this, MainService.class));
                 for (MediaController mc : controllers)
                     if (mc.getPackageName().contains("netease") && mc.getPackageName().contains("music"))
                         mediaController = mc;
 
-                if (mediaController != null) {
-                    mediaController.registerCallback(m_callBack);
-                }
-                else {
+                if (mediaController == null) {
                     if (m_MainEvent != null)
                         m_MainEvent.onNoSession();
+                    return;
                 }
-            }
-            catch (Exception ex) {
-                Toast.makeText(this, getExceptionStr(ex), Toast.LENGTH_SHORT).show();
+
+                mediaController.registerCallback(m_callBack);
+
+                PlaybackState state = mediaController.getPlaybackState();
+                MediaMetadata metadata = mediaController.getMetadata();
+                if (state != null && metadata != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                    m_callBack.onMetadataChanged(mediaController.getMetadata());
+                    m_callBack.onPlaybackStateChanged(mediaController.getPlaybackState());
+                }
+            } catch (Exception ex) {
+                Toast.makeText(this, getExceptionString(ex), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -106,8 +117,8 @@ public class MainService extends NotificationListenerService {
             long pos = state.getPosition();
 
             final Model.PlaybackState m_playbackState = new Model.PlaybackState(
-                    musicState == PlaybackState.STATE_PLAYING,
-                    (double) pos / 1000.0
+                musicState == PlaybackState.STATE_PLAYING,
+                (double) pos / 1000.0
             );
             final JSONObject obj = m_playbackState.toJson();
 
@@ -115,13 +126,10 @@ public class MainService extends NotificationListenerService {
 
             // Toast.makeText(MainService.this, obj.toString(), Toast.LENGTH_SHORT).show();
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!ClientSendUtil.sendMsg(obj.toString())) {
-                        if (m_MainEvent != null)
-                            m_MainEvent.onDisConnect();
-                    }
+            new Thread(() -> {
+                if (!SendServer.sendMsg(obj.toString())) {
+                    if (m_MainEvent != null)
+                        m_MainEvent.onDisConnect();
                 }
             }).start();
         }
@@ -143,13 +151,10 @@ public class MainService extends NotificationListenerService {
 
             // Toast.makeText(MainService.this, obj.toString(), Toast.LENGTH_SHORT).show();
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!ClientSendUtil.sendMsg(obj.toString())) {
-                        if (m_MainEvent != null)
-                            m_MainEvent.onDisConnect();
-                    }
+            new Thread(() -> {
+                if (!SendServer.sendMsg(obj.toString())) {
+                    if (m_MainEvent != null)
+                        m_MainEvent.onDisConnect();
                 }
             }).start();
         }
@@ -164,7 +169,7 @@ public class MainService extends NotificationListenerService {
     }
 
     @UiThread
-    private String getExceptionStr(Exception ex) {
+    private String getExceptionString(Exception ex) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);

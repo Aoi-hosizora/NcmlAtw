@@ -86,13 +86,10 @@ public class MainActivity extends AppCompatActivity {
 
         // 访问权限
         if (!isNotificationListenersEnabled()) {
-            showAlert(getString(R.string.alert_check_per), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                }
+            showAlert(getString(R.string.alert_check_per), (d, i) -> {
+                Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
             });
         }
 
@@ -210,9 +207,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onCancel() {
-
-                }
+                public void onCancel() { }
             });
     }
 
@@ -224,70 +219,54 @@ public class MainActivity extends AppCompatActivity {
 
         // 判断网路权限
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {
-                    Manifest.permission.INTERNET
+            ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.INTERNET
             }, REQUEST_NETWORK_PERMISSION_CODE);
         }
 
-        final boolean[] isCanceled = new boolean[] {false};
+        final boolean[] isCanceled = new boolean[] { false };
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.progress_linking));
         progressDialog.setCancelable(true);
-        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialogInterface) {
-                isCanceled[0] = true;
-            }
-        });
+        progressDialog.setOnCancelListener((d) -> isCanceled[0] = true);
         progressDialog.show();
 
+        new Thread(() -> {
+            SendServer.ip = m_edt_ip.getText().toString();
+            SendServer.port = Integer.parseInt(m_edt_port.getText().toString());
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                    ClientSendUtil.ip = m_edt_ip.getText().toString();
-                    ClientSendUtil.port = Integer.parseInt(m_edt_port.getText().toString());
+            if (!SendServer.ping()) {
 
-                    if (!ClientSendUtil.ping()) {
+                if (isCanceled[0]) return;
 
-                        if (isCanceled[0]) return;
-
-                        // 连接不通
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                progressDialog.dismiss();
-                                showAlert(getString(R.string.alert_connect_failed));
-                                on_ui_stop();
-                            }
-                        });
-                        return;
-                    }
-
-                    if (isCanceled[0]) return;
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressDialog.dismiss();
-                            Toast.makeText(MainActivity.this, R.string.tst_connect_success, Toast.LENGTH_SHORT).show();
-
-                            // 保存
-                            saveIP(ClientSendUtil.ip);
-                            savePort(ClientSendUtil.port);
-                            initAutoCompleteEdit();
-
-                            try {
-                                on_controller_stop();
-                            }
-                            catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                            startService(ServiceIntent);
-                            on_ui_starting();
-                        }
-                    });
+                // 连接不通
+                runOnUiThread(() -> {
+                    progressDialog.dismiss();
+                    showAlert(getString(R.string.alert_connect_failed));
+                    on_ui_stop();
+                });
+                return;
             }
+
+            if (isCanceled[0]) return;
+
+            runOnUiThread(() -> {
+                progressDialog.dismiss();
+                Toast.makeText(MainActivity.this, R.string.tst_connect_success, Toast.LENGTH_SHORT).show();
+
+                // 保存
+                saveIP(SendServer.ip);
+                savePort(SendServer.port);
+                initAutoCompleteEdit();
+
+                try {
+                    on_controller_stop();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                startService(ServiceIntent);
+                on_ui_starting();
+            });
         }).start();
     }
 
@@ -459,7 +438,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
