@@ -9,7 +9,7 @@ namespace NeteaseM2DServer.Src.Model {
     class Global {
 
         public static Bitmap qrCodeImage { get; set; }
-        public const string qrCodeMagic = "NETEASEM2D";
+        public const string qrCodeMagic = "NETEASE_M2D://";
 
         public static bool isListening { get; set; }
         public static long stateUpdateMS { get; set; }

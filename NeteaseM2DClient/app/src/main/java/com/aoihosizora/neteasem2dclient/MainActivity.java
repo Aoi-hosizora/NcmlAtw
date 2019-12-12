@@ -9,6 +9,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.MediaMetadata;
+import android.media.session.PlaybackState;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_NETWORK_PERMISSION_CODE = 1;
     public static final int REQUEST_CAMERA_PERMISSION_CODE = 2;
 
-    public static final String QRCODE_MAGIC = "NETEASEM2D://";
+    public static final String QRCODE_MAGIC = "NETEASE_M2D://";
 
     private SharedPreferences ipSP, portSP;
 
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             @UiThread
             public void onDisConnect() {
-                showAlert(getString(R.string.alert_break_connect));
+                showAlert(getString(R.string.alert_break_connect), null);
                 on_ui_stop();
                 on_controller_stop();
             }
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             @UiThread
             public void onNoSession() {
-                showAlert(getString(R.string.alert_no_session));
+                showAlert(getString(R.string.alert_no_session), null);
                 on_ui_stop();
                 on_controller_stop();
             }
@@ -78,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             @UiThread
             public void onSessionDestroy() {
-                showAlert(getString(R.string.alert_session_destroy));
+                showAlert(getString(R.string.alert_session_destroy), null);
                 on_ui_stop();
                 on_controller_stop();
             }
@@ -117,10 +119,32 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_NETWORK_PERMISSION_CODE:
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
+                break;
+            case REQUEST_CAMERA_PERMISSION_CODE:
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                    Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
+                else
+                    on_btn_qrCode_clicked();
+                break;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     @BindView(R.id.id_btn_service)
     Button m_btn_service;
     @BindView(R.id.id_btn_qrCode)
     Button m_btn_qrCode;
+    @BindView(R.id.id_btn_update)
+    Button m_btn_update;
 
     @BindView(R.id.id_edt_ip)
     AutoCompleteTextView m_edt_ip;
@@ -135,31 +159,10 @@ public class MainActivity extends AppCompatActivity {
         ((AutoCompleteTextView) view).showDropDown();
     }
 
-    /**
-     * 开始结束服务
-     */
-    @OnClick(R.id.id_btn_service)
-    @UiThread
-    void on_btn_service_clicked() {
-        if (m_btn_service.getText().equals(getString(R.string.btn_start))) {
-            // 开启服务
-            final String ip_str = m_edt_ip.getText().toString();
-            final String port_str = m_edt_port.getText().toString();
-
-            String ip_re = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
-            String port_re = "([0-9]|[1-9]\\d{1,3}|[1-5]\\d{4}|6[0-4]\\d{4}|65[0-4]\\d{2}|655[0-2]\\d|6553[0-5])";
-
-            if (!ip_str.matches(ip_re))
-                showAlert(getString(R.string.alert_ip_format));
-            else if (!port_str.matches(port_re))
-                showAlert(getString(R.string.alert_port_format));
-            else
-                connect();
-        }
-        else {
-            // 断开服务
-            disconnect();
-        }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        QRCodeManager.getInstance().with(this).onActivityResult(requestCode, resultCode, data);
     }
 
     /**
@@ -169,9 +172,9 @@ public class MainActivity extends AppCompatActivity {
     void on_btn_qrCode_clicked() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[] {
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
             }, REQUEST_CAMERA_PERMISSION_CODE);
             return;
         }
@@ -194,8 +197,7 @@ public class MainActivity extends AppCompatActivity {
                         String[] sp = result.split(":");
                         m_edt_ip.setText(sp[0]);
                         m_edt_port.setText(sp[1]);
-                    }
-                    catch (Exception ex) {
+                    } catch (Exception ex) {
                         ex.printStackTrace();
                         Toast.makeText(MainActivity.this, getString(R.string.tst_qr_error), Toast.LENGTH_SHORT).show();
                     }
@@ -212,6 +214,56 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * 开始结束服务
+     */
+    @OnClick(R.id.id_btn_service)
+    @UiThread
+    void on_btn_service_clicked() {
+        if (m_btn_service.getText().equals(getString(R.string.btn_start))) {
+            // 开启服务
+            final String ip_str = m_edt_ip.getText().toString();
+            final String port_str = m_edt_port.getText().toString();
+
+            String ip_re = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+            String port_re = "([0-9]|[1-9]\\d{1,3}|[1-5]\\d{4}|6[0-4]\\d{4}|65[0-4]\\d{2}|655[0-2]\\d|6553[0-5])";
+
+            if (!ip_str.matches(ip_re))
+                showAlert(getString(R.string.alert_ip_format), null);
+            else if (!port_str.matches(port_re))
+                showAlert(getString(R.string.alert_port_format), null);
+            else
+                connect();
+        } else {
+            // 断开服务
+            disconnect();
+            new Thread(() -> {
+                if (!SendServer.sendMsg("{\"isDestroyed\": \"true\"}")) {
+                    if (MainService.m_MainEvent != null)
+                        MainService.m_MainEvent.onDisConnect();
+                }
+            }).start();
+        }
+    }
+
+    /**
+     * 手动更新
+     */
+    @OnClick(R.id.id_btn_update)
+    void on_btn_update_clicked() {
+        if (MainService.mediaController != null && MainService.m_callBack != null) {
+            PlaybackState state = MainService.mediaController.getPlaybackState();
+            MediaMetadata metadata = MainService.mediaController.getMetadata();
+
+            if (state != null && metadata != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                MainService.m_callBack.onMetadataChanged(MainService.mediaController.getMetadata());
+                MainService.m_callBack.onPlaybackStateChanged(MainService.mediaController.getPlaybackState());
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
      * 格式正确，连接
      */
     @UiThread
@@ -224,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
             }, REQUEST_NETWORK_PERMISSION_CODE);
         }
 
-        final boolean[] isCanceled = new boolean[] { false };
+        final boolean[] isCanceled = new boolean[]{false};
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getString(R.string.progress_linking));
         progressDialog.setCancelable(true);
@@ -242,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
                 // 连接不通
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
-                    showAlert(getString(R.string.alert_connect_failed));
+                    showAlert(getString(R.string.alert_connect_failed), null);
                     on_ui_stop();
                 });
                 return;
@@ -259,11 +311,8 @@ public class MainActivity extends AppCompatActivity {
                 savePort(SendServer.port);
                 initAutoCompleteEdit();
 
-                try {
-                    on_controller_stop();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                // 开始服务
+                on_controller_stop();
                 startService(ServiceIntent);
                 on_ui_starting();
             });
@@ -288,6 +337,7 @@ public class MainActivity extends AppCompatActivity {
         m_edt_ip.setEnabled(false);
         m_edt_port.setEnabled(false);
         m_btn_qrCode.setEnabled(false);
+        m_btn_update.setEnabled(true);
     }
 
     /**
@@ -299,6 +349,7 @@ public class MainActivity extends AppCompatActivity {
         m_edt_ip.setEnabled(true);
         m_edt_port.setEnabled(true);
         m_btn_qrCode.setEnabled(true);
+        m_btn_update.setEnabled(false);
     }
 
     /**
@@ -307,6 +358,7 @@ public class MainActivity extends AppCompatActivity {
     private void on_controller_stop() {
         if (MainService.mediaController != null)
             MainService.mediaController.unregisterCallback(MainService.m_callBack);
+
         MainService.mediaController = null;
         MainService.m_callBack = null;
 
@@ -315,13 +367,20 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        try {
-            on_controller_stop();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        on_controller_stop();
         super.onDestroy();
     }
+
+    private void showAlert(String msg, DialogInterface.OnClickListener listener) {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.alert_title)
+            .setMessage(msg)
+            .setPositiveButton(R.string.alert_pos, listener)
+            .show();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * 获得当前时间
@@ -362,8 +421,7 @@ public class MainActivity extends AppCompatActivity {
                     isSaved = true;
                     break;
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
@@ -400,48 +458,11 @@ public class MainActivity extends AppCompatActivity {
      * 初始化自动完成框
      */
     private void initAutoCompleteEdit() {
-        ArrayAdapter ipAda = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getSavedIP());
-        ArrayAdapter portAda = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getSavedPort());
-        m_edt_ip.setAdapter(ipAda);
-        m_edt_port.setAdapter(portAda);
-        ipAda.notifyDataSetChanged();
-        portAda.notifyDataSetChanged();
-
-
-    }
-
-    private void showAlert(String msg) {
-        showAlert(msg, null);
-    }
-
-    private void showAlert(String msg, DialogInterface.OnClickListener listener) {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.alert_title)
-                .setMessage(msg)
-                .setPositiveButton(R.string.alert_pos, listener)
-                .show();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_NETWORK_PERMISSION_CODE:
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
-                    Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
-                break;
-            case REQUEST_CAMERA_PERMISSION_CODE:
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
-                    Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
-                else
-                    on_btn_qrCode_clicked();
-                break;
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        QRCodeManager.getInstance().with(this).onActivityResult(requestCode, resultCode, data);
+        ArrayAdapter ipAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getSavedIP());
+        ArrayAdapter portAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getSavedPort());
+        m_edt_ip.setAdapter(ipAdapter);
+        m_edt_port.setAdapter(portAdapter);
+        ipAdapter.notifyDataSetChanged();
+        portAdapter.notifyDataSetChanged();
     }
 }

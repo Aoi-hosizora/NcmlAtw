@@ -4,6 +4,7 @@
     <string name="btn_start">启动服务</string>
     <string name="btn_stop">暂停服务</string>
     <string name="btn_qrCode">扫描二维码</string>
+    <string name="btn_update">手动更新</string>
 
     <string name="txt_title">请打开 PC 端软件并输入 PC 端的局域网地址和监听端口：</string>
     <string name="txt_colon">：</string>

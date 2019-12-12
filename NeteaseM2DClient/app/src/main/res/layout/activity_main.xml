@@ -69,4 +69,16 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/id_btn_qrCode" />
 
+    <Button
+        android:id="@+id/id_btn_update"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_update"
+        android:layout_marginTop="@dimen/widget_margin"
+        android:enabled="false"
+
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/id_btn_service" />
+
 </android.support.constraint.ConstraintLayout>

@@ -31,7 +31,6 @@ namespace NeteaseM2DServer.Src.UI {
 
         private MainForm() {
             InitializeComponent();
-            // this.Font = System.Drawing.SystemFonts.MessageBoxFont;
         }
 
         // StartThread SocketMetaDataCb SocketPlaybackStateCb StopThread
@@ -57,7 +56,7 @@ namespace NeteaseM2DServer.Src.UI {
                         // 监听成功
 
                         QRCodeGenerator qrGenerator = new QRCodeGenerator();
-                        QRCodeData qrCodeData = qrGenerator.CreateQrCode(Global.qrCodeMagic + "://" +
+                        QRCodeData qrCodeData = qrGenerator.CreateQrCode(Global.qrCodeMagic +
                             textBoxIP.Text + ":" + socketService.port, QRCodeGenerator.ECCLevel.Q);
                         QRCode qrCode = new QRCode(qrCodeData);
                         Global.qrCodeImage = qrCode.GetGraphic(7);
@@ -88,6 +87,7 @@ namespace NeteaseM2DServer.Src.UI {
 
             socketService.metaDataCb = SocketMetaDataCb;
             socketService.playbackStateCb = SocketPlaybackStateCb;
+            socketService.sessionDestroyedCb = SocketSessionDestroyedCb;
 
             socketThread = new Thread(new ThreadStart(socketService.RunThread));
             socketThread.IsBackground = true;
@@ -151,6 +151,16 @@ namespace NeteaseM2DServer.Src.UI {
                 labelSongTitle.Visible = labelSongArtist.Visible = labelSongAlbum.Visible = true;
                 timerGlobal.Enabled = true;
                 Global.currentState = obj;
+            }));
+        }
+
+        /// <summary>
+        /// Socket 收到断开连接 回调
+        /// </summary>
+        private void SocketSessionDestroyedCb() {
+            this.Invoke(new Action(() => {
+                MessageBox.Show("已与安卓端断开连接。");
+                buttonListen_Click(buttonListen, new EventArgs());
             }));
         }
 

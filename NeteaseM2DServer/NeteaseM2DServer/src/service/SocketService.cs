@@ -13,15 +13,18 @@ namespace NeteaseM2DServer.Src.Service {
     class SocketService {
 
         public int port { get; set; }
-        public SuccessListenCackDelegate listenCb;
-        public PingCallBackDelegate pingCb;
-        public PlaybackStateCallBackDelegate playbackStateCb;
-        public MetadataCallBackDelegate metaDataCb;
 
         public delegate void SuccessListenCackDelegate(bool ok);
         public delegate void PingCallBackDelegate(bool ok);
+        public SuccessListenCackDelegate listenCb;
+        public PingCallBackDelegate pingCb;
+
         public delegate void PlaybackStateCallBackDelegate(PlaybackState obj);
         public delegate void MetadataCallBackDelegate(Metadata obj);
+        public delegate void SessionDestroyedDelegate();
+        public PlaybackStateCallBackDelegate playbackStateCb;
+        public MetadataCallBackDelegate metaDataCb;
+        public SessionDestroyedDelegate sessionDestroyedCb;
 
         /// <summary>
         /// 新线程，委托调用 `RunService`
@@ -79,11 +82,7 @@ namespace NeteaseM2DServer.Src.Service {
                                 byte[] retBuffer = new byte[bytesRead - 1];
                                 Buffer.BlockCopy(srcBuffer, 0, retBuffer, 0, bytesRead - 1);
                                 ret = System.Text.Encoding.UTF8.GetString(retBuffer);
-                                Console.WriteLine(ret);
-                                if (ret.StartsWith("{\"isPlay\":"))
-                                    playbackStateCb(PlaybackState.parseJson(ret)); // PlaybackState
-                                else
-                                    metaDataCb(Metadata.parseJson(ret)); // Metadata
+                                handleRcvMessage(ret);
                             }
                         }
                     }
@@ -94,6 +93,19 @@ namespace NeteaseM2DServer.Src.Service {
                 }
                 Thread.Sleep(100);
             }
+        }
+
+        /// <summary>
+        /// 处理接收到的信息
+        /// </summary>
+        private void handleRcvMessage(String message) {
+            Console.WriteLine(message);
+            if (message.StartsWith("{\"isDestroyed\":") && sessionDestroyedCb != null)
+                sessionDestroyedCb(); // PlaybackState
+            else if (message.StartsWith("{\"isPlay\":") && playbackStateCb != null)
+                playbackStateCb(PlaybackState.parseJson(message)); // PlaybackState
+            else if (metaDataCb != null)
+                metaDataCb(Metadata.parseJson(message)); // Metadata
         }
     }
 }

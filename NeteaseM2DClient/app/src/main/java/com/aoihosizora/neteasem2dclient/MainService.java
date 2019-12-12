@@ -165,6 +165,13 @@ public class MainService extends NotificationListenerService {
             // Toast.makeText(MainService.this, "onSessionDestroyed", Toast.LENGTH_SHORT).show();
             if (m_MainEvent != null)
                 m_MainEvent.onSessionDestroy();
+
+            new Thread(() -> {
+                if (!SendServer.sendMsg("{\"isDestroyed\": \"true\"}")) {
+                    if (m_MainEvent != null)
+                        m_MainEvent.onDisConnect();
+                }
+            }).start();
         }
     }
 
