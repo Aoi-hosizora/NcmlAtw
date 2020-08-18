@@ -11,12 +11,12 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -39,8 +39,6 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
-    // public static String TAG = "MainActivity";
-
     public static final int REQUEST_NETWORK_PERMISSION_CODE = 1;
     public static final int REQUEST_CAMERA_PERMISSION_CODE = 2;
 
@@ -59,11 +57,11 @@ public class MainActivity extends AppCompatActivity {
         ServiceIntent = new Intent(this, MainService.class);
 
         // 服务事件
-        MainService.m_MainEvent = new MainService.MainEvent() {
+        MainService.mainEvent = new MainEvent() {
 
             @Override
             @UiThread
-            public void onDisConnect() {
+            public void onDisconnect() {
                 showAlert(getString(R.string.alert_break_connect), null);
                 on_ui_stop();
                 on_controller_stop();
@@ -209,7 +207,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onCancel() { }
+                public void onCancel() {
+                }
             });
     }
 
@@ -237,9 +236,9 @@ public class MainActivity extends AppCompatActivity {
             // 断开服务
             disconnect();
             new Thread(() -> {
-                if (!SendServer.sendMsg("{\"isDestroyed\": \"true\"}")) {
-                    if (MainService.m_MainEvent != null)
-                        MainService.m_MainEvent.onDisConnect();
+                if (!SendService.sendMsg("{\"isDestroyed\": \"true\"}")) {
+                    if (MainService.mainEvent != null)
+                        MainService.mainEvent.onDisconnect();
                 }
             }).start();
         }
@@ -250,13 +249,13 @@ public class MainActivity extends AppCompatActivity {
      */
     @OnClick(R.id.id_btn_update)
     void on_btn_update_clicked() {
-        if (MainService.mediaController != null && MainService.m_callBack != null) {
+        if (MainService.mediaController != null && MainService.mediaCallBack != null) {
             PlaybackState state = MainService.mediaController.getPlaybackState();
             MediaMetadata metadata = MainService.mediaController.getMetadata();
 
             if (state != null && metadata != null && state.getState() == PlaybackState.STATE_PLAYING) {
-                MainService.m_callBack.onMetadataChanged(MainService.mediaController.getMetadata());
-                MainService.m_callBack.onPlaybackStateChanged(MainService.mediaController.getPlaybackState());
+                MainService.mediaCallBack.onMetadataChanged(MainService.mediaController.getMetadata());
+                MainService.mediaCallBack.onPlaybackStateChanged(MainService.mediaController.getPlaybackState());
             }
         }
     }
@@ -268,7 +267,6 @@ public class MainActivity extends AppCompatActivity {
      */
     @UiThread
     private void connect() {
-
         // 判断网路权限
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -284,10 +282,10 @@ public class MainActivity extends AppCompatActivity {
         progressDialog.show();
 
         new Thread(() -> {
-            SendServer.ip = m_edt_ip.getText().toString();
-            SendServer.port = Integer.parseInt(m_edt_port.getText().toString());
+            SendService.ip = m_edt_ip.getText().toString();
+            SendService.port = Integer.parseInt(m_edt_port.getText().toString());
 
-            if (!SendServer.ping()) {
+            if (!SendService.ping()) {
 
                 if (isCanceled[0]) return;
 
@@ -307,8 +305,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, R.string.tst_connect_success, Toast.LENGTH_SHORT).show();
 
                 // 保存
-                saveIP(SendServer.ip);
-                savePort(SendServer.port);
+                saveIP(SendService.ip);
+                savePort(SendService.port);
                 initAutoCompleteEdit();
 
                 // 开始服务
@@ -357,10 +355,10 @@ public class MainActivity extends AppCompatActivity {
      */
     private void on_controller_stop() {
         if (MainService.mediaController != null)
-            MainService.mediaController.unregisterCallback(MainService.m_callBack);
+            MainService.mediaController.unregisterCallback(MainService.mediaCallBack);
 
         MainService.mediaController = null;
-        MainService.m_callBack = null;
+        MainService.mediaCallBack = null;
 
         stopService(ServiceIntent);
     }
@@ -384,6 +382,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 获得当前时间
+     *
      * @return yyyy-MM-dd-HH-mm-ss
      */
     private String getCurrentTime() {
