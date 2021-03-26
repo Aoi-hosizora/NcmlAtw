@@ -5,7 +5,7 @@ import android.support.annotation.WorkerThread;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-class SendService {
+class SendUtils {
 
     static String ip;
     static int port;
@@ -22,9 +22,8 @@ class SendService {
         return true;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     @WorkerThread
-    static boolean sendMsg(String message) {
+    static boolean send(String message) {
         try {
             Socket socket = new Socket(ip, port);
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);

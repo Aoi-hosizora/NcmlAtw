@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.widget.Toast;
 
+import com.aoihosizora.neteasem2dclient.model.DestroyDto;
 import com.aoihosizora.neteasem2dclient.model.MetadataDto;
 import com.aoihosizora.neteasem2dclient.model.PlaybackStateDto;
 
@@ -30,7 +31,7 @@ public class MainService extends NotificationListenerService {
     public static MainEvent mainEvent = null;
 
     /**
-     * 媒体控制器，防止被 onDestroy 注销
+     * 媒体控制器
      */
     public static MediaController mediaController = null;
 
@@ -42,19 +43,15 @@ public class MainService extends NotificationListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        // 初始化回调
+        if (mediaController != null) {
+            return;
+        }
         if (mediaCallBack == null) {
             mediaCallBack = new MediaCallBack();
         }
 
-        // 初始化控制器
-        if (mediaController != null) {
-            return;
-        }
-
         try {
-            // 获得 MediaSessionManager，检查是否有音乐服务
+            // 获得 MediaSessionManager
             MediaSessionManager manager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
             if (manager == null) {
                 if (mainEvent != null) {
@@ -63,12 +60,13 @@ public class MainService extends NotificationListenerService {
                 return;
             }
 
-            // 检查是否是网易云
+            // 检查当前服务是否是网易云
             List<MediaController> controllers = manager.getActiveSessions(new ComponentName(this, MainService.class));
             for (MediaController controller : controllers) {
                 String packageName = controller.getPackageName();
-                if (packageName.equals("com.netease.cloudmusic")) { // TODO 网易云搞事情
+                if (packageName.contains("netease") && packageName.contains("music")) {
                     mediaController = controller;
+                    break;
                 }
             }
             if (mediaController == null) {
@@ -81,12 +79,10 @@ public class MainService extends NotificationListenerService {
             // 注册回调
             mediaController.registerCallback(mediaCallBack);
 
-            // 一连接上就返回状态
+            // 返回状态
             PlaybackState state = mediaController.getPlaybackState();
             MediaMetadata metadata = mediaController.getMetadata();
-
             if (state != null && metadata != null) {
-                Toast.makeText(this, metadata.getText(MediaMetadata.METADATA_KEY_TITLE), Toast.LENGTH_SHORT).show();
                 if (state.getState() == PlaybackState.STATE_PLAYING) {
                     mediaCallBack.onMetadataChanged(mediaController.getMetadata());
                     mediaCallBack.onPlaybackStateChanged(mediaController.getPlaybackState());
@@ -99,9 +95,7 @@ public class MainService extends NotificationListenerService {
 
     @Override
     public void onDestroy() {
-        // 会自动 destroy，不能把注销 MediaController 放在这里
         super.onDestroy();
-        Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -120,17 +114,16 @@ public class MainService extends NotificationListenerService {
         @Override
         public void onPlaybackStateChanged(@Nullable PlaybackState state) {
             super.onPlaybackStateChanged(state);
+            // Toast.makeText(MainService.this, "onPlaybackStateChanged", Toast.LENGTH_SHORT).show();
             if (state == null) {
-                Toast.makeText(MainService.this, "onPlaybackStateChanged: state == null", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Toast.makeText(MainService.this, "onPlaybackStateChanged: state != null", Toast.LENGTH_SHORT).show();
 
             // 信息
             boolean isPlaying = state.getState() == PlaybackState.STATE_PLAYING;
             double musicPosition = (double) state.getPosition() / 1000.0;
 
-            // dto
+            // 序列化
             PlaybackStateDto dto = new PlaybackStateDto(isPlaying, musicPosition);
             JSONObject json = dto.toJson();
             if (json == null) {
@@ -140,7 +133,8 @@ public class MainService extends NotificationListenerService {
 
             // 发送
             new Thread(() -> {
-                if (!SendService.sendMsg(json.toString()) && mainEvent != null) {
+                boolean ok = SendUtils.send(json.toString());
+                if (!ok && mainEvent != null) {
                     mainEvent.onDisconnect();
                 }
             }).start();
@@ -152,11 +146,10 @@ public class MainService extends NotificationListenerService {
         @Override
         public void onMetadataChanged(@Nullable MediaMetadata metadata) {
             super.onMetadataChanged(metadata);
+            // Toast.makeText(MainService.this, "onMetadataChanged", Toast.LENGTH_SHORT).show();
             if (metadata == null) {
-                Toast.makeText(MainService.this, "onMetadataChanged: metadata == null", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Toast.makeText(MainService.this, "onMetadataChanged: metadata != null", Toast.LENGTH_SHORT).show();
 
             // 信息
             String title = metadata.getString(MediaMetadata.METADATA_KEY_TITLE);
@@ -164,7 +157,7 @@ public class MainService extends NotificationListenerService {
             String album = metadata.getString(MediaMetadata.METADATA_KEY_ALBUM);
             double duration = (double) metadata.getLong(MediaMetadata.METADATA_KEY_DURATION) / 1000.0;
 
-            // dto
+            // 序列化
             MetadataDto dto = new MetadataDto(title, artist, album, duration);
             JSONObject json = dto.toJson();
             if (json == null) {
@@ -174,7 +167,8 @@ public class MainService extends NotificationListenerService {
 
             // 发送
             new Thread(() -> {
-                if (!SendService.sendMsg(json.toString()) && mainEvent != null) {
+                boolean ok = SendUtils.send(json.toString());
+                if (!ok && mainEvent != null) {
                     mainEvent.onDisconnect();
                 }
             }).start();
@@ -186,14 +180,23 @@ public class MainService extends NotificationListenerService {
         @Override
         public void onSessionDestroyed() {
             super.onSessionDestroyed();
-            Toast.makeText(MainService.this, "onSessionDestroyed1", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainService.this, "onSessionDestroyed", Toast.LENGTH_SHORT).show();
             if (mainEvent != null) {
                 mainEvent.onSessionDestroy();
             }
-            Toast.makeText(MainService.this, "onSessionDestroyed2", Toast.LENGTH_SHORT).show();
 
+            // 序列化
+            DestroyDto dto = new DestroyDto(true);
+            JSONObject json = dto.toJson();
+            if (json == null) {
+                return;
+            }
+            Toast.makeText(MainService.this, json.toString(), Toast.LENGTH_SHORT).show();
+
+            // 发送
             new Thread(() -> {
-                if (!SendService.sendMsg("{\"isDestroyed\": \"true\"}") && mainEvent != null) {
+                boolean ok = SendUtils.send(json.toString());
+                if (!ok && mainEvent != null) {
                     mainEvent.onDisconnect();
                 }
             }).start();

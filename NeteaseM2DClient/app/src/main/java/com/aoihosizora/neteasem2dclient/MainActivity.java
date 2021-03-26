@@ -24,8 +24,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.aoihosizora.neteasem2dclient.model.DestroyDto;
 import com.jwsd.libzxing.OnQRCodeScanCallback;
 import com.jwsd.libzxing.QRCodeManager;
+
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,11 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int REQUEST_NETWORK_PERMISSION_CODE = 1;
     public static final int REQUEST_CAMERA_PERMISSION_CODE = 2;
-
     public static final String QRCODE_MAGIC = "NETEASE_M2D://";
-
     private SharedPreferences ipSP, portSP;
-
     private Intent ServiceIntent;
 
     @Override
@@ -62,24 +62,24 @@ public class MainActivity extends AppCompatActivity {
             @UiThread
             public void onDisconnect() {
                 showAlert(getString(R.string.alert_break_connect), null);
-                on_ui_stop();
-                on_controller_stop();
+                stopUiUpdate();
+                stopController();
             }
 
             @Override
             @UiThread
             public void onNoSession() {
                 showAlert(getString(R.string.alert_no_session), null);
-                on_ui_stop();
-                on_controller_stop();
+                stopUiUpdate();
+                stopController();
             }
 
             @Override
             @UiThread
             public void onSessionDestroy() {
                 showAlert(getString(R.string.alert_session_destroy), null);
-                on_ui_stop();
-                on_controller_stop();
+                stopUiUpdate();
+                stopController();
             }
         };
 
@@ -130,14 +130,14 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
                 } else {
-                    on_btn_qrCode_clicked();
+                    onBtnQrCodeClicked();
                 }
                 break;
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     @BindView(R.id.id_btn_service)
     Button m_btn_service;
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
      * 自动补全文本框 弹出
      */
     @OnClick({R.id.id_edt_ip, R.id.id_edt_port})
-    void on_edt_auto_completed_clicked(View view) {
+    void onEdtAutoCompletedClicked(View view) {
         ((AutoCompleteTextView) view).showDropDown();
     }
 
@@ -169,9 +169,10 @@ public class MainActivity extends AppCompatActivity {
      * 扫描二维码
      */
     @OnClick(R.id.id_btn_qrCode)
-    void on_btn_qrCode_clicked() {
+    void onBtnQrCodeClicked() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION_CODE);
             return;
         }
 
@@ -181,22 +182,18 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onCompleted(String result) {
                     try {
-                        // 无 MAGIC
                         if (!result.startsWith(QRCODE_MAGIC)) {
                             throw new Exception("qr code has no magic");
                         }
                         result = result.substring(QRCODE_MAGIC.length());
-                        // 无端口
                         if (!result.contains(":")) {
                             throw new Exception("qr code has a wrong format");
                         }
 
-                        // 分割
                         String[] sp = result.split(":");
                         m_edt_ip.setText(sp[0]);
                         m_edt_port.setText(sp[1]);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
                         Toast.makeText(MainActivity.this, getString(R.string.tst_qr_error), Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -217,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @OnClick(R.id.id_btn_service)
     @UiThread
-    void on_btn_service_clicked() {
+    void onBtnServiceClicked() {
         if (m_btn_service.getText().equals(getString(R.string.btn_start))) {
             // 开启服务
             final String ip_str = m_edt_ip.getText().toString();
@@ -237,10 +234,14 @@ public class MainActivity extends AppCompatActivity {
             // 断开服务
             disconnect();
             new Thread(() -> {
-                if (!SendService.sendMsg("{\"isDestroyed\": \"true\"}")) {
-                    if (MainService.mainEvent != null) {
-                        MainService.mainEvent.onDisconnect();
-                    }
+                DestroyDto dto = new DestroyDto(true);
+                JSONObject json = dto.toJson();
+                if (json == null) {
+                    return;
+                }
+                boolean ok = SendUtils.send(json.toString());
+                if (!ok && MainService.mainEvent != null) {
+                    MainService.mainEvent.onDisconnect();
                 }
             }).start();
         }
@@ -250,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
      * 手动更新
      */
     @OnClick(R.id.id_btn_update)
-    void on_btn_update_clicked() {
+    void onBtnUpdateClicked() {
         if (MainService.mediaController != null && MainService.mediaCallBack != null) {
             PlaybackState state = MainService.mediaController.getPlaybackState();
             MediaMetadata metadata = MainService.mediaController.getMetadata();
@@ -262,7 +263,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * 格式正确，连接
@@ -283,36 +285,38 @@ public class MainActivity extends AppCompatActivity {
         progressDialog.show();
 
         new Thread(() -> {
-            SendService.ip = m_edt_ip.getText().toString();
-            SendService.port = Integer.parseInt(m_edt_port.getText().toString());
-
-            if (!SendService.ping()) {
+            SendUtils.ip = m_edt_ip.getText().toString();
+            SendUtils.port = Integer.parseInt(m_edt_port.getText().toString());
+            // ping
+            if (!SendUtils.ping()) {
+                // 取消操作
                 if (isCanceled[0]) return;
-
                 // 连接不通
                 runOnUiThread(() -> {
                     progressDialog.dismiss();
                     showAlert(getString(R.string.alert_connect_failed), null);
-                    on_ui_stop();
+                    stopUiUpdate();
                 });
                 return;
             }
 
+            // 取消操作
             if (isCanceled[0]) return;
 
+            // 连接成功
             runOnUiThread(() -> {
                 progressDialog.dismiss();
                 Toast.makeText(MainActivity.this, R.string.tst_connect_success, Toast.LENGTH_SHORT).show();
 
                 // 保存
-                saveIP(SendService.ip);
-                savePort(SendService.port);
+                saveIP(SendUtils.ip);
+                savePort(SendUtils.port);
                 initAutoCompleteEdit();
 
                 // 开始服务
-                on_controller_stop();
+                stopController();
                 startService(ServiceIntent);
-                on_ui_starting();
+                startUiUpdate();
             });
         }).start();
     }
@@ -322,15 +326,15 @@ public class MainActivity extends AppCompatActivity {
      */
     @UiThread
     private void disconnect() {
-        on_ui_stop();
-        on_controller_stop();
+        stopUiUpdate();
+        stopController();
     }
 
     /**
      * 连接界面更新
      */
     @UiThread
-    private void on_ui_starting() {
+    private void startUiUpdate() {
         m_btn_service.setText(getString(R.string.btn_stop));
         m_edt_ip.setEnabled(false);
         m_edt_port.setEnabled(false);
@@ -342,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
      * 断开连接界面更新
      */
     @UiThread
-    private void on_ui_stop() {
+    private void stopUiUpdate() {
         m_btn_service.setText(getString(R.string.btn_start));
         m_edt_ip.setEnabled(true);
         m_edt_port.setEnabled(true);
@@ -353,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 主动注销通知，(不能写在 onDestroy)
      */
-    private void on_controller_stop() {
+    private void stopController() {
         if (MainService.mediaController != null) {
             MainService.mediaController.unregisterCallback(MainService.mediaCallBack);
         }
@@ -366,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        on_controller_stop();
+        stopController();
         super.onDestroy();
     }
 
@@ -378,8 +382,8 @@ public class MainActivity extends AppCompatActivity {
             .show();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * 获得当前时间
