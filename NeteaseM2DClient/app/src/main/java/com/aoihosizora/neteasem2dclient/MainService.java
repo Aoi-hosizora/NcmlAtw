@@ -7,7 +7,6 @@ import android.media.MediaMetadata;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.support.annotation.Nullable;
@@ -68,11 +67,8 @@ public class MainService extends NotificationListenerService {
             List<MediaController> controllers = manager.getActiveSessions(new ComponentName(this, MainService.class));
             for (MediaController controller : controllers) {
                 String packageName = controller.getPackageName();
-                // if (packageName.contains("netease") && packageName.contains("music")) {
-                if ((packageName.contains("netease") && packageName.contains("music")) || packageName.contains("xiami")) {
-                    Toast.makeText(this, packageName, Toast.LENGTH_SHORT).show();
+                if (packageName.equals("com.netease.cloudmusic")) { // TODO 网易云搞事情
                     mediaController = controller;
-                    break;
                 }
             }
             if (mediaController == null) {
@@ -86,17 +82,8 @@ public class MainService extends NotificationListenerService {
             mediaController.registerCallback(mediaCallBack);
 
             // 一连接上就返回状态
-            // TODO 网易云搞事情
-            Bundle bundle = mediaController.getExtras();
-            long flags = mediaController.getFlags();
             PlaybackState state = mediaController.getPlaybackState();
             MediaMetadata metadata = mediaController.getMetadata();
-
-            Toast.makeText(this, bundle == null ? "bundle == null" : "bundle != null", Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, String.valueOf(flags), Toast.LENGTH_SHORT).show();
-
-            Toast.makeText(this, mediaController.getPackageName(), Toast.LENGTH_SHORT).show();
-            Toast.makeText(this, state == null ? "state == null" : "state != null", Toast.LENGTH_SHORT).show();
 
             if (state != null && metadata != null) {
                 Toast.makeText(this, metadata.getText(MediaMetadata.METADATA_KEY_TITLE), Toast.LENGTH_SHORT).show();
@@ -114,7 +101,7 @@ public class MainService extends NotificationListenerService {
     public void onDestroy() {
         // 会自动 destroy，不能把注销 MediaController 放在这里
         super.onDestroy();
-        // Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -133,11 +120,11 @@ public class MainService extends NotificationListenerService {
         @Override
         public void onPlaybackStateChanged(@Nullable PlaybackState state) {
             super.onPlaybackStateChanged(state);
-            Toast.makeText(MainService.this, "onPlaybackStateChanged1", Toast.LENGTH_SHORT).show();
             if (state == null) {
+                Toast.makeText(MainService.this, "onPlaybackStateChanged: state == null", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Toast.makeText(MainService.this, "onPlaybackStateChanged2", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainService.this, "onPlaybackStateChanged: state != null", Toast.LENGTH_SHORT).show();
 
             // 信息
             boolean isPlaying = state.getState() == PlaybackState.STATE_PLAYING;
@@ -165,11 +152,11 @@ public class MainService extends NotificationListenerService {
         @Override
         public void onMetadataChanged(@Nullable MediaMetadata metadata) {
             super.onMetadataChanged(metadata);
-            Toast.makeText(MainService.this, "onMetadataChanged1", Toast.LENGTH_SHORT).show();
             if (metadata == null) {
+                Toast.makeText(MainService.this, "onMetadataChanged: metadata == null", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Toast.makeText(MainService.this, "onMetadataChanged2", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainService.this, "onMetadataChanged: metadata != null", Toast.LENGTH_SHORT).show();
 
             // 信息
             String title = metadata.getString(MediaMetadata.METADATA_KEY_TITLE);

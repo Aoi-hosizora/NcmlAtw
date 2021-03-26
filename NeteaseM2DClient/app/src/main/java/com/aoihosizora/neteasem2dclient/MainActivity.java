@@ -58,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
         // 服务事件
         MainService.mainEvent = new MainEvent() {
-
             @Override
             @UiThread
             public void onDisconnect() {
@@ -110,8 +109,9 @@ public class MainActivity extends AppCompatActivity {
             final String[] names = flat.split(":");
             for (String name : names) {
                 final ComponentName cn = ComponentName.unflattenFromString(name);
-                if (cn != null && TextUtils.equals(pkgName, cn.getPackageName()))
+                if (cn != null && TextUtils.equals(pkgName, cn.getPackageName())) {
                     return true;
+                }
             }
         }
         return false;
@@ -122,14 +122,16 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_NETWORK_PERMISSION_CODE:
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
+                }
                 break;
             case REQUEST_CAMERA_PERMISSION_CODE:
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED)
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, R.string.tst_auth_failed, Toast.LENGTH_LONG).show();
-                else
+                } else {
                     on_btn_qrCode_clicked();
+                }
                 break;
         }
     }
@@ -168,12 +170,8 @@ public class MainActivity extends AppCompatActivity {
      */
     @OnClick(R.id.id_btn_qrCode)
     void on_btn_qrCode_clicked() {
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-            }, REQUEST_CAMERA_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION_CODE);
             return;
         }
 
@@ -184,12 +182,14 @@ public class MainActivity extends AppCompatActivity {
                 public void onCompleted(String result) {
                     try {
                         // 无 MAGIC
-                        if (!result.startsWith(QRCODE_MAGIC))
-                            throw new Exception();
+                        if (!result.startsWith(QRCODE_MAGIC)) {
+                            throw new Exception("qr code has no magic");
+                        }
                         result = result.substring(QRCODE_MAGIC.length());
                         // 无端口
-                        if (!result.contains(":"))
-                            throw new Exception();
+                        if (!result.contains(":")) {
+                            throw new Exception("qr code has a wrong format");
+                        }
 
                         // 分割
                         String[] sp = result.split(":");
@@ -226,19 +226,21 @@ public class MainActivity extends AppCompatActivity {
             String ip_re = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
             String port_re = "([0-9]|[1-9]\\d{1,3}|[1-5]\\d{4}|6[0-4]\\d{4}|65[0-4]\\d{2}|655[0-2]\\d|6553[0-5])";
 
-            if (!ip_str.matches(ip_re))
+            if (!ip_str.matches(ip_re)) {
                 showAlert(getString(R.string.alert_ip_format), null);
-            else if (!port_str.matches(port_re))
+            } else if (!port_str.matches(port_re)) {
                 showAlert(getString(R.string.alert_port_format), null);
-            else
+            } else {
                 connect();
+            }
         } else {
             // 断开服务
             disconnect();
             new Thread(() -> {
                 if (!SendService.sendMsg("{\"isDestroyed\": \"true\"}")) {
-                    if (MainService.mainEvent != null)
+                    if (MainService.mainEvent != null) {
                         MainService.mainEvent.onDisconnect();
+                    }
                 }
             }).start();
         }
@@ -269,9 +271,8 @@ public class MainActivity extends AppCompatActivity {
     private void connect() {
         // 判断网路权限
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.INTERNET
-            }, REQUEST_NETWORK_PERMISSION_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, REQUEST_NETWORK_PERMISSION_CODE);
+            return;
         }
 
         final boolean[] isCanceled = new boolean[]{false};
@@ -286,7 +287,6 @@ public class MainActivity extends AppCompatActivity {
             SendService.port = Integer.parseInt(m_edt_port.getText().toString());
 
             if (!SendService.ping()) {
-
                 if (isCanceled[0]) return;
 
                 // 连接不通
@@ -354,8 +354,9 @@ public class MainActivity extends AppCompatActivity {
      * 主动注销通知，(不能写在 onDestroy)
      */
     private void on_controller_stop() {
-        if (MainService.mediaController != null)
+        if (MainService.mediaController != null) {
             MainService.mediaController.unregisterCallback(MainService.mediaCallBack);
+        }
 
         MainService.mediaController = null;
         MainService.mediaCallBack = null;
