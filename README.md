@@ -1,6 +1,6 @@
-# NcmLyricA2W
+# NcmlAtw
 
-+ NcmLyricA2W means "Netease Cloud Music Lyric, Android to Windows".
++ NcmlAtw means "Netease Cloud Music Lyric, Android to Windows".
 + A set of tools that is used to subscribe the current playing songs from ncm for Android, and publish it to Windows to show lyrics on desktop.
 + Development environment: `.NET Framework 4.8` `Android 10` `ncm v8.1.70`.
 

@@ -7,16 +7,10 @@
 
 ### Android ###
 .settings/
-captures/
 *.iml
-.gradle
-.DS_Store
-.externalNativeBuild
-local.properties
 *.apk
 
 ### Windows ###
-ipch/
 *.suo
 *.user
 *.exe
