@@ -86,7 +86,6 @@ class MainService : NotificationListenerService() {
     inner class MediaCallBack : MediaController.Callback() {
         override fun onPlaybackStateChanged(state: PlaybackState?) {
             super.onPlaybackStateChanged(state)
-            Toast.makeText(this@MainService, "onPlaybackStateChanged", Toast.LENGTH_SHORT).show()
             if (state == null) {
                 return
             }
@@ -98,7 +97,6 @@ class MainService : NotificationListenerService() {
             // marshal
             val dto = PlaybackStateDto(isPlaying, currPosition)
             val json = dto.toJSON() ?: return
-            Toast.makeText(this@MainService, json.toString(), Toast.LENGTH_SHORT).show()
 
             // send
             Thread {
@@ -108,7 +106,6 @@ class MainService : NotificationListenerService() {
 
         override fun onMetadataChanged(metadata: MediaMetadata?) {
             super.onMetadataChanged(metadata)
-            Toast.makeText(this@MainService, "onMetadataChanged", Toast.LENGTH_SHORT).show()
             if (metadata == null) {
                 return
             }
@@ -122,7 +119,6 @@ class MainService : NotificationListenerService() {
             // marshal
             val dto = MetadataDto(title, artist, album, duration)
             val json = dto.toJSON() ?: return
-            Toast.makeText(this@MainService, json.toString(), Toast.LENGTH_SHORT).show()
 
             // send
             Thread {
@@ -132,13 +128,11 @@ class MainService : NotificationListenerService() {
 
         override fun onSessionDestroyed() {
             super.onSessionDestroyed()
-            Toast.makeText(this@MainService, "onSessionDestroyed", Toast.LENGTH_SHORT).show()
             eventCallback?.onSessionDestroyed()
 
             // marshal
             val dto = DestroyedDto(true)
             val json = dto.toJSON() ?: return
-            Toast.makeText(this@MainService, json.toString(), Toast.LENGTH_SHORT).show()
 
             // send
             Thread {
