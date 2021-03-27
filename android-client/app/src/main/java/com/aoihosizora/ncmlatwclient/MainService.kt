@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
@@ -12,8 +11,6 @@ import android.media.session.PlaybackState
 import android.service.notification.NotificationListenerService
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
-import java.io.PrintWriter
-import java.io.StringWriter
 
 class MainService : NotificationListenerService() {
 
@@ -98,10 +95,10 @@ class MainService : NotificationListenerService() {
 
             // information
             val isPlaying = state.state == PlaybackState.STATE_PLAYING
-            val currPosition = state.position.toDouble() / 1000.0
+            val position = state.position.toDouble() / 1000.0
 
             // marshal
-            val dto = PlaybackStateDto(isPlaying, currPosition)
+            val dto = PlaybackStateDto(isPlaying, position)
             val json = dto.toJSON() ?: return
 
             // send
@@ -135,7 +132,6 @@ class MainService : NotificationListenerService() {
         override fun onSessionDestroyed() {
             super.onSessionDestroyed()
             eventCallback?.onSessionDestroyed()
-            stopSelf()
 
             // marshal
             val dto = DestroyedDto(true)
@@ -143,42 +139,46 @@ class MainService : NotificationListenerService() {
 
             // send
             Thread {
-                eventCallback?.onSend(json.toString())
+                try {
+                    eventCallback?.onSend(json.toString())
+                } finally {
+                    stopSelf()
+                }
             }.start()
         }
     }
 
     interface EventCallback {
         /**
-         * no ncm session callback
+         * No ncm session callback.
          */
         @UiThread
         fun onNoSession()
 
         /**
-         * session destroyed callback
+         * Session destroyed callback.
          */
         @UiThread
         fun onSessionDestroyed()
 
         /**
-         * send text callback
+         * Send text callback.
          */
         @WorkerThread
         fun onSend(text: String, checkResult: Boolean = true)
 
         /**
-         * do log callback
+         * Do log callback.
          */
         @UiThread
         fun onLog(text: String)
     }
 
-    private fun getExceptionString(ex: Exception): String? {
-        val sw = StringWriter()
-        val pw = PrintWriter(sw)
-        ex.printStackTrace(pw)
-        pw.flush()
-        return sw.toString()
-    }
+    // private fun getExceptionString(ex: Exception): String? {
+    //     val sw = StringWriter()
+    //     val pw = PrintWriter(sw)
+    //     ex.printStackTrace(pw)
+    //     pw.flush()
+    //     return sw.toString()
+    // }
 }

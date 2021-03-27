@@ -6,7 +6,7 @@ import org.json.JSONObject
 
 data class PlaybackStateDto(
     val isPlaying: Boolean,
-    val currentPosition: Double
+    val currentPosition: Double // second
 ) : Serializable {
     fun toJSON(): JSONObject? {
         val obj = JSONObject()
@@ -24,7 +24,7 @@ data class MetadataDto(
     val title: String,
     val artist: String,
     val album: String,
-    val duration: Double
+    val duration: Double // second
 ) : Serializable {
     fun toJSON(): JSONObject? {
         val obj = JSONObject()
@@ -41,7 +41,7 @@ data class MetadataDto(
 }
 
 data class DestroyedDto(
-    val isDestroyed: Boolean
+    val isDestroyed: Boolean // always true
 ) : Serializable {
     fun toJSON(): JSONObject? {
         val obj = JSONObject()

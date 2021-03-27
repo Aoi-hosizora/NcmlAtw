@@ -88,6 +88,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initListener() {
+        MainService.eventCallback = EventCallback()
+
         edt_ip.setOnClickListener { v -> (v as AutoCompleteTextView).showDropDown() }
         edt_port.setOnClickListener { v -> (v as AutoCompleteTextView).showDropDown() }
 
@@ -101,8 +103,6 @@ class MainActivity : AppCompatActivity() {
                 stopService()
             }
         }
-
-        MainService.eventCallback = EventCallback()
     }
 
     @UiThread
@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity() {
         // show progress dlg
         var isCanceled = false
         @Suppress("DEPRECATION") val dlg = ProgressDialog(this)
-        @Suppress("DEPRECATION") dlg.setMessage("正在连接中...")
+        @Suppress("DEPRECATION") dlg.setMessage("正在连接...")
         dlg.setCancelable(true)
         dlg.setOnCancelListener { isCanceled = true }
         dlg.show()
@@ -136,34 +136,29 @@ class MainActivity : AppCompatActivity() {
             if (isCanceled) {
                 return@Thread
             }
-            if (!ok) {
-                runOnUiThread {
-                    dlg.dismiss()
-                    showAlertDialog("启动服务", "无法连接到给定地址。")
-                }
-                return@Thread
-            }
 
             // process
             runOnUiThread {
                 dlg.dismiss()
-                processStartService(ip, portStr)
+                if (!ok) {
+                    showAlertDialog("启动服务", "无法连接到给定地址。")
+                } else {
+                    processStartService(ip, portStr)
+                }
             }
         }.start()
     }
 
     @UiThread
     private fun stopService() {
-        Thread {
-            // process
-            runOnUiThread {
-                processStopService()
-            }
+        // process
+        processStopService()
 
-            // disconnect
+        // disconnect
+        Thread {
             val dto = DestroyedDto(true)
             val json = dto.toJSON() ?: return@Thread
-            MainService.eventCallback?.onSend(json.toString(), false)
+            MainService.eventCallback?.onSend(json.toString(), checkResult = false)
         }.start()
     }
 
@@ -180,10 +175,10 @@ class MainActivity : AppCompatActivity() {
         // start service
         if (MainService.isRunning(this)) {
             stopService(Intent(this, MainService::class.java))
-            MainService.mediaCallback?.let { MainService.mediaController?.unregisterCallback(it) }
-            MainService.mediaController = null
-            MainService.mediaCallback = null
         }
+        MainService.mediaCallback?.let { MainService.mediaController?.unregisterCallback(it) }
+        MainService.mediaController = null
+        MainService.mediaCallback = null
         if (!MainService.isRunning(this)) {
             startService(Intent(this, MainService::class.java))
         }
@@ -248,10 +243,10 @@ class MainActivity : AppCompatActivity() {
                 appendLog(text)
             }
 
-            if (SendUtils.send(text) == SendUtils.SendResult.FAILED && checkResult) {
+            if (!SendUtils.send(text) && checkResult) {
                 // disconnected
                 runOnUiThread {
-                    showAlertDialog("服务", "无法连接到给定地址。")
+                    showAlertDialog("服务", "连接已断开。")
                     processStopService()
                 }
             }
@@ -302,7 +297,7 @@ class MainActivity : AppCompatActivity() {
                     val ip = addrSp[0]
                     val portStr = addrSp[1]
                     if (!SendUtils.checkIPString(ip) || !SendUtils.checkPortString(portStr)) {
-                        showAlertDialog("扫描二维码", "二维码包含不支持的 IP 地址和端口。")
+                        showAlertDialog("扫描二维码", "二维码包含格式错误的 IP 地址和端口。")
                         return
                     }
 
@@ -328,7 +323,9 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             REQUEST_CAMERA_PERMISSION_CODE -> {
                 if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    showAlertDialog("授权", "授权相机失败。")
+                    showAlertDialog("授权", "相机授权失败。")
+                } else {
+                    scanQrcode()
                 }
             }
         }
@@ -345,7 +342,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Append log with datetime, and add to the bottom of TextView with a new line.
+     * Append log with datetime, and add to the bottom of TextView.
      */
     @UiThread
     private fun appendLog(text: String) {

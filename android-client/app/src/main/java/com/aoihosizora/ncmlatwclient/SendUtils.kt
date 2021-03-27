@@ -3,13 +3,17 @@ package com.aoihosizora.ncmlatwclient
 import android.text.TextUtils
 import android.util.Patterns
 import androidx.annotation.WorkerThread
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.lang.Exception
+import java.net.InetSocketAddress
 import java.net.Socket
 
 object SendUtils {
     var ip: String? = null
     var port: Int? = null
+    private const val TIMEOUT = 3000; // 3s
 
     fun checkIPString(s: String): Boolean {
         return Patterns.IP_ADDRESS.matcher(s).matches()
@@ -28,42 +32,58 @@ object SendUtils {
         return true
     }
 
+    /**
+     * Establish socket test connection.
+     */
     @WorkerThread
     fun ping(): Boolean {
         if (ip == null || port == null) {
             return true
         }
 
+        val socket = Socket()
         try {
-            val socket = Socket(ip!!, port!!)
-            socket.close()
+            val addr = InetSocketAddress(ip!!, port!!)
+            socket.connect(addr, TIMEOUT)
+
+            val writer = PrintWriter(socket.getOutputStream(), true)
+            val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
+
+            writer.println("ping")
+            if (reader.readLine() == "pong\r\n") {
+                return true // ping-pong
+            }
         } catch (ex: Exception) {
+        } finally {
+            socket.close()
+        }
+        return false
+    }
+
+    /**
+     * Establish connection and send text, return false if use invalid address or fail to send.
+     */
+    @WorkerThread
+    fun send(text: String): Boolean {
+        if (ip == null || port == null) {
             return false
         }
-        return true
-    }
-
-    enum class SendResult {
-        SUCCESS,
-        FAILED,
-        WRONG_PARAM,
-    }
-
-    @WorkerThread
-    fun send(text: String): SendResult {
-        if (ip == null || port == null || TextUtils.isEmpty(text)) {
-            return SendResult.WRONG_PARAM
+        if (TextUtils.isEmpty(text)) {
+            return true
         }
 
+        val socket = Socket()
         try {
-            val socket = Socket(ip!!, port!!)
+            val addr = InetSocketAddress(ip!!, port!!)
+            socket.connect(addr, TIMEOUT)
+
             val writer = PrintWriter(socket.getOutputStream(), true)
             writer.println(text)
-            socket.close()
         } catch (ex: Exception) {
-            return SendResult.FAILED
+            return false
+        } finally {
+            socket.close()
         }
-
-        return SendResult.SUCCESS
+        return true
     }
 }
