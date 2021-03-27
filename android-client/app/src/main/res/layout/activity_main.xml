@@ -18,6 +18,7 @@
         tools:ignore="HardcodedText" />
 
     <LinearLayout
+        android:id="@+id/ll_addr"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
@@ -37,7 +38,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="6dp"
+            android:layout_marginHorizontal="4dp"
             android:text=":"
             android:textColor="#000000"
             tools:ignore="HardcodedText" />
@@ -51,44 +52,74 @@
             android:inputType="number"
             tools:ignore="HardcodedText" />
 
+        <Button
+            android:id="@+id/btn_qrcode"
+            style="@style/IconOnlyButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_qr_code_scanner_24px" />
+
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/ll_btns"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="horizontal"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <Button
-            android:id="@+id/btn_qrcode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:text="扫描二维码"
-            tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/ll_addr">
 
         <Button
             android:id="@+id/btn_service"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dp"
+            android:layout_marginHorizontal="5dp"
             android:text="启动服务"
-            tools:ignore="HardcodedText" />
+            tools:ignore="ButtonStyle,HardcodedText" />
 
         <Button
             android:id="@+id/btn_manual"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="2dp"
+            android:layout_marginHorizontal="5dp"
             android:enabled="false"
             android:text="手动更新"
-            tools:ignore="HardcodedText" />
+            tools:ignore="ButtonStyle,HardcodedText" />
+
+        <Button
+            android:id="@+id/btn_clearLog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="5dp"
+            android:text="清除日志"
+            tools:ignore="ButtonStyle,HardcodedText" />
 
     </LinearLayout>
+
+    <View
+        android:id="@+id/div_log"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_margin="10dp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_btns" />
+
+    <TextView
+        android:id="@+id/tv_log"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="10dp"
+        android:scrollbars="vertical"
+        android:textIsSelectable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/div_log"
+        tools:ignore="HardcodedText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,7 @@
 package com.aoihosizora.ncmlatwclient
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.ComponentName
 import android.content.Context
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
+import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.annotation.UiThread
@@ -30,8 +32,9 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_CAMERA_PERMISSION_CODE = 1
     }
 
-    private lateinit var adtIP: EventArrayAdapter
-    private lateinit var adtPort: EventArrayAdapter
+    private lateinit var adtIP: ArrayAdapter<String>
+    private lateinit var adtPort: ArrayAdapter<String>
+    private var lastBackPressedTime: Date? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,26 +46,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-        adtIP = EventArrayAdapter(this, android.R.layout.simple_list_item_1, getSavedSpData("ip"))
-        adtPort = EventArrayAdapter(this, android.R.layout.simple_list_item_1, getSavedSpData("port"))
-        // adtIP.setOnItemLongPressedListener { _, s ->
-        //     if (s != null && removeDateFromSp("ip", s)) {
-        //         edt_ip.dismissDropDown()
-        //         // adtIP.remove(s)
-        //         // adtIP.notifyDataSetChanged()
-        //         edt_ip.showDropDown()
-        //     }
-        //     true
-        // }
-        // adtPort.setOnItemLongPressedListener { _, s ->
-        //     if (s != null && removeDateFromSp("port", s)) {
-        //         edt_port.dismissDropDown()
-        //         // adtPort.remove(s)
-        //         // adtPort.notifyDataSetChanged()
-        //         edt_port.showDropDown()
-        //     }
-        //     true
-        // }
+        adtIP = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getSavedSpData("ip"))
+        adtPort = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getSavedSpData("port"))
         edt_ip.setAdapter(adtIP)
         edt_port.setAdapter(adtPort)
         adtIP.notifyDataSetChanged()
@@ -92,12 +77,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        val current = Calendar.getInstance().time
+        if (lastBackPressedTime == null || current.time - lastBackPressedTime!!.time > 2000) {
+            Toast.makeText(this, "再按一次退出应用", Toast.LENGTH_SHORT).show()
+            lastBackPressedTime = current
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     private fun initListener() {
         edt_ip.setOnClickListener { v -> (v as AutoCompleteTextView).showDropDown() }
         edt_port.setOnClickListener { v -> (v as AutoCompleteTextView).showDropDown() }
 
         btn_qrcode.setOnClickListener { scanQrcode() }
         btn_manual.setOnClickListener { updateManually() }
+        btn_clearLog.setOnClickListener { tv_log.text = "" }
         btn_service.setOnClickListener {
             if (btn_service.text == "启动服务") {
                 startService()
@@ -182,15 +178,14 @@ class MainActivity : AppCompatActivity() {
     @UiThread
     private fun processStartService(ip: String, port: String) {
         // start service
-        val intent = Intent(this, MainService::class.java)
         if (MainService.isRunning(this)) {
-            stopService(intent)
+            stopService(Intent(this, MainService::class.java))
             MainService.mediaCallback?.let { MainService.mediaController?.unregisterCallback(it) }
             MainService.mediaController = null
             MainService.mediaCallback = null
         }
         if (!MainService.isRunning(this)) {
-            startService(intent)
+            startService(Intent(this, MainService::class.java))
         }
 
         // update ui
@@ -246,21 +241,25 @@ class MainActivity : AppCompatActivity() {
             processStopService()
         }
 
+        @SuppressLint("SetTextI18n")
         @WorkerThread
         override fun onSend(text: String, checkResult: Boolean) {
-            val r = SendUtils.send(text)
-            if (r == SendUtils.SendResult.FAILED && checkResult) {
+            runOnUiThread {
+                appendLog(text)
+            }
+
+            if (SendUtils.send(text) == SendUtils.SendResult.FAILED && checkResult) {
                 // disconnected
                 runOnUiThread {
                     showAlertDialog("服务", "无法连接到给定地址。")
                     processStopService()
                 }
             }
-            if (r == SendUtils.SendResult.SUCCESS) {
-                runOnUiThread {
-                    Toast.makeText(this@MainActivity, text, Toast.LENGTH_SHORT).show()
-                }
-            }
+        }
+
+        @UiThread
+        override fun onLog(text: String) {
+            appendLog(text)
         }
     }
 
@@ -329,7 +328,7 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             REQUEST_CAMERA_PERMISSION_CODE -> {
                 if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "授权相机失败。", Toast.LENGTH_SHORT).show()
+                    showAlertDialog("授权", "授权相机失败。")
                 }
             }
         }
@@ -343,6 +342,22 @@ class MainActivity : AppCompatActivity() {
             .setCancelable(cancelable)
             .setPositiveButton("确定", okCallback)
             .show()
+    }
+
+    /**
+     * Append log with datetime, and add to the bottom of TextView with a new line.
+     */
+    @UiThread
+    private fun appendLog(text: String) {
+        val fmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
+        val now = fmt.format(Calendar.getInstance().time)
+        tv_log.append("\n[$now] $text")
+        val scrollAmount = tv_log.layout.getLineTop(tv_log.lineCount) - tv_log.height
+        if (scrollAmount > 0) {
+            tv_log.scrollTo(0, scrollAmount)
+        } else {
+            tv_log.scrollTo(0, 0)
+        }
     }
 
     private fun getSavedSpData(name: String): Array<String> {
@@ -365,19 +380,5 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return false
-    }
-
-    private fun removeDateFromSp(name: String, value: String): Boolean {
-        val sp = getSharedPreferences(name, Context.MODE_PRIVATE)
-        val edt = sp.edit()
-        var ok = false
-        for (entry in sp.all.entries) {
-            if (entry.value.toString() == value) {
-                edt.remove(entry.key)
-                ok = true
-            }
-        }
-        edt.apply()
-        return ok
     }
 }

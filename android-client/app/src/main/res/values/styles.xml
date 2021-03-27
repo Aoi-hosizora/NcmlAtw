@@ -1,7 +1,20 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="IconOnlyButton" parent="Widget.MaterialComponents.Button.UnelevatedButton" tools:ignore="PrivateResource">
+        <item name="iconPadding">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">6dp</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:minWidth">42dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="backgroundTint">#00000000</item>
+        <item name="iconTint">@color/mtrl_text_btn_text_color_selector</item>
+        <item name="rippleColor">@color/mtrl_btn_text_btn_ripple_color</item>
     </style>
 </resources>

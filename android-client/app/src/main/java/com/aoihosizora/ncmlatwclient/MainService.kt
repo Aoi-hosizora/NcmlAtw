@@ -4,12 +4,12 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.service.notification.NotificationListenerService
-import android.widget.Toast
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
 import java.io.PrintWriter
@@ -36,9 +36,11 @@ class MainService : NotificationListenerService() {
 
     override fun onCreate() {
         super.onCreate()
-        Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show()
+        // Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show()
+        eventCallback?.onLog("onCreate")
 
         if (mediaController != null) {
+            stopSelf()
             return
         }
         if (mediaCallback == null) {
@@ -50,10 +52,11 @@ class MainService : NotificationListenerService() {
             val manager = getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
             if (manager == null) {
                 eventCallback?.onNoSession()
+                stopSelf()
                 return
             }
             // find ncm MediaController
-            for (controller in manager.getActiveSessions(ComponentName(this, this::class.java))) {
+            for (controller in manager.getActiveSessions(ComponentName(this, MainService::class.java))) {
                 val pkgName = controller.packageName
                 if (pkgName.contains("netease") && pkgName.contains("music")) {
                     mediaController = controller
@@ -62,6 +65,7 @@ class MainService : NotificationListenerService() {
             }
             if (mediaController == null) {
                 eventCallback?.onNoSession()
+                stopSelf()
                 return
             }
 
@@ -69,17 +73,19 @@ class MainService : NotificationListenerService() {
             mediaController!!.registerCallback(mediaCallback!!)
             val state = mediaController!!.playbackState
             val metadata = mediaController!!.metadata
-            if (state != null && metadata != null && state.state == PlaybackState.STATE_PLAYING) {
+            if (state != null && metadata != null) {
                 mediaCallback!!.onMetadataChanged(metadata)
                 mediaCallback!!.onPlaybackStateChanged(state)
             }
         } catch (ex: Exception) {
-            Toast.makeText(this, getExceptionString(ex), Toast.LENGTH_SHORT).show()
+            // Toast.makeText(this, getExceptionString(ex), Toast.LENGTH_SHORT).show()
+            stopSelf()
         }
     }
 
     override fun onDestroy() {
-        Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show()
+        // Toast.makeText(this, "onDestroy", Toast.LENGTH_SHORT).show()
+        eventCallback?.onLog("onDestroy")
         super.onDestroy()
     }
 
@@ -129,6 +135,7 @@ class MainService : NotificationListenerService() {
         override fun onSessionDestroyed() {
             super.onSessionDestroyed()
             eventCallback?.onSessionDestroyed()
+            stopSelf()
 
             // marshal
             val dto = DestroyedDto(true)
@@ -159,6 +166,12 @@ class MainService : NotificationListenerService() {
          */
         @WorkerThread
         fun onSend(text: String, checkResult: Boolean = true)
+
+        /**
+         * do log callback
+         */
+        @UiThread
+        fun onLog(text: String)
     }
 
     private fun getExceptionString(ex: Exception): String? {
