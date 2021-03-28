@@ -48,8 +48,11 @@ namespace NcmlAtwServer {
             return code.GetGraphic(pixelsPerModule);
         }
 
+        private static Form _bitmapForm;
+
         public static void ShowBitmapForm(Bitmap bmp, string title, Form parent) {
-            var form = new Form {
+            _bitmapForm?.Close();
+            _bitmapForm = new Form {
                 Text = title,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 MaximizeBox = false,
@@ -59,13 +62,18 @@ namespace NcmlAtwServer {
                 StartPosition = FormStartPosition.CenterScreen,
                 Size = new Size(bmp.Width, bmp.Height + (parent.RectangleToScreen(parent.ClientRectangle).Top - parent.Top - 8)),
             };
+
             var pictureBox = new PictureBox {
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Image = bmp,
+                Dock = DockStyle.Fill,
             };
-            form.Controls.Add(pictureBox);
-            pictureBox.Dock = DockStyle.Fill;
-            form.Show(parent);
+            _bitmapForm.Controls.Add(pictureBox);
+            _bitmapForm.Show(parent);
+        }
+
+        public static void CloseBitmapForm() {
+            _bitmapForm?.Close();
         }
     }
 }

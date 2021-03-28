@@ -13,7 +13,7 @@ import java.net.Socket
 object SendUtils {
     var ip: String? = null
     var port: Int? = null
-    private const val TIMEOUT = 3000; // 3s
+    private const val TIMEOUT = 3000 // 3s
 
     fun checkIPString(s: String): Boolean {
         return Patterns.IP_ADDRESS.matcher(s).matches()
@@ -50,7 +50,7 @@ object SendUtils {
             val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
 
             writer.println("ping")
-            if (reader.readLine() == "pong\r\n") {
+            if (reader.readText() == "pong") {
                 return true // ping-pong
             }
         } catch (ex: Exception) {

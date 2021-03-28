@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace NcmlAtwServer {
@@ -9,6 +10,17 @@ namespace NcmlAtwServer {
 
         public MainForm() {
             InitializeComponent();
+        }
+
+        private static MainForm _instance;
+
+        public static MainForm Instance {
+            get {
+                if (_instance == null) {
+                    _instance = new MainForm();
+                }
+                return _instance;
+            }
         }
 
         private void MainForm_Load(object sender, EventArgs e) {
@@ -37,7 +49,7 @@ namespace NcmlAtwServer {
                 return;
             }
 
-            e.Cancel = false;
+            StopService();
             Properties.Settings.Default.Top = Top;
             Properties.Settings.Default.Left = Left;
             Properties.Settings.Default.Save();
@@ -70,37 +82,6 @@ namespace NcmlAtwServer {
             }
         }
 
-        private void BtnListen_Click(object sender, EventArgs e) {
-            var doListen = btnListen.Text == "开始监听";
-            if (doListen) {
-                btnListen.Text = "停止监听";
-                cbbInterface.Enabled = false;
-                numPort.ReadOnly = true;
-                btnQrcode.Enabled = true;
-                btnAdjustOffset.Enabled = true;
-                lblDuration.Text = "正在等待歌曲...";
-                lblTitle.Text = "未知标题";
-                lblAlbum.Text = "未知专辑";
-                lblArtist.Text = "未知歌手";
-                lblLink.Text = "未知链接";
-            } else {
-                btnListen.Text = "开始监听";
-                cbbInterface.Enabled = true;
-                numPort.ReadOnly = false;
-                btnQrcode.Enabled = false;
-                btnAdjustOffset.Enabled = false;
-                lblDuration.Text = "未监听...";
-            }
-
-            if (doListen) {
-                Properties.Settings.Default.NetworkInterface = (string) cbbInterface.SelectedItem;
-                Properties.Settings.Default.Port = (int) numPort.Value;
-                Properties.Settings.Default.Save();
-            } else {
-
-            }
-        }
-
         private void BtnAdjustOffset_Click(object sender, EventArgs e) {
             cmsAdjustOffset.Show(btnAdjustOffset, new Point(0, btnAdjustOffset.Height));
         }
@@ -115,6 +96,78 @@ namespace NcmlAtwServer {
             if (sender is ToolStripMenuItem mi) {
                 Global.Offset += (double) mi.Tag;
             }
+        }
+
+        private void BtnListen_Click(object sender, EventArgs e) {
+            var doListen = btnListen.Text == "开始监听";
+            if (doListen) {
+                StartService();
+            } else {
+                StopService();
+                btnListen.Text = "开始监听";
+                cbbInterface.Enabled = true;
+                numPort.ReadOnly = false;
+                btnQrcode.Enabled = false;
+                btnAdjustOffset.Enabled = false;
+                lblDuration.Text = "未监听...";
+            }
+        }
+
+        private Thread _socketThread;
+        private SocketService _socketService;
+
+        private void StartService() {
+            int port = (int) numPort.Value;
+
+            _socketService = new SocketService {
+                listenCallback = (ok) => {
+                    Invoke(new Action(() => {
+                        if (ok) {
+                            btnListen.Text = "停止监听";
+                            cbbInterface.Enabled = false;
+                            numPort.ReadOnly = true;
+                            btnQrcode.Enabled = true;
+                            btnAdjustOffset.Enabled = true;
+                            lblDuration.Text = "正在等待歌曲...";
+                            lblTitle.Text = "未知标题";
+                            lblAlbum.Text = "未知专辑";
+                            lblArtist.Text = "未知歌手";
+                            lblLink.Text = "未知链接";
+                            Properties.Settings.Default.NetworkInterface = (string) cbbInterface.SelectedItem;
+                            Properties.Settings.Default.Port = (int) numPort.Value;
+                            Properties.Settings.Default.Save();
+                        } else {
+                            MessageBox.Show("端口监听失败，可能因为端口被占用。", "开始监听", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }));
+                },
+                pingCallback = () => {
+                    Invoke(new Action(() => {
+                        Utils.CloseBitmapForm();
+                    }));
+                },
+                playbackStateCallback = (state) => {
+
+                },
+                metadataCallback = (metadata) => {
+
+                },
+                sessionDestroyedCallback = () => {
+
+                },
+            };
+
+            _socketThread = new Thread(() => _socketService.StartService(port)) {
+                IsBackground = true
+            };
+            _socketThread.Start();
+        }
+
+        private void StopService() {
+            _socketService?.StopService();
+            _socketService = null;
+            _socketThread?.Abort();
+            _socketThread = null;
         }
     }
 }
