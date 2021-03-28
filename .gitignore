@@ -11,6 +11,7 @@
 *.apk
 
 ### Windows ###
+packages/
 *.suo
 *.user
 *.exe
