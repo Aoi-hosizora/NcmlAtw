@@ -2,14 +2,23 @@
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace NcmlAtwServer {
 
     static class Global {
-        public static double Offset;
+        public static bool IsListening { get; set; }
+        public static double Offset { get; set; }
+
+        public static Metadata CurrentMetadata { get; set; }
+        public static PlaybackState CurrentState { get; set; }
+        public static double LastUpdateTimestamp { get; set; }
+        public static double CurrentPosition { get; set; }
+
+        public static long CurrentMusicId { get; set; }
+        public static LyricPage CurrentLyric { get; set; }
+        public static LyricState CurrentLyricState { get; set; }
     }
 
     [JsonObject]
@@ -47,6 +56,12 @@ namespace NcmlAtwServer {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
             });
         }
+    }
+
+    enum LyricState {
+        Found,
+        NotFound,
+        PureMusic,
     }
 
     class LyricPage {

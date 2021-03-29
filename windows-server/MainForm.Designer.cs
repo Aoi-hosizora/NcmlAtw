@@ -54,6 +54,7 @@ namespace NcmlAtwServer {
             this.miSlowHalfSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miFastSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miSlowSecond = new System.Windows.Forms.ToolStripMenuItem();
+            this.ttpText = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).BeginInit();
             this.cmsText.SuspendLayout();
             this.gpbNetwork.SuspendLayout();
@@ -197,6 +198,7 @@ namespace NcmlAtwServer {
             this.lblTitleHint.Size = new System.Drawing.Size(39, 17);
             this.lblTitleHint.TabIndex = 10;
             this.lblTitleHint.Text = "标题 :";
+            this.lblTitleHint.Visible = false;
             // 
             // lblTitle
             // 
@@ -209,6 +211,7 @@ namespace NcmlAtwServer {
             this.lblTitle.Size = new System.Drawing.Size(291, 17);
             this.lblTitle.TabIndex = 11;
             this.lblTitle.Text = "未知标题";
+            this.lblTitle.Visible = false;
             // 
             // cmsText
             // 
@@ -232,6 +235,7 @@ namespace NcmlAtwServer {
             this.lblAlbumHint.Size = new System.Drawing.Size(39, 17);
             this.lblAlbumHint.TabIndex = 12;
             this.lblAlbumHint.Text = "专辑 :";
+            this.lblAlbumHint.Visible = false;
             // 
             // lblAlbum
             // 
@@ -244,6 +248,7 @@ namespace NcmlAtwServer {
             this.lblAlbum.Size = new System.Drawing.Size(291, 17);
             this.lblAlbum.TabIndex = 13;
             this.lblAlbum.Text = "未知专辑";
+            this.lblAlbum.Visible = false;
             // 
             // lblArtistHint
             // 
@@ -253,6 +258,7 @@ namespace NcmlAtwServer {
             this.lblArtistHint.Size = new System.Drawing.Size(39, 17);
             this.lblArtistHint.TabIndex = 14;
             this.lblArtistHint.Text = "歌手 :";
+            this.lblArtistHint.Visible = false;
             // 
             // lblArtist
             // 
@@ -265,6 +271,7 @@ namespace NcmlAtwServer {
             this.lblArtist.Size = new System.Drawing.Size(291, 17);
             this.lblArtist.TabIndex = 15;
             this.lblArtist.Text = "未知歌手";
+            this.lblArtist.Visible = false;
             // 
             // edtIP
             // 
@@ -338,6 +345,7 @@ namespace NcmlAtwServer {
             this.lblLinkHint.Size = new System.Drawing.Size(39, 17);
             this.lblLinkHint.TabIndex = 16;
             this.lblLinkHint.Text = "链接 :";
+            this.lblLinkHint.Visible = false;
             // 
             // lblLink
             // 
@@ -350,6 +358,7 @@ namespace NcmlAtwServer {
             this.lblLink.Size = new System.Drawing.Size(291, 17);
             this.lblLink.TabIndex = 17;
             this.lblLink.Text = "未知链接";
+            this.lblLink.Visible = false;
             // 
             // cmsAdjustOffset
             // 
@@ -454,6 +463,7 @@ namespace NcmlAtwServer {
         private System.Windows.Forms.ToolStripMenuItem miSlowHalfSecond;
         private System.Windows.Forms.ToolStripMenuItem miFastSecond;
         private System.Windows.Forms.ToolStripMenuItem miSlowSecond;
+        private System.Windows.Forms.ToolTip ttpText;
     }
 }
 
