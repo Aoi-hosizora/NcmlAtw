@@ -61,7 +61,7 @@ namespace NcmlAtwServer {
     enum LyricState {
         Found,
         NotFound,
-        PureMusic,
+        NoLyric,
     }
 
     class LyricPage {

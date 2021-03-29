@@ -84,8 +84,9 @@ namespace NcmlAtwServer {
 
             // search song
             foreach (var keyword in GetSearchKeywords(metadata)) {
-                Console.WriteLine($"Search keyword: {keyword}");
+                Console.WriteLine($">>>>>>>>>>>>>>>>>>>>>>\n> search keyword: {keyword}");
                 var searchSongResult = api.Search(keyword, Ncma.SearchType.Song);
+                Console.WriteLine($"> search result code: {searchSongResult.Code}");
                 if (searchSongResult.Code == 200) {
                     var result = FilterSongInSearchResult(searchSongResult, metadata, Ncma.SearchType.Song);
                     if (result != null) {
@@ -95,6 +96,7 @@ namespace NcmlAtwServer {
             }
 
             // search album
+            Console.WriteLine($"> Search keyword: {metadata.Album}");
             var searchAlbumResult = api.Search(metadata.Album, Ncma.SearchType.Album);
             if (searchAlbumResult.Code == 200) {
                 var result = FilterSongInSearchResult(searchAlbumResult, metadata, Ncma.SearchType.Album);
@@ -123,23 +125,39 @@ namespace NcmlAtwServer {
         private static Song FilterSongInSearchResult(SearchResult sr, Metadata metadata, Ncma.SearchType type) {
             var api = new Ncma();
 
-            var artists = metadata.Artist.Split(new string[] { "/", "|", "," }, StringSplitOptions.RemoveEmptyEntries);
+            var artists = metadata.Artist.Split(new string[] { "/", "|", "," }, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Trim());
             bool CheckCorrectSong(Song s) {
                 // check album
-                // check artist
-                // check song title
-                return false;
-            }
-            bool CheckCorrectAlbum(Album a) {
-                // check album title
-                // check artist
-                return false;
-            }
-            bool CheckCorrectSongInAlbum(Song s, Album a) {
-                foreach (var song in a.Songs) {
-                    // check song title
+                Console.WriteLine($"> check album: {s.Al.Name} | {metadata.Album}");
+                if (s.Al.Name.Trim() != metadata.Album.Trim()) {
+                    return false;
                 }
-                return false;
+                // check artists
+                var ars = s.Ar.Select(a => a.Name.Trim());
+                Console.WriteLine($"> check artists: {string.Join(",", ars)} | {string.Join(",", artists)}");
+                if (artists.Any(a => !ars.Contains(a))) {
+                    return false;
+                }
+                // check song title
+                Console.WriteLine($"> check title: {s.Name} | {metadata.Title}");
+                if (s.Name.Trim() == metadata.Title.Trim()) {
+                    return true;
+                }
+                var titles1 = metadata.Title.Split(new string[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Trim()).ToList();
+                var titles2 = s.Name.Split(new string[] { "(", ")" }, StringSplitOptions.RemoveEmptyEntries).Select(a => a.Trim()).ToList();
+                if (titles1.Count > 1 && titles2.Count > 1) {
+                    return titles1[0] == titles2[0] && titles1[1] == titles2[1];
+                }
+                return titles1[0] == titles2[0];
+            }
+            bool CheckCorrectAlbum(Album al) {
+                // check album name
+                if (al.Name.Trim() != metadata.Title.Trim()) {
+                    return false;
+                }
+                // check artists
+                var ars = al.Artists.Select(a => a.Name.Trim());
+                return artists.All(a => ars.Contains(a));
             }
 
             if (type == Ncma.SearchType.Song) {
@@ -160,7 +178,7 @@ namespace NcmlAtwServer {
                         var albumResult = api.Album(album.Id);
                         if (albumResult.Code == 200 && albumResult.Songs != null) {
                             foreach (var song in albumResult.Songs) { // for each songs in album
-                                if (CheckCorrectSongInAlbum(song, album)) {
+                                if (CheckCorrectSong(song)) {
                                     return song;
                                 }
                             }
@@ -170,6 +188,26 @@ namespace NcmlAtwServer {
             }
 
             return null;
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public static Tuple<LyricPage, LyricState> SearchLyricFromNcma(long musicId) {
+            var api = new Ncma();
+            var lr = api.Lyric(musicId);
+            if (lr.Code == 200) {
+                if (lr.Nolyric) {
+                    return new Tuple<LyricPage, LyricState>(null, LyricState.NoLyric);
+                }
+                var lp = LyricPage.ParseLyricPage(lr.Lrc?.Lyric ?? "");
+                if (lp != null) {
+                    return new Tuple<LyricPage, LyricState>(lp, LyricState.Found);
+                }
+            }
+            return new Tuple<LyricPage, LyricState>(null, LyricState.NotFound);
+        }
+
+        public static string GetMusicLink(long musicId) {
+            return $"https://music.163.com/#/song?id={musicId}";
         }
     }
 }

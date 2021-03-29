@@ -91,7 +91,7 @@ namespace NcmlAtwServer {
             } else if (Global.CurrentMusicId == -1) {
                 MessageBox.Show("未找到链接。", "打开链接", MessageBoxButtons.OK, MessageBoxIcon.Error);
             } else {
-                var link = "https://music.163.com/#/song?id=" + Global.CurrentMusicId;
+                var link = Utils.GetMusicLink(Global.CurrentMusicId);
                 Process.Start(link);
             }
         }
@@ -103,7 +103,13 @@ namespace NcmlAtwServer {
         private void MiAdjustOffset_Click(object sender, EventArgs e) {
             if (sender is ToolStripMenuItem mi) {
                 Global.Offset += (double) mi.Tag;
+                miOffsetText.Text = $"当前时间差 : {Global.Offset} 秒";
             }
+        }
+
+        private void MiResetOffset_Click(object sender, EventArgs e) {
+            Global.Offset = 0;
+            miOffsetText.Text = $"当前时间差 : 0 秒";
         }
 
         private void MiCopy_Click(object sender, EventArgs e) {
@@ -114,24 +120,27 @@ namespace NcmlAtwServer {
 
         private void BtnListen_Click(object sender, EventArgs e) {
             if (btnListen.Text == "开始监听") {
+                StopService();
                 StartService();
             } else {
                 StopService();
             }
         }
 
+        // ===========
+        // key methods
+        // ===========
+
         private Thread _socketThread;
         private SocketService _socketService;
         private Timer _globalTimer;
+        private Thread _searchThread;
 
         private void StartService() {
-            StopService();
-            int port = (int) numPort.Value;
-
             _socketService = new SocketService {
                 listenCallback = (ok) => Invoke(new Action(() => {
                     if (!ok) {
-                        MessageBox.Show("端口监听失败，可能因为端口被占用。", "监听", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("监听失败，可能因为端口被占用。", "监听", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         StopService();
                         return;
                     }
@@ -147,14 +156,23 @@ namespace NcmlAtwServer {
                     btnQrcode.Enabled = true;
 
                     // <<<
-                    btnAdjustOffset.Enabled = true;
+                    btnAdjustOffset.Enabled = false;
                     btnShowLyric.Enabled = false;
                     btnVisitLink.Enabled = false;
-                    lblDuration.Text = "正在等待歌曲...";
+                    lblTitle.Visible = lblTitleHint.Visible = false;
+                    lblArtist.Visible = lblArtistHint.Visible = false;
+                    lblAlbum.Visible = lblAlbumHint.Visible = false;
+                    lblLink.Visible = lblLinkHint.Visible = false;
                     lblTitle.Text = "未知标题";
                     lblAlbum.Text = "未知专辑";
                     lblArtist.Text = "未知歌手";
                     lblLink.Text = "未知链接";
+                    lblDuration.Text = "正在等待歌曲...";
+
+                    Global.CurrentMetadata = null;
+                    Global.CurrentState = null;
+                    Global.CurrentPosition = 0;
+                    Global.CurrentMusicId = -1;
                 })),
                 pingCallback = () => Invoke(new Action(() => {
                     Console.WriteLine("pong");
@@ -163,11 +181,12 @@ namespace NcmlAtwServer {
                 metadataCallback = (o) => Invoke(new Action(() => SocketMetadataCallback(o))),
                 playbackStateCallback = (o) => Invoke(new Action(() => SocketPlaybackStateCallback(o))),
                 sessionDestroyedCallback = () => Invoke(new Action(() => {
-                    MessageBox.Show("安卓端的连接已经断开。", "监听", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     StopService();
+                    MessageBox.Show("安卓端的连接已经断开。", "监听", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 })),
             };
 
+            int port = (int) numPort.Value;
             _socketThread = new Thread(() => _socketService.StartService(port)) {
                 IsBackground = true
             };
@@ -180,6 +199,8 @@ namespace NcmlAtwServer {
             _socketThread?.Abort();
             _socketThread = null;
             _globalTimer.Stop();
+            _searchThread?.Abort();
+            _searchThread = null;
 
             Global.IsListening = false;
             btnListen.Text = "开始监听";
@@ -191,25 +212,22 @@ namespace NcmlAtwServer {
             btnAdjustOffset.Enabled = false;
             btnShowLyric.Enabled = false;
             btnVisitLink.Enabled = false;
-            lblDuration.Text = "未监听...";
             lblTitle.Visible = lblTitleHint.Visible = false;
             lblArtist.Visible = lblArtistHint.Visible = false;
             lblAlbum.Visible = lblAlbumHint.Visible = false;
             lblLink.Visible = lblLinkHint.Visible = false;
+            lblDuration.Text = "未监听...";
+
+            Global.CurrentMetadata = null;
+            Global.CurrentState = null;
+            Global.CurrentPosition = 0;
+            Global.CurrentMusicId = -1;
         }
 
         private void SocketMetadataCallback(Metadata obj) {
             if (!Global.IsListening) {
                 return;
             }
-
-            btnShowLyric.Enabled = true;
-            btnVisitLink.Enabled = true;
-            lblTitle.Visible = lblTitleHint.Visible = true;
-            lblArtist.Visible = lblArtistHint.Visible = true;
-            lblAlbum.Visible = lblAlbumHint.Visible = true;
-            lblLink.Visible = lblLinkHint.Visible = true;
-
             if (Global.CurrentMetadata != null && Global.CurrentMetadata.Equals(obj)) {
                 return;
             }
@@ -217,6 +235,14 @@ namespace NcmlAtwServer {
             Global.CurrentPosition = 0;
             Global.CurrentMusicId = -1;
 
+            // <<<
+            btnAdjustOffset.Enabled = true;
+            btnShowLyric.Enabled = true;
+            btnVisitLink.Enabled = true;
+            lblTitle.Visible = lblTitleHint.Visible = true;
+            lblArtist.Visible = lblArtistHint.Visible = true;
+            lblAlbum.Visible = lblAlbumHint.Visible = true;
+            lblLink.Visible = lblLinkHint.Visible = true;
             lblTitle.Text = obj.Title;
             lblArtist.Text = obj.Artist;
             lblAlbum.Text = obj.Album;
@@ -226,7 +252,31 @@ namespace NcmlAtwServer {
             ttpText.SetToolTip(lblAlbum, lblAlbum.Text);
             ttpText.SetToolTip(lblLink, lblLink.Text);
 
-            _globalTimer.Enabled = true;
+            _globalTimer.Start();
+
+            _searchThread?.Abort();
+            _searchThread = new Thread(() => {
+                Song song;
+                try {
+                    song = Utils.SearchMusicFromNcma(obj);
+                } catch (Exception ex) {
+                    Console.WriteLine(ex.Message);
+                    return;
+                }
+                if (song == null) {
+                    Global.CurrentMusicId = -1;
+                    Global.CurrentLyric = null;
+                    Global.CurrentLyricState = LyricState.NotFound;
+                    return;
+                }
+                Global.CurrentMusicId = song.Id;
+                Invoke(new Action(() => {
+                    lblLink.Text = Utils.GetMusicLink(song.Id);
+                    ttpText.SetToolTip(lblLink, lblLink.Text);
+                }));
+                (Global.CurrentLyric, Global.CurrentLyricState) = Utils.SearchLyricFromNcma(song.Id);
+            });
+            _searchThread.Start();
         }
 
         private void SocketPlaybackStateCallback(PlaybackState obj) {
@@ -234,32 +284,38 @@ namespace NcmlAtwServer {
                 return;
             }
 
+            Global.CurrentState = obj;
+            Global.CurrentPosition = obj.CurrentPosition;
+            Global.LastUpdateTimestamp = Utils.GetCurrentTimestamp(); // ms
+
+            // <<<
+            btnAdjustOffset.Enabled = true;
+            btnShowLyric.Enabled = true;
+            btnVisitLink.Enabled = true;
             lblTitle.Visible = lblTitleHint.Visible = true;
             lblArtist.Visible = lblArtistHint.Visible = true;
             lblAlbum.Visible = lblAlbumHint.Visible = true;
             lblLink.Visible = lblLinkHint.Visible = true;
 
-            Global.CurrentState = obj;
-            Global.LastUpdateTimestamp = Utils.GetCurrentTimestamp(); // ms
-            _globalTimer.Enabled = true;
+            _globalTimer.Start();
         }
 
         private void GlobalTimer_Elapsed(object sender, ElapsedEventArgs e) {
             if (Global.CurrentMetadata == null) {
                 lblDuration.Text = "正在等待歌曲...";
             } else if (Global.CurrentState == null) {
-                var s = Global.CurrentMetadata.Duration;
-                lblDuration.Text = string.Format("{0:00}:{1:00}", (int) (s / 60.0), (int) (s % 60.0));
+                var tot = Global.CurrentMetadata.Duration;
+                lblDuration.Text = string.Format("当前进度 : 00:00 / {0:00}:{1:00}", (int) (tot / 60.0), (int) (tot % 60.0));
             } else {
                 long now = Utils.GetCurrentTimestamp(); // ms
-                Global.CurrentPosition = Global.CurrentState.CurrentPosition + (double) ((now - Global.LastUpdateTimestamp) / 1000.0);
+                Global.CurrentPosition = Global.CurrentState.CurrentPosition + (double) ((now - Global.LastUpdateTimestamp) / 1000.0) + Global.Offset;
                 if (!Global.CurrentState.IsPlaying || Global.CurrentPosition >= Global.CurrentMetadata.Duration) {
                     return;
                 }
 
-                var curS = Global.CurrentPosition;
-                var totS = Global.CurrentMetadata.Duration;
-                lblDuration.Text = string.Format("{0:00}:{1:00} / {2:00}:{3:00}", (int) (curS / 60.0), (int) (curS % 60.0), (int) (totS / 60.0), (int) (totS % 60.0));
+                var cur = Global.CurrentPosition;
+                var tot = Global.CurrentMetadata.Duration;
+                lblDuration.Text = string.Format("当前进度 : {0:00}:{1:00} / {2:00}:{3:00}", (int) (cur / 60.0), (int) (cur % 60.0), (int) (tot / 60.0), (int) (tot % 60.0));
             }
         }
     }
