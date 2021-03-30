@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -68,6 +69,10 @@ namespace NcmlAtwServer {
 
         public List<LyricLine> Lines { get; set; }
 
+        public override string ToString() {
+            return string.Join("\n", Lines.Select(l => l.ToString()));
+        }
+
         private static readonly Regex LYRIC_PAGE_REGEXP = new Regex(@"(\[\d{1,2}:\d{1,2}(.\d{1,3})*\])+.*");
 
         public static LyricPage ParseLyricPage(string s) {
@@ -84,14 +89,6 @@ namespace NcmlAtwServer {
             result.Sort();
             return new LyricPage { Lines = result };
         }
-
-        public override string ToString() {
-            var sb = new StringBuilder();
-            foreach (var line in Lines) {
-                sb.AppendLine(line.ToString());
-            }
-            return sb.ToString();
-        }
     }
 
     class LyricLine : IComparable<LyricLine> {
@@ -100,7 +97,7 @@ namespace NcmlAtwServer {
         public int Second { get; set; }
         public int Millisecond { get; set; }
         public string Lyric { set; get; }
-        public long Duration { get => Millisecond * 10 + Second * 1000 + Minute * 60000; }
+        public double Duration { get => Millisecond / 100.0 + Second + Minute * 60; }
 
         public override string ToString() {
             return string.Format("[{0:00}:{1:00}:{2:000}] {3}", Minute, Second, Millisecond, Lyric);

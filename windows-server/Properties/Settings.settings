@@ -32,5 +32,14 @@
     <Setting Name="LyricAdjustOffset" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="LyricFont" Type="System.Drawing.Font" Scope="User">
+      <Value Profile="(Default)">Yu Gothic UI, 48pt</Value>
+    </Setting>
+    <Setting Name="LyricForeColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">White</Value>
+    </Setting>
+    <Setting Name="LyricBackColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">Black</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

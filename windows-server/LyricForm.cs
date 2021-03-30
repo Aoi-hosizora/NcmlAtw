@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Timers;
 using System.Windows.Forms;
 
@@ -44,6 +45,9 @@ namespace NcmlAtwServer {
                 }
             }
 
+            lblLyric.Font = Properties.Settings.Default.LyricFont;
+            lblLyric.ForeColor = Properties.Settings.Default.LyricForeColor;
+            BackColor = Properties.Settings.Default.LyricBackColor;
             miLockWindow.Checked = Properties.Settings.Default.LyricLock;
             miAdjustOffset.Checked = Properties.Settings.Default.LyricAdjustOffset;
             for (int i = 1; i <= 10; i++) {
@@ -215,7 +219,7 @@ namespace NcmlAtwServer {
         }
 
         private void MiRestoreWindow_Click(object sender, EventArgs e) {
-            Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 100, 120);
+            Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 100, 100);
             Top = Screen.PrimaryScreen.WorkingArea.Height - Height;
             Left = (Screen.PrimaryScreen.WorkingArea.Width - Width) / 2;
         }
@@ -246,6 +250,61 @@ namespace NcmlAtwServer {
             btnFaster.Visible = miAdjustOffset.Checked;
         }
 
+        private void MiFont_Click(object sender, EventArgs e) {
+            var dlg = new FontDialog {
+                Font = Properties.Settings.Default.LyricFont,
+                ShowColor = false,
+                ShowEffects = true,
+                ShowApply = false,
+                ShowHelp = false,
+                AllowVerticalFonts = false,
+                FontMustExist = true
+            };
+            var ok = dlg.ShowDialog();
+            if (ok == DialogResult.OK) {
+                lblLyric.Font = dlg.Font;
+                Properties.Settings.Default.LyricFont = dlg.Font;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        private void MiForeColor_Click(object sender, EventArgs e) {
+            var dlg = new ColorDialog {
+                Color = Properties.Settings.Default.LyricForeColor,
+                AnyColor = true,
+                FullOpen = true
+            };
+            var ok = dlg.ShowDialog();
+            if (ok == DialogResult.OK) {
+                lblLyric.ForeColor = dlg.Color;
+                Properties.Settings.Default.LyricForeColor = dlg.Color;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        private void MiBackColor_Click(object sender, EventArgs e) {
+            var dlg = new ColorDialog {
+                Color = Properties.Settings.Default.LyricBackColor,
+                AnyColor = true,
+                FullOpen = true
+            };
+            var ok = dlg.ShowDialog();
+            if (ok == DialogResult.OK) {
+                BackColor = dlg.Color;
+                Properties.Settings.Default.LyricBackColor = dlg.Color;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        private void MiRestoreStyle_Click(object sender, EventArgs e) {
+            lblLyric.Font = new Font("Yu Gothic UI", 48F);
+            lblLyric.ForeColor = Color.White;
+            BackColor = Color.Black;
+            Properties.Settings.Default.LyricFont = lblLyric.Font;
+            Properties.Settings.Default.LyricForeColor = lblLyric.ForeColor;
+            Properties.Settings.Default.LyricBackColor = BackColor;
+        }
+
         private void BtnSlower_Click(object sender, EventArgs e) {
             Global.Offset -= 0.5; // -0.5s
         }
@@ -263,12 +322,126 @@ namespace NcmlAtwServer {
             }
         }
 
+        private void MiShowLyric_Click(object sender, EventArgs e) {
+            if (Global.CurrentLyric == null) {
+                MessageBox.Show("该歌曲无歌词。", "完整歌词", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            } else {
+                MessageBox.Show(Global.CurrentLyric.ToString(), "完整歌词", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        /// <summary>变换成的文字</summary>
+        private string _transformDestination = "";
+        /// <summary>是否是变换的第一部分，及渐变至 BackColor</summary>
+        private bool _isTransformFront = true;
+        /// <summary>变换速率</summary>
+        private const int _colorRate = 20;
+
+        private void TransformToText(string s) {
+            if (lblLyric.Text != s) {
+                _transformDestination = s;
+                _isTransformFront = true;
+                tmrText.Start();
+            }
+        }
+
+        private void TmrText_Tick(object sender, EventArgs e) {
+            int r = lblLyric.ForeColor.R;
+            int g = lblLyric.ForeColor.G;
+            int b = lblLyric.ForeColor.B;
+            var dest = _isTransformFront ? BackColor : Properties.Settings.Default.LyricForeColor; // BackColor -> ForeColor
+            r = (r == dest.R) ? r : ((r > dest.R) ? (r - _colorRate <= 0 ? 0 : r - _colorRate) : (r + _colorRate >= 255 ? 255 : r + _colorRate));
+            g = (g == dest.G) ? g : ((g > dest.G) ? (g - _colorRate <= 0 ? 0 : g - _colorRate) : (g + _colorRate >= 255 ? 255 : g + _colorRate));
+            b = (b == dest.B) ? b : ((b > dest.B) ? (b - _colorRate <= 0 ? 0 : b - _colorRate) : (b + _colorRate >= 255 ? 255 : b + _colorRate));
+            lblLyric.ForeColor = Color.FromArgb(r, g, b);
+
+            if (Math.Abs(r - dest.R) < _colorRate && Math.Abs(g - dest.G) < _colorRate && Math.Abs(b - dest.B) < _colorRate) {
+                if (_isTransformFront) {
+                    _isTransformFront = false;
+                    lblLyric.Text = _transformDestination;
+                } else {
+                    tmrText.Stop();
+                }
+            }
+        }
+
+        /// <summary>当前的歌词行</summary>
+        private int _currentLineIdx = -1;
+        private bool _isSearching = false;
+
+        /// <summary>更新当前的歌词</summary>
+        public void UpdateSongLyric(bool isSearching) {
+            _currentLineIdx = -1;
+            _isSearching = isSearching;
+            if (isSearching) {
+                if (Global.CurrentMusicId == -1 || Global.CurrentMetadata == null) {
+                    TransformToText("正在搜索歌曲...");
+                } else if (Global.CurrentLyricState == LyricState.NotFound) {
+                    TransformToText("正在搜索歌詞...");
+                } else {
+                    TransformToText("正在搜索...");
+                }
+            } else if (Global.CurrentMusicId == -1 || Global.CurrentMetadata == null) {
+                TransformToText("未找到歌曲");
+            } else if (Global.CurrentLyricState == LyricState.NotFound) {
+                TransformToText("未找到歌詞");
+            } else if (Global.CurrentLyricState == LyricState.NoLyric) {
+                TransformToText("純音樂 請欣賞");
+            } else if (Global.CurrentMetadata != null) {
+                TransformToText(Global.CurrentMetadata.Title);
+            } else {
+                TransformToText("......");
+            }
+        }
+
         public void GlobalTimer_Elapsed(object sender, ElapsedEventArgs e) {
+            // 窗口
             if (Properties.Settings.Default.LyricLock) {
                 var onBtn = Utils.ControlInRange(this, btnOption) || Utils.ControlInRange(this, btnFaster) || Utils.ControlInRange(this, btnSlower);
                 Utils.SetWindowCrossOver(this, Opacity, !onBtn);
             } else {
                 Utils.SetWindowCrossOver(this, Opacity, false);
+            }
+
+            // 歌词
+            if (_isSearching || Global.CurrentLyric == null || Global.CurrentMetadata == null) {
+                return;
+            }
+            if (_currentLineIdx == -1) {
+                // 正文前
+                TransformToText(Global.CurrentMetadata.Title);
+                if (Global.CurrentPosition >= Global.CurrentLyric.Lines.ElementAt(0).Duration) {
+                    _currentLineIdx++;
+                }
+            } else if (_currentLineIdx > Global.CurrentLyric.Lines.Count - 1) {
+                // 超过正文末尾
+                _currentLineIdx--;
+            } else {
+                // 正文
+                var currLyric = Global.CurrentLyric.Lines.ElementAt(_currentLineIdx);
+                if (_currentLineIdx == Global.CurrentLyric.Lines.Count - 1) {
+                    // 最后一行
+                    if (Global.CurrentPosition <= currLyric.Duration) {
+                        // 时间过快，上一行
+                        _currentLineIdx--;
+                    } else {
+                        // 最后一行刚好
+                        TransformToText(currLyric.Lyric);
+                    }
+                } else {
+                    // 非最后一行
+                    var nextLyric = Global.CurrentLyric.Lines.ElementAt(_currentLineIdx + 1);
+                    if (Global.CurrentPosition >= currLyric.Duration && Global.CurrentPosition <= nextLyric.Duration) {
+                        // 到达行内
+                        TransformToText(currLyric.Lyric);
+                    } else if (Global.CurrentPosition >= nextLyric.Duration) {
+                        // 下一行
+                        _currentLineIdx++;
+                    } else if (Global.CurrentPosition <= currLyric.Duration) {
+                        // 上一行
+                        _currentLineIdx--;
+                    }
+                }
             }
         }
     }

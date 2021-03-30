@@ -142,5 +142,41 @@ namespace NcmlAtwServer.Properties {
                 this["LyricAdjustOffset"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Yu Gothic UI, 48pt")]
+        public global::System.Drawing.Font LyricFont {
+            get {
+                return ((global::System.Drawing.Font)(this["LyricFont"]));
+            }
+            set {
+                this["LyricFont"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("White")]
+        public global::System.Drawing.Color LyricForeColor {
+            get {
+                return ((global::System.Drawing.Color)(this["LyricForeColor"]));
+            }
+            set {
+                this["LyricForeColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Black")]
+        public global::System.Drawing.Color LyricBackColor {
+            get {
+                return ((global::System.Drawing.Color)(this["LyricBackColor"]));
+            }
+            set {
+                this["LyricBackColor"] = value;
+            }
+        }
     }
 }

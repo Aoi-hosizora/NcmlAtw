@@ -42,7 +42,7 @@ namespace NcmlAtwServer {
             numPort.Value = Properties.Settings.Default.Port;
 
             lblDuration.Text = "未监听...";
-            _globalTimer = new Timer(100);
+            _globalTimer = new Timer(20);
             _globalTimer.Elapsed += (s, e2) => Invoke(new Action(() => GlobalTimer_Elapsed(s, e2)));
         }
 
@@ -280,19 +280,32 @@ namespace NcmlAtwServer {
             _globalTimer.Start();
             _searchThread?.Abort();
             _searchThread = new Thread(() => {
+                Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: true)));
+                Global.CurrentMusicId = -1;
+                Global.CurrentLyric = null;
+                Global.CurrentLyricState = LyricState.NotFound;
+
                 var song = Utils.SearchMusicFromNcma(obj);
                 if (song == null) {
-                    Global.CurrentMusicId = -1;
-                    Global.CurrentLyric = null;
-                    Global.CurrentLyricState = LyricState.NotFound;
+                    Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: false)));
                     return;
                 }
+
                 Global.CurrentMusicId = song.Id;
                 Invoke(new Action(() => {
                     lblLink.Text = Utils.GetMusicLink(song.Id);
                     tipText.SetToolTip(lblLink, lblLink.Text);
                 }));
-                (Global.CurrentLyric, Global.CurrentLyricState) = Utils.SearchLyricFromNcma(song.Id);
+
+                Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: true)));
+                var (lyricPage, lyricState) = Utils.SearchLyricFromNcma(song.Id);
+                Console.WriteLine($"Lyric lines: {lyricPage?.Lines?.Count ?? 0}, Lyric state: {lyricState}");
+                Global.CurrentLyric = null;
+                Global.CurrentLyricState = lyricState;
+                if (lyricState == LyricState.Found) {
+                    Global.CurrentLyric = lyricPage;
+                }
+                Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: false)));
             });
             _searchThread.Start();
         }
@@ -320,7 +333,9 @@ namespace NcmlAtwServer {
 
         private void GlobalTimer_Elapsed(object sender, ElapsedEventArgs e) {
             if (LyricForm.Instance.IsShown) {
-                LyricForm.Instance.GlobalTimer_Elapsed(sender, e);
+                try {
+                    LyricForm.Instance.GlobalTimer_Elapsed(sender, e);
+                } catch { }
             }
 
             if (Global.CurrentMetadata == null) {

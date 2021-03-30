@@ -195,12 +195,13 @@ namespace NcmlAtwServer {
         public static Tuple<LyricPage, LyricState> SearchLyricFromNcma(long musicId) {
             var api = new Ncma();
             var lr = api.Lyric(musicId);
+            Console.WriteLine($"> lyric response code: {lr.Code}, No lyric: {lr.Nolyric}, lrc: {lr.Lrc?.Lyric?.Length ?? 0}");
             if (lr.Code == 200) {
                 if (lr.Nolyric) {
                     return new Tuple<LyricPage, LyricState>(null, LyricState.NoLyric);
                 }
                 var lp = LyricPage.ParseLyricPage(lr.Lrc?.Lyric ?? "");
-                if (lp != null) {
+                if (lp != null && lp.Lines.Count > 0) {
                     return new Tuple<LyricPage, LyricState>(lp, LyricState.Found);
                 }
             }
