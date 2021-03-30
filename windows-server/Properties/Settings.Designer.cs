@@ -49,7 +49,7 @@ namespace NcmlAtwServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("12122")]
+        [global::System.Configuration.DefaultSettingValueAttribute("12121")]
         public int Port {
             get {
                 return ((int)(this["Port"]));
@@ -68,6 +68,66 @@ namespace NcmlAtwServer.Properties {
             }
             set {
                 this["NetworkInterface"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public int LyricTop {
+            get {
+                return ((int)(this["LyricTop"]));
+            }
+            set {
+                this["LyricTop"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public int LyricLeft {
+            get {
+                return ((int)(this["LyricLeft"]));
+            }
+            set {
+                this["LyricLeft"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1, -1")]
+        public global::System.Drawing.Size LyricSize {
+            get {
+                return ((global::System.Drawing.Size)(this["LyricSize"]));
+            }
+            set {
+                this["LyricSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.75")]
+        public double LyricOpacity {
+            get {
+                return ((double)(this["LyricOpacity"]));
+            }
+            set {
+                this["LyricOpacity"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LyricLock {
+            get {
+                return ((bool)(this["LyricLock"]));
+            }
+            set {
+                this["LyricLock"] = value;
             }
         }
     }

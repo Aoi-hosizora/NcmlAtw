@@ -46,6 +46,8 @@ namespace NcmlAtwServer {
             _globalTimer.Elapsed += (s, e2) => Invoke(new Action(() => GlobalTimer_Elapsed(s, e2)));
         }
 
+        private bool _hasCheckedExit = false;
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
             if (Global.IsListening) {
                 var ok1 = MessageBox.Show("是否结束监听？", "退出", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
@@ -56,14 +58,30 @@ namespace NcmlAtwServer {
                 StopService();
             }
 
-            var ok2 = MessageBox.Show("确定退出程序？", "退出", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-            if (ok2 != DialogResult.Yes) {
-                e.Cancel = true;
-                return;
+            if (!_hasCheckedExit) {
+                var ok2 = MessageBox.Show("确定退出程序？", "退出", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (ok2 != DialogResult.Yes) {
+                    e.Cancel = true;
+                    return;
+                }
+                Properties.Settings.Default.Top = Top;
+                Properties.Settings.Default.Left = Left;
+                Properties.Settings.Default.Save();
             }
-            Properties.Settings.Default.Top = Top;
-            Properties.Settings.Default.Left = Left;
-            Properties.Settings.Default.Save();
+            _hasCheckedExit = true;
+
+            if (LyricForm.Instance.Opacity != 0) {
+                LyricForm.Instance.Close();
+                e.Cancel = true;
+                new Thread(() => {
+                    while (true) {
+                        if (LyricForm.Instance.Opacity <= 0) {
+                            Invoke(new Action(() => Close()));
+                            break;
+                        }
+                    }
+                }).Start();
+            }
         }
 
         private void BtnExit_Click(object sender, EventArgs e) {
@@ -102,8 +120,10 @@ namespace NcmlAtwServer {
 
         private void MiAdjustOffset_Click(object sender, EventArgs e) {
             if (sender is ToolStripMenuItem mi) {
-                Global.Offset += (double) mi.Tag;
-                miOffsetText.Text = $"当前时间差 : {Global.Offset} 秒";
+                if (mi.Tag is double d) {
+                    Global.Offset += d;
+                    miOffsetText.Text = $"当前时间差 : {Global.Offset} 秒";
+                }
             }
         }
 
@@ -116,6 +136,12 @@ namespace NcmlAtwServer {
             if (cmsText.SourceControl is Label c) {
                 Clipboard.SetText(c.Text);
             }
+        }
+
+        private void BtnShowLyric_Click(object sender, EventArgs e) {
+            var form = LyricForm.Instance;
+            form.Activate();
+            form.Show();
         }
 
         private void BtnListen_Click(object sender, EventArgs e) {
@@ -155,10 +181,16 @@ namespace NcmlAtwServer {
                     numPort.ReadOnly = true;
                     btnQrcode.Enabled = true;
 
+                    Global.CurrentMetadata = null;
+                    Global.CurrentState = null;
+                    Global.CurrentPosition = 0;
+                    Global.CurrentMusicId = -1;
+
                     // <<<
                     btnAdjustOffset.Enabled = false;
                     btnShowLyric.Enabled = false;
                     btnVisitLink.Enabled = false;
+                    lblDuration.Text = "正在等待歌曲...";
                     lblTitle.Visible = lblTitleHint.Visible = false;
                     lblArtist.Visible = lblArtistHint.Visible = false;
                     lblAlbum.Visible = lblAlbumHint.Visible = false;
@@ -167,12 +199,6 @@ namespace NcmlAtwServer {
                     lblAlbum.Text = "未知专辑";
                     lblArtist.Text = "未知歌手";
                     lblLink.Text = "未知链接";
-                    lblDuration.Text = "正在等待歌曲...";
-
-                    Global.CurrentMetadata = null;
-                    Global.CurrentState = null;
-                    Global.CurrentPosition = 0;
-                    Global.CurrentMusicId = -1;
                 })),
                 pingCallback = () => Invoke(new Action(() => {
                     Console.WriteLine("pong");
@@ -208,20 +234,20 @@ namespace NcmlAtwServer {
             numPort.ReadOnly = false;
             btnQrcode.Enabled = false;
 
-            // <<<
-            btnAdjustOffset.Enabled = false;
-            btnShowLyric.Enabled = false;
-            btnVisitLink.Enabled = false;
-            lblTitle.Visible = lblTitleHint.Visible = false;
-            lblArtist.Visible = lblArtistHint.Visible = false;
-            lblAlbum.Visible = lblAlbumHint.Visible = false;
-            lblLink.Visible = lblLinkHint.Visible = false;
-            lblDuration.Text = "未监听...";
-
             Global.CurrentMetadata = null;
             Global.CurrentState = null;
             Global.CurrentPosition = 0;
             Global.CurrentMusicId = -1;
+
+            // <<<
+            btnAdjustOffset.Enabled = false;
+            btnShowLyric.Enabled = false;
+            btnVisitLink.Enabled = false;
+            lblDuration.Text = "未监听...";
+            lblTitle.Visible = lblTitleHint.Visible = false;
+            lblArtist.Visible = lblArtistHint.Visible = false;
+            lblAlbum.Visible = lblAlbumHint.Visible = false;
+            lblLink.Visible = lblLinkHint.Visible = false;
         }
 
         private void SocketMetadataCallback(Metadata obj) {
@@ -247,22 +273,15 @@ namespace NcmlAtwServer {
             lblArtist.Text = obj.Artist;
             lblAlbum.Text = obj.Album;
             lblLink.Text = "未知链接";
-            ttpText.SetToolTip(lblTitle, lblTitle.Text);
-            ttpText.SetToolTip(lblArtist, lblArtist.Text);
-            ttpText.SetToolTip(lblAlbum, lblAlbum.Text);
-            ttpText.SetToolTip(lblLink, lblLink.Text);
+            tipText.SetToolTip(lblTitle, lblTitle.Text);
+            tipText.SetToolTip(lblArtist, lblArtist.Text);
+            tipText.SetToolTip(lblAlbum, lblAlbum.Text);
+            tipText.SetToolTip(lblLink, lblLink.Text);
 
             _globalTimer.Start();
-
             _searchThread?.Abort();
             _searchThread = new Thread(() => {
-                Song song;
-                try {
-                    song = Utils.SearchMusicFromNcma(obj);
-                } catch (Exception ex) {
-                    Console.WriteLine(ex.Message);
-                    return;
-                }
+                var song = Utils.SearchMusicFromNcma(obj);
                 if (song == null) {
                     Global.CurrentMusicId = -1;
                     Global.CurrentLyric = null;
@@ -272,7 +291,7 @@ namespace NcmlAtwServer {
                 Global.CurrentMusicId = song.Id;
                 Invoke(new Action(() => {
                     lblLink.Text = Utils.GetMusicLink(song.Id);
-                    ttpText.SetToolTip(lblLink, lblLink.Text);
+                    tipText.SetToolTip(lblLink, lblLink.Text);
                 }));
                 (Global.CurrentLyric, Global.CurrentLyricState) = Utils.SearchLyricFromNcma(song.Id);
             });

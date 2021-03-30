@@ -59,7 +59,7 @@ namespace NcmlAtwServer {
             this.miSlowHalfSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miFastSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miSlowSecond = new System.Windows.Forms.ToolStripMenuItem();
-            this.ttpText = new System.Windows.Forms.ToolTip(this.components);
+            this.tipText = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).BeginInit();
             this.cmsText.SuspendLayout();
             this.gpbNetwork.SuspendLayout();
@@ -169,6 +169,7 @@ namespace NcmlAtwServer {
             this.btnShowLyric.TabIndex = 19;
             this.btnShowLyric.Text = "显示桌面歌词";
             this.btnShowLyric.UseVisualStyleBackColor = true;
+            this.btnShowLyric.Click += new System.EventHandler(this.BtnShowLyric_Click);
             // 
             // btnVisitLink
             // 
@@ -369,15 +370,15 @@ namespace NcmlAtwServer {
             // cmsAdjustOffset
             // 
             this.cmsAdjustOffset.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miOffsetText,
-            this.miResetOffset,
-            this.sepAdjustOffset,
             this.miFastHalfHalfSecond,
             this.miSlowHalfHalfSecond,
             this.miFastHalfSecond,
             this.miSlowHalfSecond,
             this.miFastSecond,
-            this.miSlowSecond});
+            this.miSlowSecond,
+            this.sepAdjustOffset,
+            this.miOffsetText,
+            this.miResetOffset});
             this.cmsAdjustOffset.Name = "cmsAdjustOffset";
             this.cmsAdjustOffset.Size = new System.Drawing.Size(165, 186);
             // 
@@ -404,7 +405,7 @@ namespace NcmlAtwServer {
             // 
             this.miFastHalfHalfSecond.Name = "miFastHalfHalfSecond";
             this.miFastHalfHalfSecond.Size = new System.Drawing.Size(164, 22);
-            this.miFastHalfHalfSecond.Tag = 0.25;
+            this.miFastHalfHalfSecond.Tag = 0.25D;
             this.miFastHalfHalfSecond.Text = "快 0.25 秒";
             this.miFastHalfHalfSecond.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
@@ -412,7 +413,7 @@ namespace NcmlAtwServer {
             // 
             this.miSlowHalfHalfSecond.Name = "miSlowHalfHalfSecond";
             this.miSlowHalfHalfSecond.Size = new System.Drawing.Size(164, 22);
-            this.miFastHalfHalfSecond.Tag = -0.25;
+            this.miSlowHalfHalfSecond.Tag = -0.25D;
             this.miSlowHalfHalfSecond.Text = "慢 0.25 秒";
             this.miSlowHalfHalfSecond.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
@@ -420,7 +421,7 @@ namespace NcmlAtwServer {
             // 
             this.miFastHalfSecond.Name = "miFastHalfSecond";
             this.miFastHalfSecond.Size = new System.Drawing.Size(164, 22);
-            this.miFastHalfSecond.Tag = 0.5;
+            this.miFastHalfSecond.Tag = 0.5D;
             this.miFastHalfSecond.Text = "快 0.5 秒";
             this.miFastHalfSecond.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
@@ -428,7 +429,7 @@ namespace NcmlAtwServer {
             // 
             this.miSlowHalfSecond.Name = "miSlowHalfSecond";
             this.miSlowHalfSecond.Size = new System.Drawing.Size(164, 22);
-            this.miSlowHalfSecond.Tag = -0.5;
+            this.miSlowHalfSecond.Tag = -0.5D;
             this.miSlowHalfSecond.Text = "慢 0.5 秒";
             this.miSlowHalfSecond.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
@@ -436,7 +437,7 @@ namespace NcmlAtwServer {
             // 
             this.miFastSecond.Name = "miFastSecond";
             this.miFastSecond.Size = new System.Drawing.Size(164, 22);
-            this.miFastSecond.Tag = 1;
+            this.miFastSecond.Tag = 1D;
             this.miFastSecond.Text = "快 1 秒";
             this.miFastSecond.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
@@ -444,7 +445,7 @@ namespace NcmlAtwServer {
             // 
             this.miSlowSecond.Name = "miSlowSecond";
             this.miSlowSecond.Size = new System.Drawing.Size(164, 22);
-            this.miSlowSecond.Tag = -1;
+            this.miSlowSecond.Tag = -1D;
             this.miSlowSecond.Text = "慢 1 秒";
             this.miSlowSecond.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
@@ -509,7 +510,7 @@ namespace NcmlAtwServer {
         private System.Windows.Forms.ToolStripMenuItem miSlowHalfSecond;
         private System.Windows.Forms.ToolStripMenuItem miFastSecond;
         private System.Windows.Forms.ToolStripMenuItem miSlowSecond;
-        private System.Windows.Forms.ToolTip ttpText;
+        private System.Windows.Forms.ToolTip tipText;
         private System.Windows.Forms.ToolStripMenuItem miResetOffset;
         private System.Windows.Forms.ToolStripMenuItem miOffsetText;
         private System.Windows.Forms.ToolStripSeparator sepAdjustOffset;

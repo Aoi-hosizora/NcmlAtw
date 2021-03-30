@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -208,6 +209,30 @@ namespace NcmlAtwServer {
 
         public static string GetMusicLink(long musicId) {
             return $"https://music.163.com/#/song?id={musicId}";
+        }
+
+        private const uint WS_EX_LAYERED = 0x80000;
+        private const int WS_EX_TRANSPARENT = 0x20;
+        private const int GWL_EXSTYLE = (-20);
+        private const int LWA_ALPHA = 0x2;
+
+        [DllImport("user32")]
+        public static extern uint SetWindowLong(IntPtr hwnd, int nIndex, uint dwNewLong);
+
+        [DllImport("user32")]
+        public static extern uint GetWindowLong(IntPtr hwnd, int nIndex);
+
+        [DllImport("user32")]
+        public static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, int bAlpha, int dwFlags);
+
+        public static void SetWindowCrossOver(Form form, double opacity, bool isCross) {
+            // uint intExTemp = GetWindowLong(form.Handle, GWL_EXSTYLE);
+            if (isCross) {
+                SetWindowLong(form.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            } else {
+                SetWindowLong(form.Handle, GWL_EXSTYLE, WS_EX_LAYERED);
+            }
+            SetLayeredWindowAttributes(form.Handle, 0, (int) (opacity * 255), LWA_ALPHA);
         }
     }
 }
