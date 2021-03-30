@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val QRCODE_MAGIC = "NCMLATW-"
         private const val REQUEST_CAMERA_PERMISSION_CODE = 1
+        private var SHOWING_NO_SESSION_DIALOG = false
+        private var SHOWING_DISCONNECT_DIALOG = false
     }
 
     private lateinit var adtIP: ArrayAdapter<String>
@@ -232,21 +234,31 @@ class MainActivity : AppCompatActivity() {
 
         @UiThread
         override fun onSessionDestroyed() {
-            showAlertDialog("服务", "网易云音乐 app 已经关闭。")
+            if (!SHOWING_NO_SESSION_DIALOG) {
+                SHOWING_NO_SESSION_DIALOG = true
+                showAlertDialog("服务", "网易云音乐 app 已经关闭。", false) { _, _ -> SHOWING_NO_SESSION_DIALOG = false }
+            }
             processStopService()
         }
 
-        @SuppressLint("SetTextI18n")
         @WorkerThread
         override fun onSend(text: String, checkResult: Boolean) {
             runOnUiThread {
                 appendLog(text)
             }
 
-            if (!SendUtils.send(text) && checkResult) {
+            for (i in 0..1) { // retry
+                if (SendUtils.send(text)) {
+                    return
+                }
+            }
+            if (checkResult) {
                 // disconnected
                 runOnUiThread {
-                    showAlertDialog("服务", "连接已断开。")
+                    if (!SHOWING_DISCONNECT_DIALOG) {
+                        SHOWING_DISCONNECT_DIALOG = true
+                        showAlertDialog("服务", "连接已断开。", false) { _, _ -> SHOWING_DISCONNECT_DIALOG = false }
+                    }
                     processStopService()
                 }
             }

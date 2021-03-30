@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
 
@@ -67,14 +68,16 @@ namespace NcmlAtwServer {
         }
 
         private void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
+            _instance = null;
             IsShown = false;
-            e.Cancel = Opacity != 0;
-            tmrShow.Stop();
-            tmrHide.Start();
+            if (Opacity != 0) {
+                e.Cancel = true;
+                tmrShow.Stop();
+                tmrHide.Start();
+            }
         }
 
         private void LyricForm_FormClosed(object sender, FormClosedEventArgs e) {
-            _instance = null;
             Properties.Settings.Default.LyricTop = Top;
             Properties.Settings.Default.LyricLeft = Left;
             Properties.Settings.Default.LyricSize = Size;

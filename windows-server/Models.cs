@@ -117,9 +117,15 @@ namespace NcmlAtwServer {
             }
             if (sp.Length == 2) { // [1]2
                 lyric = sp[1].Trim();
+                if (string.IsNullOrEmpty(lyric)) {
+                    return new List<LyricLine>();
+                }
                 timeStrings.Add(sp[0].Trim());
             } else { // [1][2][3]4
                 lyric = sp[sp.Length - 1].Trim();
+                if (string.IsNullOrEmpty(lyric)) {
+                    return new List<LyricLine>();
+                }
                 for (int i = 0; i < sp.Length - 1; i++) {
                     timeStrings.Add(sp[i].Trim());
                 }

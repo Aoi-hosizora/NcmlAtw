@@ -226,6 +226,9 @@ namespace NcmlAtwServer {
             _globalTimer.Stop();
             _searchThread?.Abort();
             _searchThread = null;
+            if (LyricForm.Instance.Opacity != 0) {
+                LyricForm.Instance.Close();
+            }
 
             Global.IsListening = false;
             btnListen.Text = "开始监听";
