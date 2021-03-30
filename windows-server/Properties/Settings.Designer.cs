@@ -130,5 +130,17 @@ namespace NcmlAtwServer.Properties {
                 this["LyricLock"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool LyricAdjustOffset {
+            get {
+                return ((bool)(this["LyricAdjustOffset"]));
+            }
+            set {
+                this["LyricAdjustOffset"] = value;
+            }
+        }
     }
 }

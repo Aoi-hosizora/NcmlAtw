@@ -115,6 +115,7 @@ namespace NcmlAtwServer {
         }
 
         private void BtnAdjustOffset_Click(object sender, EventArgs e) {
+            miOffsetText.Text = $"当前时间差 : {Global.Offset} 秒";
             cmsAdjustOffset.Show(btnAdjustOffset, new Point(0, btnAdjustOffset.Height));
         }
 
@@ -122,14 +123,12 @@ namespace NcmlAtwServer {
             if (sender is ToolStripMenuItem mi) {
                 if (mi.Tag is double d) {
                     Global.Offset += d;
-                    miOffsetText.Text = $"当前时间差 : {Global.Offset} 秒";
                 }
             }
         }
 
         private void MiResetOffset_Click(object sender, EventArgs e) {
             Global.Offset = 0;
-            miOffsetText.Text = $"当前时间差 : 0 秒";
         }
 
         private void MiCopy_Click(object sender, EventArgs e) {
@@ -320,6 +319,10 @@ namespace NcmlAtwServer {
         }
 
         private void GlobalTimer_Elapsed(object sender, ElapsedEventArgs e) {
+            if (LyricForm.Instance.IsShown) {
+                LyricForm.Instance.GlobalTimer_Elapsed(sender, e);
+            }
+
             if (Global.CurrentMetadata == null) {
                 lblDuration.Text = "正在等待歌曲...";
             } else if (Global.CurrentState == null) {

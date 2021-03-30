@@ -226,13 +226,20 @@ namespace NcmlAtwServer {
         public static extern int SetLayeredWindowAttributes(IntPtr hwnd, int crKey, int bAlpha, int dwFlags);
 
         public static void SetWindowCrossOver(Form form, double opacity, bool isCross) {
-            // uint intExTemp = GetWindowLong(form.Handle, GWL_EXSTYLE);
+            GetWindowLong(form.Handle, GWL_EXSTYLE);
             if (isCross) {
                 SetWindowLong(form.Handle, GWL_EXSTYLE, WS_EX_TRANSPARENT | WS_EX_LAYERED);
             } else {
                 SetWindowLong(form.Handle, GWL_EXSTYLE, WS_EX_LAYERED);
             }
             SetLayeredWindowAttributes(form.Handle, 0, (int) (opacity * 255), LWA_ALPHA);
+        }
+
+        public static bool ControlInRange(Control parent, Control ctrl) {
+            return Cursor.Position.X > parent.Left + ctrl.Left &&
+                Cursor.Position.X < parent.Left + ctrl.Left + ctrl.Width &&
+                Cursor.Position.Y > parent.Top + ctrl.Top &&
+                Cursor.Position.Y < parent.Top + ctrl.Top + ctrl.Height;
         }
     }
 }

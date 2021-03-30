@@ -31,10 +31,14 @@ namespace NcmlAtwServer {
             this.cmsOption = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.miRestoreWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.miLockWindow = new System.Windows.Forms.ToolStripMenuItem();
+            this.miOpacity = new System.Windows.Forms.ToolStripMenuItem();
+            this.miAdjustOffset = new System.Windows.Forms.ToolStripMenuItem();
             this.divOption = new System.Windows.Forms.ToolStripSeparator();
             this.miShowMainWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.miExit = new System.Windows.Forms.ToolStripMenuItem();
             this.tipLyric = new System.Windows.Forms.ToolTip(this.components);
+            this.btnFaster = new System.Windows.Forms.Button();
+            this.btnSlower = new System.Windows.Forms.Button();
             this.cmsOption.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -51,7 +55,6 @@ namespace NcmlAtwServer {
             // btnOption
             // 
             this.btnOption.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOption.ContextMenuStrip = this.cmsOption;
             this.btnOption.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
             this.btnOption.ForeColor = System.Drawing.Color.White;
             this.btnOption.Image = global::NcmlAtwServer.Properties.Resources.Option;
@@ -68,11 +71,13 @@ namespace NcmlAtwServer {
             this.cmsOption.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miRestoreWindow,
             this.miLockWindow,
+            this.miOpacity,
+            this.miAdjustOffset,
             this.divOption,
             this.miShowMainWindow,
             this.miExit});
             this.cmsOption.Name = "cmsOption";
-            this.cmsOption.Size = new System.Drawing.Size(198, 98);
+            this.cmsOption.Size = new System.Drawing.Size(198, 142);
             // 
             // miRestoreWindow
             // 
@@ -89,6 +94,21 @@ namespace NcmlAtwServer {
             this.miLockWindow.Size = new System.Drawing.Size(197, 22);
             this.miLockWindow.Text = "锁定窗口(L)";
             this.miLockWindow.Click += new System.EventHandler(this.MiLockWindow_Click);
+            // 
+            // miOpacity
+            // 
+            this.miOpacity.Name = "miOpacity";
+            this.miOpacity.Size = new System.Drawing.Size(197, 22);
+            this.miOpacity.Text = "透明度(&O)";
+            // 
+            // miAdjustOffset
+            // 
+            this.miAdjustOffset.Checked = true;
+            this.miAdjustOffset.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.miAdjustOffset.Name = "miAdjustOffset";
+            this.miAdjustOffset.Size = new System.Drawing.Size(197, 22);
+            this.miAdjustOffset.Text = "调整时间差(&O)";
+            this.miAdjustOffset.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
             // divOption
             // 
@@ -109,13 +129,43 @@ namespace NcmlAtwServer {
             this.miExit.Text = "退出(&X)";
             this.miExit.Click += new System.EventHandler(this.MiExit_Click);
             // 
+            // btnFaster
+            // 
+            this.btnFaster.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnFaster.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnFaster.ForeColor = System.Drawing.Color.White;
+            this.btnFaster.Image = global::NcmlAtwServer.Properties.Resources.Faster;
+            this.btnFaster.Location = new System.Drawing.Point(1320, 70);
+            this.btnFaster.Name = "btnFaster";
+            this.btnFaster.Size = new System.Drawing.Size(24, 24);
+            this.btnFaster.TabIndex = 0;
+            this.tipLyric.SetToolTip(this.btnFaster, "歌词加快 0.5 秒");
+            this.btnFaster.UseVisualStyleBackColor = true;
+            this.btnFaster.Click += new System.EventHandler(this.BtnFaster_Click);
+            // 
+            // btnSlower
+            // 
+            this.btnSlower.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSlower.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.btnSlower.ForeColor = System.Drawing.Color.White;
+            this.btnSlower.Image = global::NcmlAtwServer.Properties.Resources.Slower;
+            this.btnSlower.Location = new System.Drawing.Point(1293, 70);
+            this.btnSlower.Name = "btnSlower";
+            this.btnSlower.Size = new System.Drawing.Size(24, 24);
+            this.btnSlower.TabIndex = 0;
+            this.tipLyric.SetToolTip(this.btnSlower, "歌词放慢 0.5 秒");
+            this.btnSlower.UseVisualStyleBackColor = true;
+            this.btnSlower.Click += new System.EventHandler(this.BtnSlower_Click);
+            // 
             // LyricForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(1350, 100);
+            this.Controls.Add(this.btnSlower);
+            this.Controls.Add(this.btnFaster);
             this.Controls.Add(this.btnOption);
-            this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Font = new System.Drawing.Font("Yu Gothic UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -145,5 +195,9 @@ namespace NcmlAtwServer {
         private System.Windows.Forms.ToolStripMenuItem miExit;
         private System.Windows.Forms.ToolStripMenuItem miLockWindow;
         private System.Windows.Forms.ToolStripMenuItem miShowMainWindow;
+        private System.Windows.Forms.ToolStripMenuItem miOpacity;
+        private System.Windows.Forms.Button btnFaster;
+        private System.Windows.Forms.Button btnSlower;
+        private System.Windows.Forms.ToolStripMenuItem miAdjustOffset;
     }
 }
