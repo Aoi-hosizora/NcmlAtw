@@ -85,8 +85,14 @@ namespace NcmlAtwServer {
 
             // search song
             foreach (var keyword in GetSearchKeywords(metadata)) {
-                Console.WriteLine($">>>>>>>>>>>>>>>>>>>>>>\n> search keyword: {keyword}");
-                var searchSongResult = api.Search(keyword, Ncma.SearchType.Song);
+                Console.WriteLine($">>>>>>>>>>>>>>>>>>>>>>\n> search song keyword: {keyword}");
+                SearchResult searchSongResult;
+                try {
+                    searchSongResult = api.Search(keyword, Ncma.SearchType.Song);
+                } catch (Exception ex) {
+                    Console.WriteLine(ex.Message);
+                    continue; // ex
+                }
                 Console.WriteLine($"> search result code: {searchSongResult.Code}");
                 if (searchSongResult.Code == 200) {
                     var result = FilterSongInSearchResult(searchSongResult, metadata, Ncma.SearchType.Song);
@@ -97,8 +103,14 @@ namespace NcmlAtwServer {
             }
 
             // search album
-            Console.WriteLine($"> Search keyword: {metadata.Album}");
-            var searchAlbumResult = api.Search(metadata.Album, Ncma.SearchType.Album);
+            Console.WriteLine($">>>>>>>>>>>>>>>>>>>>>>\n> Search album keyword: {metadata.Album}");
+            SearchResult searchAlbumResult;
+            try {
+                searchAlbumResult = api.Search(metadata.Album, Ncma.SearchType.Album);
+            } catch (Exception ex) {
+                Console.WriteLine(ex.Message);
+                return null; // ex
+            }
             if (searchAlbumResult.Code == 200) {
                 var result = FilterSongInSearchResult(searchAlbumResult, metadata, Ncma.SearchType.Album);
                 if (result != null) {
@@ -176,7 +188,13 @@ namespace NcmlAtwServer {
                 }
                 foreach (var album in sr.Result.Albums) { // for each albums
                     if (CheckCorrectAlbum(album)) {
-                        var albumResult = api.Album(album.Id);
+                        AlbumResult albumResult;
+                        try {
+                            albumResult = api.Album(album.Id);
+                        } catch (Exception ex) {
+                            Console.WriteLine(ex);
+                            continue;
+                        }
                         if (albumResult.Code == 200 && albumResult.Songs != null) {
                             foreach (var song in albumResult.Songs) { // for each songs in album
                                 if (CheckCorrectSong(song)) {
@@ -194,13 +212,19 @@ namespace NcmlAtwServer {
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static Tuple<LyricPage, LyricState> SearchLyricFromNcma(long musicId) {
             var api = new Ncma();
-            var lr = api.Lyric(musicId);
-            Console.WriteLine($"> lyric response code: {lr.Code}, No lyric: {lr.Nolyric}, lrc: {lr.Lrc?.Lyric?.Length ?? 0}");
-            if (lr.Code == 200) {
-                if (lr.Nolyric) {
+            LyricResult result;
+            try {
+                result = api.Lyric(musicId);
+            } catch (Exception ex) {
+                Console.WriteLine(ex);
+                return new Tuple<LyricPage, LyricState>(null, LyricState.NotFound);
+            }
+            Console.WriteLine($"> lyric response code: {result.Code}, No lyric: {result.Nolyric}, lrc: {result.Lrc?.Lyric?.Length ?? 0}");
+            if (result.Code == 200) {
+                if (result.Nolyric) {
                     return new Tuple<LyricPage, LyricState>(null, LyricState.NoLyric);
                 }
-                var lp = LyricPage.ParseLyricPage(lr.Lrc?.Lyric ?? "");
+                var lp = LyricPage.ParseLyricPage(result.Lrc?.Lyric ?? "");
                 if (lp != null && lp.Lines.Count > 0) {
                     return new Tuple<LyricPage, LyricState>(lp, LyricState.Found);
                 }

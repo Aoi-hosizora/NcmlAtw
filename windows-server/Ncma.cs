@@ -122,6 +122,7 @@ namespace NcmlAtwServer {
             string result;
             var nuid = new string(Enumerable.Repeat(_NUIDRAND, 32).Select(s => s[_RANDOM.Next(s.Length)]).ToArray());
             using (var wc = new WebClient()) {
+                wc.Proxy = new WebProxy();
                 wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                 wc.Headers.Add(HttpRequestHeader.Referer, _REFERER);
                 wc.Headers.Add(HttpRequestHeader.UserAgent, _USERAGENTS[_RANDOM.Next(_USERAGENTS.Length)]);
