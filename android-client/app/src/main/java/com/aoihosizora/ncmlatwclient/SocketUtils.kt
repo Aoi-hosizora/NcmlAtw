@@ -10,10 +10,10 @@ import java.lang.Exception
 import java.net.InetSocketAddress
 import java.net.Socket
 
-object SendUtils {
-    var ip: String? = null
-    var port: Int? = null
-    private const val TIMEOUT = 3000 // 3s
+object SocketUtils {
+    private var ip: String? = null
+    private var port: Int? = null
+    private const val CONNECT_TIMEOUT = 3000 // 3s
 
     fun checkIPString(s: String): Boolean {
         return Patterns.IP_ADDRESS.matcher(s).matches()
@@ -32,19 +32,24 @@ object SendUtils {
         return true
     }
 
+    fun storeAddress(ip: String, port: Int) {
+        this.ip = ip
+        this.port = port
+    }
+
     /**
      * Establish socket test connection.
      */
     @WorkerThread
     fun ping(): Boolean {
         if (ip == null || port == null) {
-            return true
+            return false
         }
 
         val socket = Socket()
         try {
             val addr = InetSocketAddress(ip!!, port!!)
-            socket.connect(addr, TIMEOUT)
+            socket.connect(addr, CONNECT_TIMEOUT)
 
             val writer = PrintWriter(socket.getOutputStream(), true)
             val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
@@ -75,7 +80,7 @@ object SendUtils {
         val socket = Socket()
         try {
             val addr = InetSocketAddress(ip!!, port!!)
-            socket.connect(addr, TIMEOUT)
+            socket.connect(addr, CONNECT_TIMEOUT)
 
             val writer = PrintWriter(socket.getOutputStream(), true)
             writer.println(text)

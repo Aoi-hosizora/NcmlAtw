@@ -1,13 +1,12 @@
 package com.aoihosizora.ncmlatwclient
 
 import android.Manifest
-import android.app.ProgressDialog
+import android.app.*
 import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.text.TextUtils
@@ -16,9 +15,10 @@ import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.annotation.UiThread
-import androidx.annotation.WorkerThread
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import com.jwsd.libzxing.OnQRCodeScanCallback
 import com.jwsd.libzxing.QRCodeManager
 import kotlinx.android.synthetic.main.activity_main.*
@@ -48,8 +48,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-        adtIP = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getSavedSpData("ip"))
-        adtPort = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getSavedSpData("port"))
+        adtIP = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getDataFromSP("ip"))
+        adtPort = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getDataFromSP("port"))
         edt_ip.setAdapter(adtIP)
         edt_port.setAdapter(adtPort)
         adtIP.notifyDataSetChanged()
@@ -89,6 +89,11 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
     }
 
+    override fun onDestroy() {
+        processStopService()
+        super.onDestroy()
+    }
+
     override fun onBackPressed() {
         val current = Calendar.getInstance().time
         if (lastBackPressedTime == null || current.time - lastBackPressedTime!!.time > 2000) {
@@ -100,33 +105,31 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initListener() {
-        MainService.eventCallback = EventCallback()
+        MainService.eventListener = EventListener()
 
         edt_ip.setOnClickListener { v -> (v as AutoCompleteTextView).showDropDown() }
         edt_port.setOnClickListener { v -> (v as AutoCompleteTextView).showDropDown() }
 
         btn_qrcode.setOnClickListener { scanQrcode() }
         btn_manual.setOnClickListener { updateManually() }
-        btn_clearLog.setOnClickListener { tv_log.text = "" }
-        btn_service.setOnClickListener {
-            if (btn_service.text == "启动服务") {
-                startService()
-            } else {
-                stopService()
-            }
-        }
+        btn_clearLog.setOnClickListener { clearLog() }
+        btn_service.setOnClickListener { if (btn_service.text == "启动服务") startService() else stopService() }
     }
+
+    // ===============
+    // service related
+    // ===============
 
     @UiThread
     private fun startService() {
         // check address
         val ip = edt_ip.text.toString()
         val portStr = edt_port.text.toString()
-        if (!SendUtils.checkIPString(ip)) {
+        if (!SocketUtils.checkIPString(ip)) {
             showAlertDialog("启动服务", "IP 地址格式有误。")
             return
         }
-        if (!SendUtils.checkPortString(portStr)) {
+        if (!SocketUtils.checkPortString(portStr)) {
             showAlertDialog("启动服务", "无效的端口。")
             return
         }
@@ -134,22 +137,21 @@ class MainActivity : AppCompatActivity() {
 
         // show progress dlg
         var isCanceled = false
-        @Suppress("DEPRECATION") val dlg = ProgressDialog(this)
-        @Suppress("DEPRECATION") dlg.setMessage("正在连接...")
+        val dlg = ProgressDialog(this)
+        dlg.setMessage("正在连接...")
         dlg.setCancelable(true)
         dlg.setOnCancelListener { isCanceled = true }
         dlg.show()
 
         Thread {
-            // connect
-            SendUtils.ip = ip
-            SendUtils.port = port
-            val ok = SendUtils.ping()
+            // start connect
+            SocketUtils.storeAddress(ip, port)
+            val ok = SocketUtils.ping()
             if (isCanceled) {
                 return@Thread
             }
 
-            // process
+            // start service
             runOnUiThread {
                 dlg.dismiss()
                 if (!ok) {
@@ -163,20 +165,12 @@ class MainActivity : AppCompatActivity() {
 
     @UiThread
     private fun stopService() {
-        // process
+        // stop service
         processStopService()
 
-        // disconnect
-        Thread {
-            val dto = DestroyedDto(true)
-            val json = dto.toJSON() ?: return@Thread
-            MainService.eventCallback?.onSend(json.toString(), checkResult = false)
-        }.start()
-    }
-
-    override fun onDestroy() {
-        processStopService()
-        super.onDestroy()
+        // send destroyed
+        val dto = DestroyedDto(true)
+        dto.toJSON()?.let { sendToServer(it.toString()) }
     }
 
     /**
@@ -195,6 +189,16 @@ class MainActivity : AppCompatActivity() {
             startService(Intent(this, MainService::class.java))
         }
 
+        // save sp and update adapter
+        if (saveDataToSP("ip", ip)) {
+            adtIP.add(ip)
+            adtIP.notifyDataSetChanged()
+        }
+        if (saveDataToSP("port", port)) {
+            adtPort.add(port)
+            adtPort.notifyDataSetChanged()
+        }
+
         // update ui
         btn_service.text = "停止服务"
         edt_ip.isEnabled = false
@@ -202,15 +206,24 @@ class MainActivity : AppCompatActivity() {
         btn_qrcode.isEnabled = false
         btn_manual.isEnabled = true
 
-        // save sp and update adapter
-        if (saveDataToSp("ip", ip)) {
-            adtIP.add(ip)
-            adtIP.notifyDataSetChanged()
-        }
-        if (saveDataToSp("port", port)) {
-            adtPort.add(port)
-            adtPort.notifyDataSetChanged()
-        }
+        // setup notification
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channel = NotificationChannel("ncmlatw", "服务状态", NotificationManager.IMPORTANCE_DEFAULT)
+        nm.createNotificationChannel(channel)
+        val contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val actionIntent = PendingIntent.getService(this, 0, Intent(this, NotificationIntentService::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
+        // val actionIntent = PendingIntent.getService(this, 0, Intent(this, MainService::class.java).setAction("UPDATE"), PendingIntent.FLAG_UPDATE_CURRENT)
+        val notification = NotificationCompat.Builder(this, "ncmlatw")
+            .setAutoCancel(false)
+            .setOngoing(true)
+            .setContentTitle("服务已启动")
+            .addAction(R.mipmap.ic_launcher, "手动更新", actionIntent)
+            .setContentText("与 PC 端保持着连接")
+            .setWhen(System.currentTimeMillis())
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentIntent(contentIntent)
+            .build()
+        nm.notify(1, notification)
     }
 
     /**
@@ -232,9 +245,17 @@ class MainActivity : AppCompatActivity() {
         edt_port.isEnabled = true
         btn_qrcode.isEnabled = true
         btn_manual.isEnabled = false
+
+        // remove notification
+        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        nm.cancel(1)
     }
 
-    inner class EventCallback : MainService.EventCallback {
+    // =====================
+    // event respond related
+    // =====================
+
+    inner class EventListener : MainService.EventListener {
 
         @UiThread
         override fun onNoSession() {
@@ -249,45 +270,84 @@ class MainActivity : AppCompatActivity() {
                 showAlertDialog("服务", "网易云音乐 app 已经关闭。", false) { _, _ -> SHOWING_NO_SESSION_DIALOG = false }
             }
             processStopService()
-        }
 
-        @WorkerThread
-        override fun onSend(text: String, checkResult: Boolean) {
-            runOnUiThread {
-                appendLog(text)
-            }
-
-            for (i in 0..1) { // retry
-                if (SendUtils.send(text)) {
-                    return
-                }
-            }
-            if (checkResult) {
-                // disconnected
-                runOnUiThread {
-                    if (!SHOWING_DISCONNECT_DIALOG) {
-                        SHOWING_DISCONNECT_DIALOG = true
-                        showAlertDialog("服务", "连接已断开。", false) { _, _ -> SHOWING_DISCONNECT_DIALOG = false }
-                    }
-                    processStopService()
-                }
-            }
+            val dto = DestroyedDto(true)
+            dto.toJSON()?.let { sendToServer(it.toString()) }
         }
 
         @UiThread
-        override fun onLog(text: String) {
+        override fun onPlaybackStateChanged(isPlaying: Boolean, position: Double) {
+            val dto = PlaybackStateDto(isPlaying, position)
+            dto.toJSON()?.let { sendToServer(it.toString()) }
+        }
+
+        @UiThread
+        override fun onMetadataChanged(title: String, artist: String, album: String, duration: Double) {
+            val dto = MetadataDto(title, artist, album, duration)
+            dto.toJSON()?.let { sendToServer(it.toString()) }
+        }
+
+        @UiThread
+        override fun onServiceLifetime(text: String) {
             appendLog(text)
         }
     }
 
+    /**
+     * Append text to log, send text to server with retrying, show alert dialog when failed and switch on.
+     */
+    @UiThread
+    private fun sendToServer(text: String, failAlert: Boolean = false) {
+        appendLog(text)
+
+        Thread {
+            for (i in 0..2) { // retry twice
+                if (SocketUtils.send(text)) {
+                    return@Thread
+                }
+            }
+            if (failAlert) {
+                runOnUiThread {
+                    if (!SHOWING_DISCONNECT_DIALOG) {
+                        SHOWING_DISCONNECT_DIALOG = true
+                        showAlertDialog("服务", "与 PC 端的连接已断开。", false) { _, _ -> SHOWING_DISCONNECT_DIALOG = false }
+                    }
+                    processStopService()
+                }
+            }
+        }.start()
+    }
+
+    // ================
+    // other actions...
+    // ================
+
     @UiThread
     private fun updateManually() {
-        MainService.mediaController?.let {
-            val state = it.playbackState
-            val metadata = it.metadata
-            if (state != null && metadata != null) {
-                MainService.mediaCallback?.onMetadataChanged(metadata)
-                MainService.mediaCallback?.onPlaybackStateChanged(state)
+        MainService.mediaController?.let { it1 ->
+            MainService.mediaCallback?.let { it2 ->
+                val state = it1.playbackState
+                val metadata = it1.metadata
+                if (state != null && metadata != null) {
+                    it2.onMetadataChanged(metadata)
+                    it2.onPlaybackStateChanged(state)
+                }
+            }
+        }
+    }
+
+    class NotificationIntentService : IntentService("NcmlAtwIntentService") {
+        override fun onHandleIntent(intent: Intent?) {
+            MainService.mediaController?.let { it1 ->
+                MainService.mediaCallback?.let { it2 ->
+                    val state = it1.playbackState
+                    val metadata = it1.metadata
+                    if (state != null && metadata != null) {
+                        // TODO
+                        it2.onMetadataChanged(metadata)
+                        it2.onPlaybackStateChanged(state)
+                    }
+                }
             }
         }
     }
@@ -318,7 +378,7 @@ class MainActivity : AppCompatActivity() {
 
                     val ip = addrSp[0]
                     val portStr = addrSp[1]
-                    if (!SendUtils.checkIPString(ip) || !SendUtils.checkPortString(portStr)) {
+                    if (!SocketUtils.checkIPString(ip) || !SocketUtils.checkPortString(portStr)) {
                         showAlertDialog("扫描二维码", "二维码包含格式错误的 IP 地址和端口。")
                         return
                     }
@@ -334,6 +394,10 @@ class MainActivity : AppCompatActivity() {
                 override fun onCancel() {}
             })
     }
+
+    // =========
+    // others...
+    // =========
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -363,9 +427,11 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    /**
-     * Append log with datetime, and add to the bottom of TextView.
-     */
+    @UiThread
+    private fun clearLog() {
+        tv_log.text = ""
+    }
+
     @UiThread
     private fun appendLog(text: String) {
         val fmt = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
@@ -379,7 +445,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getSavedSpData(name: String): Array<String> {
+    private fun getDataFromSP(name: String): Array<String> {
         val sp = getSharedPreferences(name, Context.MODE_PRIVATE)
         val out = arrayListOf<String>()
         for (entry in sp.all.entries) {
@@ -388,9 +454,9 @@ class MainActivity : AppCompatActivity() {
         return out.toArray(arrayOf<String>())
     }
 
-    private fun saveDataToSp(name: String, value: String): Boolean {
+    private fun saveDataToSP(name: String, value: String): Boolean {
         val sp = getSharedPreferences(name, Context.MODE_PRIVATE)
-        if (!getSavedSpData(name).contains(value)) {
+        if (!getDataFromSP(name).contains(value)) {
             val fmt = SimpleDateFormat("yyyyMMddHHmmss", Locale.CHINA)
             val token = fmt.format(Calendar.getInstance().time)
             val edt = sp.edit()
