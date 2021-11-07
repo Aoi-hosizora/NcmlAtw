@@ -17,7 +17,7 @@ class MainService : NotificationListenerService() {
     companion object {
         var mediaController: MediaController? = null
         var mediaCallback: MediaCallBack? = null
-        var eventListener: EventListener? = null
+        lateinit var eventListener: EventListener
 
         fun isRunning(a: Activity): Boolean {
             val manager = a.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -36,7 +36,7 @@ class MainService : NotificationListenerService() {
 
     override fun onCreate() {
         super.onCreate()
-        eventListener?.onServiceLifetime("onCreate")
+        eventListener.onServiceLifetime("onCreate")
 
         if (mediaController != null) {
             stopSelf()
@@ -50,7 +50,7 @@ class MainService : NotificationListenerService() {
             // get MediaSessionManager
             val manager = getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
             if (manager == null) {
-                eventListener?.onNoSession()
+                eventListener.onNoSession()
                 stopSelf()
                 return
             }
@@ -63,7 +63,7 @@ class MainService : NotificationListenerService() {
                 }
             }
             if (mediaController == null) {
-                eventListener?.onNoSession()
+                eventListener.onNoSession()
                 stopSelf()
                 return
             }
@@ -85,31 +85,14 @@ class MainService : NotificationListenerService() {
     }
 
     override fun onDestroy() {
-        eventListener?.onServiceLifetime("onDestroy")
+        // mediaCallback?.let { mediaController?.unregisterCallback(it) }
+        // mediaCallback = null
+        // mediaController = null
+        eventListener.onServiceLifetime("onDestroy")
         super.onDestroy()
     }
 
     // override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    //     intent?.let { it ->
-    //         if (it.action == "UPDATE") {
-    //             mediaController?.let { it1 ->
-    //                 val state = it1.playbackState
-    //                 val metadata = it1.metadata
-    //                 if (state != null && metadata != null) {
-    //                     val isPlaying = state.state == PlaybackState.STATE_PLAYING
-    //                     val position = state.position.toDouble() / 1000.0
-    //                     val title = metadata.getString(MediaMetadata.METADATA_KEY_TITLE)
-    //                     val artist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST)
-    //                     val album = metadata.getString(MediaMetadata.METADATA_KEY_ALBUM)
-    //                     val duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION).toDouble() / 1000.0
-    //                     Thread {
-    //                         PlaybackStateDto(isPlaying, position).toJSON()?.let { SocketUtils.send(it.toString()) }
-    //                         MetadataDto(title, artist, album, duration).toJSON()?.let { SocketUtils.send(it.toString()) }
-    //                     }.start()
-    //                 }
-    //             }
-    //         }
-    //     }
     //     return START_STICKY
     // }
 
@@ -127,7 +110,7 @@ class MainService : NotificationListenerService() {
             // information
             val isPlaying = state.state == PlaybackState.STATE_PLAYING
             val position = state.position.toDouble() / 1000.0
-            eventListener?.onPlaybackStateChanged(isPlaying, position)
+            eventListener.onPlaybackStateChanged(isPlaying, position)
         }
 
         override fun onMetadataChanged(metadata: MediaMetadata?) {
@@ -141,12 +124,12 @@ class MainService : NotificationListenerService() {
             val artist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST)
             val album = metadata.getString(MediaMetadata.METADATA_KEY_ALBUM)
             val duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION).toDouble() / 1000.0
-            eventListener?.onMetadataChanged(title, artist, album, duration)
+            eventListener.onMetadataChanged(title, artist, album, duration)
         }
 
         override fun onSessionDestroyed() {
             super.onSessionDestroyed()
-            eventListener?.onSessionDestroyed()
+            eventListener.onSessionDestroyed()
             stopSelf()
         }
     }

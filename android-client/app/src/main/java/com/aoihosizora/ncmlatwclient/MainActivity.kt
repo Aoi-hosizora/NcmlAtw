@@ -170,7 +170,7 @@ class MainActivity : AppCompatActivity() {
 
         // send destroyed
         val dto = DestroyedDto(true)
-        dto.toJSON()?.let { sendToServer(it.toString()) }
+        dto.toJSON()?.let { sendToServer(it.toString(), failAlert = false) }
     }
 
     /**
@@ -180,12 +180,14 @@ class MainActivity : AppCompatActivity() {
     private fun processStartService(ip: String, port: String) {
         // start service
         if (MainService.isRunning(this)) {
+            appendLog("Before start service, stopping service...")
+            MainService.mediaCallback?.let { MainService.mediaController?.unregisterCallback(it) }
+            MainService.mediaController = null
+            MainService.mediaCallback = null
             stopService(Intent(this, MainService::class.java))
         }
-        MainService.mediaCallback?.let { MainService.mediaController?.unregisterCallback(it) }
-        MainService.mediaController = null
-        MainService.mediaCallback = null
         if (!MainService.isRunning(this)) {
+            appendLog("Starting service...")
             startService(Intent(this, MainService::class.java))
         }
 
@@ -212,13 +214,12 @@ class MainActivity : AppCompatActivity() {
         nm.createNotificationChannel(channel)
         val contentIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
         val actionIntent = PendingIntent.getService(this, 0, Intent(this, NotificationIntentService::class.java), PendingIntent.FLAG_UPDATE_CURRENT)
-        // val actionIntent = PendingIntent.getService(this, 0, Intent(this, MainService::class.java).setAction("UPDATE"), PendingIntent.FLAG_UPDATE_CURRENT)
         val notification = NotificationCompat.Builder(this, "ncmlatw")
             .setAutoCancel(false)
             .setOngoing(true)
             .setContentTitle("服务已启动")
             .addAction(R.mipmap.ic_launcher, "手动更新", actionIntent)
-            .setContentText("与 PC 端保持着连接")
+            .setContentText("正在与 PC 端保持着连接")
             .setWhen(System.currentTimeMillis())
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(contentIntent)
@@ -233,10 +234,11 @@ class MainActivity : AppCompatActivity() {
     private fun processStopService() {
         // stop service
         if (MainService.isRunning(this)) {
-            stopService(Intent(this, MainService::class.java))
+            appendLog("Stopping service...")
             MainService.mediaCallback?.let { MainService.mediaController?.unregisterCallback(it) }
             MainService.mediaController = null
             MainService.mediaCallback = null
+            stopService(Intent(this, MainService::class.java))
         }
 
         // update ui
@@ -289,7 +291,7 @@ class MainActivity : AppCompatActivity() {
 
         @UiThread
         override fun onServiceLifetime(text: String) {
-            appendLog(text)
+            appendLog("Service: $text")
         }
     }
 
@@ -297,7 +299,7 @@ class MainActivity : AppCompatActivity() {
      * Append text to log, send text to server with retrying, show alert dialog when failed and switch on.
      */
     @UiThread
-    private fun sendToServer(text: String, failAlert: Boolean = false) {
+    private fun sendToServer(text: String, failAlert: Boolean = true) {
         appendLog(text)
 
         Thread {
@@ -343,7 +345,6 @@ class MainActivity : AppCompatActivity() {
                     val state = it1.playbackState
                     val metadata = it1.metadata
                     if (state != null && metadata != null) {
-                        // TODO
                         it2.onMetadataChanged(metadata)
                         it2.onPlaybackStateChanged(state)
                     }
