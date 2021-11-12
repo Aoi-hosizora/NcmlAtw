@@ -25,7 +25,7 @@ namespace NcmlAtwServer {
         private const int BUFFER_MAX_SIZE = 4096;
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void StartService(int port) {
+        public void StartAndRunService(int port) {
             listener = new TcpListener(new IPEndPoint(IPAddress.Parse("0.0.0.0"), port));
             try {
                 listener.Start();
@@ -64,7 +64,7 @@ namespace NcmlAtwServer {
                     client.Close();
                 }
 
-                Thread.Sleep(100);
+                // Thread.Sleep(100);
             }
         }
 

@@ -11,6 +11,7 @@ namespace NcmlAtwServer {
     static class Global {
         public static bool IsListening { get; set; }
         public static double Offset { get; set; }
+        public static bool Pausing { get; set; }
 
         public static Metadata CurrentMetadata { get; set; }
         public static PlaybackState CurrentState { get; set; }

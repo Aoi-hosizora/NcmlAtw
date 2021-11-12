@@ -117,11 +117,25 @@ namespace NcmlAtwServer {
             return Convert.ToBase64String(encrypted);
         }
 
+        private class MyWebClient : WebClient {
+            private readonly int _timeout; // in seconds
+
+            public MyWebClient(int timeout) {
+                _timeout = timeout;
+            }
+
+            protected override WebRequest GetWebRequest(Uri uri) {
+                WebRequest w = base.GetWebRequest(uri);
+                w.Timeout = _timeout * 1000;
+                return w;
+            }
+        }
+
         // fake curl
         private string CURL(string url, Dictionary<string, string> parms, string method = "POST") {
             string result;
             var nuid = new string(Enumerable.Repeat(_NUIDRAND, 32).Select(s => s[_RANDOM.Next(s.Length)]).ToArray());
-            using (var wc = new WebClient()) {
+            using (var wc = new MyWebClient(timeout: 6)) {
                 wc.Proxy = new WebProxy();
                 wc.Headers.Add(HttpRequestHeader.ContentType, "application/x-www-form-urlencoded");
                 wc.Headers.Add(HttpRequestHeader.Referer, _REFERER);

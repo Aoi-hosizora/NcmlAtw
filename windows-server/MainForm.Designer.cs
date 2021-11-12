@@ -50,16 +50,18 @@ namespace NcmlAtwServer {
             this.lblLinkHint = new System.Windows.Forms.Label();
             this.lblLink = new System.Windows.Forms.Label();
             this.cmsAdjustOffset = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.miOffsetText = new System.Windows.Forms.ToolStripMenuItem();
-            this.miResetOffset = new System.Windows.Forms.ToolStripMenuItem();
-            this.sepAdjustOffset = new System.Windows.Forms.ToolStripSeparator();
             this.miFastHalfHalfSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miSlowHalfHalfSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miFastHalfSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miSlowHalfSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miFastSecond = new System.Windows.Forms.ToolStripMenuItem();
             this.miSlowSecond = new System.Windows.Forms.ToolStripMenuItem();
+            this.sepAdjustOffset = new System.Windows.Forms.ToolStripSeparator();
+            this.miOffsetText = new System.Windows.Forms.ToolStripMenuItem();
+            this.miResetOffset = new System.Windows.Forms.ToolStripMenuItem();
             this.tipText = new System.Windows.Forms.ToolTip(this.components);
+            this.ckbAutoDisconnect = new System.Windows.Forms.CheckBox();
+            this.ckbPauseIgnore = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).BeginInit();
             this.cmsText.SuspendLayout();
             this.gpbNetwork.SuspendLayout();
@@ -150,10 +152,10 @@ namespace NcmlAtwServer {
             // 
             this.btnListen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnListen.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnListen.Location = new System.Drawing.Point(12, 287);
+            this.btnListen.Location = new System.Drawing.Point(12, 314);
             this.btnListen.Name = "btnListen";
             this.btnListen.Size = new System.Drawing.Size(75, 25);
-            this.btnListen.TabIndex = 18;
+            this.btnListen.TabIndex = 20;
             this.btnListen.Text = "开始监听";
             this.btnListen.UseVisualStyleBackColor = true;
             this.btnListen.Click += new System.EventHandler(this.BtnListen_Click);
@@ -163,10 +165,10 @@ namespace NcmlAtwServer {
             this.btnShowLyric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnShowLyric.Enabled = false;
             this.btnShowLyric.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnShowLyric.Location = new System.Drawing.Point(93, 287);
+            this.btnShowLyric.Location = new System.Drawing.Point(93, 314);
             this.btnShowLyric.Name = "btnShowLyric";
             this.btnShowLyric.Size = new System.Drawing.Size(95, 25);
-            this.btnShowLyric.TabIndex = 19;
+            this.btnShowLyric.TabIndex = 21;
             this.btnShowLyric.Text = "显示桌面歌词";
             this.btnShowLyric.UseVisualStyleBackColor = true;
             this.btnShowLyric.Click += new System.EventHandler(this.BtnShowLyric_Click);
@@ -176,10 +178,10 @@ namespace NcmlAtwServer {
             this.btnVisitLink.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.btnVisitLink.Enabled = false;
             this.btnVisitLink.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnVisitLink.Location = new System.Drawing.Point(194, 287);
+            this.btnVisitLink.Location = new System.Drawing.Point(194, 314);
             this.btnVisitLink.Name = "btnVisitLink";
             this.btnVisitLink.Size = new System.Drawing.Size(75, 25);
-            this.btnVisitLink.TabIndex = 20;
+            this.btnVisitLink.TabIndex = 22;
             this.btnVisitLink.Text = "打开链接";
             this.btnVisitLink.UseVisualStyleBackColor = true;
             this.btnVisitLink.Click += new System.EventHandler(this.BtnVisitLink_Click);
@@ -189,10 +191,10 @@ namespace NcmlAtwServer {
             this.btnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnExit.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnExit.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.btnExit.Location = new System.Drawing.Point(275, 287);
+            this.btnExit.Location = new System.Drawing.Point(275, 314);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(75, 25);
-            this.btnExit.TabIndex = 21;
+            this.btnExit.TabIndex = 23;
             this.btnExit.Text = "退出";
             this.btnExit.UseVisualStyleBackColor = true;
             this.btnExit.Click += new System.EventHandler(this.BtnExit_Click);
@@ -339,7 +341,7 @@ namespace NcmlAtwServer {
             this.gpbMusic.Controls.Add(this.lblAlbum);
             this.gpbMusic.Location = new System.Drawing.Point(12, 128);
             this.gpbMusic.Name = "gpbMusic";
-            this.gpbMusic.Size = new System.Drawing.Size(338, 153);
+            this.gpbMusic.Size = new System.Drawing.Size(338, 152);
             this.gpbMusic.TabIndex = 7;
             this.gpbMusic.TabStop = false;
             this.gpbMusic.Text = "当前歌曲";
@@ -381,25 +383,6 @@ namespace NcmlAtwServer {
             this.miResetOffset});
             this.cmsAdjustOffset.Name = "cmsAdjustOffset";
             this.cmsAdjustOffset.Size = new System.Drawing.Size(165, 186);
-            // 
-            // miOffsetText
-            // 
-            this.miOffsetText.Enabled = false;
-            this.miOffsetText.Name = "miOffsetText";
-            this.miOffsetText.Size = new System.Drawing.Size(164, 22);
-            this.miOffsetText.Text = "当前时间差 : 0 秒";
-            // 
-            // miResetOffset
-            // 
-            this.miResetOffset.Name = "miResetOffset";
-            this.miResetOffset.Size = new System.Drawing.Size(164, 22);
-            this.miResetOffset.Text = "复原";
-            this.miResetOffset.Click += new System.EventHandler(this.MiResetOffset_Click);
-            // 
-            // sepAdjustOffset
-            // 
-            this.sepAdjustOffset.Name = "sepAdjustOffset";
-            this.sepAdjustOffset.Size = new System.Drawing.Size(161, 6);
             // 
             // miFastHalfHalfSecond
             // 
@@ -449,11 +432,59 @@ namespace NcmlAtwServer {
             this.miSlowSecond.Text = "慢 1 秒";
             this.miSlowSecond.Click += new System.EventHandler(this.MiAdjustOffset_Click);
             // 
+            // sepAdjustOffset
+            // 
+            this.sepAdjustOffset.Name = "sepAdjustOffset";
+            this.sepAdjustOffset.Size = new System.Drawing.Size(161, 6);
+            // 
+            // miOffsetText
+            // 
+            this.miOffsetText.Enabled = false;
+            this.miOffsetText.Name = "miOffsetText";
+            this.miOffsetText.Size = new System.Drawing.Size(164, 22);
+            this.miOffsetText.Text = "当前时间差 : 0 秒";
+            // 
+            // miResetOffset
+            // 
+            this.miResetOffset.Name = "miResetOffset";
+            this.miResetOffset.Size = new System.Drawing.Size(164, 22);
+            this.miResetOffset.Text = "复原";
+            this.miResetOffset.Click += new System.EventHandler(this.MiResetOffset_Click);
+            // 
+            // ckbAutoDisconnect
+            // 
+            this.ckbAutoDisconnect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ckbAutoDisconnect.Checked = true;
+            this.ckbAutoDisconnect.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ckbAutoDisconnect.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.ckbAutoDisconnect.Location = new System.Drawing.Point(12, 286);
+            this.ckbAutoDisconnect.Name = "ckbAutoDisconnect";
+            this.ckbAutoDisconnect.Size = new System.Drawing.Size(194, 22);
+            this.ckbAutoDisconnect.TabIndex = 18;
+            this.ckbAutoDisconnect.Text = "安卓端连接断开后自动结束监听";
+            this.ckbAutoDisconnect.UseVisualStyleBackColor = true;
+            this.ckbAutoDisconnect.CheckedChanged += new System.EventHandler(this.CkbAutoDisconnect_CheckedChanged);
+            // 
+            // ckbPauseIgnore
+            // 
+            this.ckbPauseIgnore.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ckbPauseIgnore.Enabled = false;
+            this.ckbPauseIgnore.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.ckbPauseIgnore.Location = new System.Drawing.Point(217, 286);
+            this.ckbPauseIgnore.Name = "ckbPauseIgnore";
+            this.ckbPauseIgnore.Size = new System.Drawing.Size(133, 22);
+            this.ckbPauseIgnore.TabIndex = 19;
+            this.ckbPauseIgnore.Text = "暂停并忽略任何消息";
+            this.ckbPauseIgnore.UseVisualStyleBackColor = true;
+            this.ckbPauseIgnore.CheckedChanged += new System.EventHandler(this.CkbPauseIgnore_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.CancelButton = this.btnExit;
-            this.ClientSize = new System.Drawing.Size(362, 324);
+            this.ClientSize = new System.Drawing.Size(362, 351);
+            this.Controls.Add(this.ckbPauseIgnore);
+            this.Controls.Add(this.ckbAutoDisconnect);
             this.Controls.Add(this.gpbMusic);
             this.Controls.Add(this.gpbNetwork);
             this.Controls.Add(this.btnExit);
@@ -463,7 +494,7 @@ namespace NcmlAtwServer {
             this.Font = new System.Drawing.Font("Microsoft YaHei UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(378, 0);
+            this.MinimumSize = new System.Drawing.Size(378, 390);
             this.Name = "MainForm";
             this.Text = "NcmlAtw Server";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
@@ -516,6 +547,8 @@ namespace NcmlAtwServer {
         private System.Windows.Forms.ToolStripSeparator sepAdjustOffset;
         private System.Windows.Forms.ToolStripMenuItem miFastHalfHalfSecond;
         private System.Windows.Forms.ToolStripMenuItem miSlowHalfHalfSecond;
+        private System.Windows.Forms.CheckBox ckbAutoDisconnect;
+        private System.Windows.Forms.CheckBox ckbPauseIgnore;
     }
 }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
 
@@ -15,7 +14,7 @@ namespace NcmlAtwServer {
 
         private static LyricForm _instance;
 
-        public bool IsShown { get; set; }
+        public bool TimerEnabled { get; set; }
 
         public static LyricForm Instance {
             get {
@@ -64,12 +63,17 @@ namespace NcmlAtwServer {
             }
 
             Utils.SetWindowCrossOver(this, Opacity, false);
+            tmrHide.Stop();
             tmrShow.Start();
         }
 
+        // =====================
+        // show and hide related
+        // =====================
+
         private void LyricForm_FormClosing(object sender, FormClosingEventArgs e) {
             _instance = null;
-            IsShown = false;
+            TimerEnabled = false;
             if (Opacity != 0) {
                 e.Cancel = true;
                 tmrShow.Stop();
@@ -85,19 +89,19 @@ namespace NcmlAtwServer {
         }
 
         private void TmrShow_Tick(object sender, EventArgs e) {
-            bool finished;
+            bool reached;
             if (Opacity < Properties.Settings.Default.LyricOpacity) {
                 Opacity += 0.05;
-                finished = Opacity >= Properties.Settings.Default.LyricOpacity;
+                reached = Opacity >= Properties.Settings.Default.LyricOpacity;
             } else {
                 Opacity -= 0.05;
-                finished = Opacity <= Properties.Settings.Default.LyricOpacity;
+                reached = Opacity <= Properties.Settings.Default.LyricOpacity;
             }
 
-            if (finished) {
-                IsShown = true;
+            if (reached) {
                 Opacity = Properties.Settings.Default.LyricOpacity;
                 Utils.SetWindowCrossOver(this, Opacity, Properties.Settings.Default.LyricLock);
+                TimerEnabled = true;
                 tmrShow.Stop();
             }
         }
@@ -111,6 +115,10 @@ namespace NcmlAtwServer {
                 tmrHide.Stop();
             }
         }
+
+        // ============
+        // move related
+        // ============
 
         private Point _mouseDownCursorPosition;
         private Point _mouseDownWindowPosition;
@@ -212,6 +220,10 @@ namespace NcmlAtwServer {
                 }
             }
         }
+
+        // =============
+        // event handler
+        // =============
 
         private void MiExit_Click(object sender, EventArgs e) {
             Close();
@@ -333,17 +345,22 @@ namespace NcmlAtwServer {
             }
         }
 
-        /// <summary>变换成的文字</summary>
-        private string _transformDestination = "";
-        /// <summary>是否是变换的第一部分，及渐变至 BackColor</summary>
-        private bool _isTransformFront = true;
-        /// <summary>变换速率</summary>
-        private const int _colorRate = 20;
+        // =============================================
+        // text transforming and lyric searching related
+        // =============================================
 
-        private void TransformToText(string s) {
+        /// <summary>变换成的文字</summary>
+        private string _tfToText = "";
+        /// <summary>是否是变换的第一部分，表示渐变至 BackColor</summary>
+        private bool _tfFirstStage = true;
+        /// <summary>变换速率</summary>
+        private const int _tfRate = 20;
+
+        private void TransformToText(string s, bool sync = false) {
             if (lblLyric.Text != s) {
-                _transformDestination = s;
-                _isTransformFront = true;
+                tmrText.Stop();
+                _tfToText = s;
+                _tfFirstStage = true;
                 tmrText.Start();
             }
         }
@@ -352,48 +369,48 @@ namespace NcmlAtwServer {
             int r = lblLyric.ForeColor.R;
             int g = lblLyric.ForeColor.G;
             int b = lblLyric.ForeColor.B;
-            var dest = _isTransformFront ? BackColor : Properties.Settings.Default.LyricForeColor; // BackColor -> ForeColor
-            r = (r == dest.R) ? r : ((r > dest.R) ? (r - _colorRate <= 0 ? 0 : r - _colorRate) : (r + _colorRate >= 255 ? 255 : r + _colorRate));
-            g = (g == dest.G) ? g : ((g > dest.G) ? (g - _colorRate <= 0 ? 0 : g - _colorRate) : (g + _colorRate >= 255 ? 255 : g + _colorRate));
-            b = (b == dest.B) ? b : ((b > dest.B) ? (b - _colorRate <= 0 ? 0 : b - _colorRate) : (b + _colorRate >= 255 ? 255 : b + _colorRate));
+            var dest = _tfFirstStage ? BackColor : Properties.Settings.Default.LyricForeColor; // ForeColor -> BackColor -> ForeColor
+            r = (r == dest.R) ? r : ((r > dest.R) ? Math.Max(r - _tfRate, 0) : Math.Min(r + _tfRate, 255));
+            g = (g == dest.G) ? g : ((g > dest.G) ? Math.Max(g - _tfRate, 0) : Math.Min(g + _tfRate, 255));
+            b = (b == dest.B) ? b : ((b > dest.B) ? Math.Max(b - _tfRate, 0) : Math.Min(b + _tfRate, 255));
             lblLyric.ForeColor = Color.FromArgb(r, g, b);
 
-            if (Math.Abs(r - dest.R) < _colorRate && Math.Abs(g - dest.G) < _colorRate && Math.Abs(b - dest.B) < _colorRate) {
-                if (_isTransformFront) {
-                    _isTransformFront = false;
-                    lblLyric.Text = _transformDestination;
-                } else {
+            if (Math.Abs(r - dest.R) < _tfRate && Math.Abs(g - dest.G) < _tfRate && Math.Abs(b - dest.B) < _tfRate) {
+                if (_tfFirstStage) { // 当前 ForeColor 为 BackColor
+                    _tfFirstStage = false;
+                    lblLyric.Text = _tfToText;
+                } else { // 文字变换已结束
                     tmrText.Stop();
                 }
             }
         }
 
-        /// <summary>当前的歌词行</summary>
+        /// <summary>当前的歌词行，-1 表示正在处理歌词</summary>
         private int _currentLineIdx = -1;
         private bool _isSearching = false;
 
-        /// <summary>更新当前的歌词</summary>
-        public void UpdateSongLyric(bool isSearching) {
+        /// <summary>更新当前的歌词显示</summary>
+        public void UpdateMusicLyric(bool searching) {
             _currentLineIdx = -1;
-            _isSearching = isSearching;
-            if (isSearching) {
+            _isSearching = searching;
+            if (searching) {
                 if (Global.CurrentMusicId == -1 || Global.CurrentMetadata == null) {
-                    TransformToText("正在搜索歌曲...");
+                    TransformToText("正在捜索歌曲...");
                 } else if (Global.CurrentLyricState == LyricState.NotFound) {
-                    TransformToText("正在搜索歌詞...");
+                    TransformToText("正在捜索歌詞...");
                 } else {
-                    TransformToText("正在搜索...");
+                    TransformToText("エラー");
                 }
-            } else if (Global.CurrentMusicId == -1 || Global.CurrentMetadata == null) {
-                TransformToText("未找到歌曲");
-            } else if (Global.CurrentLyricState == LyricState.NotFound) {
-                TransformToText("未找到歌詞");
-            } else if (Global.CurrentLyricState == LyricState.NoLyric) {
-                TransformToText("純音樂 請欣賞");
-            } else if (Global.CurrentMetadata != null) {
-                TransformToText(Global.CurrentMetadata.Title);
             } else {
-                TransformToText("......");
+                if (Global.CurrentMusicId == -1 || Global.CurrentMetadata == null) {
+                    TransformToText("未找到歌曲");
+                } else if (Global.CurrentLyricState == LyricState.NotFound) {
+                    TransformToText("未找到歌詞");
+                } else if (Global.CurrentLyricState == LyricState.NoLyric) {
+                    TransformToText("純音楽 請欣賞");
+                } else {
+                    TransformToText("正在準備歌詞");
+                }
             }
         }
 
@@ -407,24 +424,24 @@ namespace NcmlAtwServer {
             }
 
             // 歌词
-            if (_isSearching || Global.CurrentLyric == null || Global.CurrentMetadata == null) {
+            if (Global.Pausing || _isSearching || Global.CurrentMusicId == -1 || Global.CurrentMetadata == null || Global.CurrentLyric == null) {
                 return;
             }
             if (_currentLineIdx == -1) {
-                // 正文前
+                // => 正文前
                 TransformToText(Global.CurrentMetadata.Title);
                 if (Global.CurrentPosition >= Global.CurrentLyric.Lines.ElementAt(0).Duration) {
                     _currentLineIdx++;
                 }
             } else if (_currentLineIdx > Global.CurrentLyric.Lines.Count - 1) {
-                // 超过正文末尾
-                _currentLineIdx--;
+                // => 超过正文末尾
+                _currentLineIdx = Global.CurrentLyric.Lines.Count - 1;
             } else {
                 // 正文
                 var currLyric = Global.CurrentLyric.Lines.ElementAt(_currentLineIdx);
                 if (_currentLineIdx == Global.CurrentLyric.Lines.Count - 1) {
-                    // 最后一行
-                    if (Global.CurrentPosition <= currLyric.Duration) {
+                    // => 最后一行
+                    if (Global.CurrentPosition < currLyric.Duration) {
                         // 时间过快，上一行
                         _currentLineIdx--;
                     } else {
@@ -432,15 +449,15 @@ namespace NcmlAtwServer {
                         TransformToText(currLyric.Lyric);
                     }
                 } else {
-                    // 非最后一行
+                    // => 非最后一行
                     var nextLyric = Global.CurrentLyric.Lines.ElementAt(_currentLineIdx + 1);
-                    if (Global.CurrentPosition >= currLyric.Duration && Global.CurrentPosition <= nextLyric.Duration) {
+                    if (Global.CurrentPosition >= currLyric.Duration && Global.CurrentPosition < nextLyric.Duration) {
                         // 到达行内
                         TransformToText(currLyric.Lyric);
                     } else if (Global.CurrentPosition >= nextLyric.Duration) {
                         // 下一行
                         _currentLineIdx++;
-                    } else if (Global.CurrentPosition <= currLyric.Duration) {
+                    } else if (Global.CurrentPosition < currLyric.Duration) {
                         // 上一行
                         _currentLineIdx--;
                     }

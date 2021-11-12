@@ -40,6 +40,7 @@ namespace NcmlAtwServer {
                 cbbInterface.SelectedIndex = 0;
             }
             numPort.Value = Properties.Settings.Default.Port;
+            ckbAutoDisconnect.Checked = Properties.Settings.Default.AutoDisconnect;
 
             lblDuration.Text = "未监听...";
             _globalTimer = new Timer(20);
@@ -76,13 +77,17 @@ namespace NcmlAtwServer {
                 new Thread(() => {
                     while (true) {
                         if (LyricForm.Instance.Opacity <= 0) {
-                            Invoke(new Action(() => Close()));
+                            Invoke(new Action(() => Close())); // 下一次 Close 直接退出
                             break;
                         }
                     }
                 }).Start();
             }
         }
+
+        // =============
+        // event handler
+        // =============
 
         private void BtnExit_Click(object sender, EventArgs e) {
             Close();
@@ -137,6 +142,15 @@ namespace NcmlAtwServer {
             }
         }
 
+        private void CkbAutoDisconnect_CheckedChanged(object sender, EventArgs e) {
+            Properties.Settings.Default.AutoDisconnect = (sender as CheckBox).Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void CkbPauseIgnore_CheckedChanged(object sender, EventArgs e) {
+            Global.Pausing = (sender as CheckBox).Checked;
+        }
+
         private void BtnShowLyric_Click(object sender, EventArgs e) {
             var form = LyricForm.Instance;
             form.Activate();
@@ -152,14 +166,17 @@ namespace NcmlAtwServer {
             }
         }
 
-        // ===========
-        // key methods
-        // ===========
+        // ===============
+        // service related
+        // ===============
 
+        /// <summary>执行 socket 服务线程</summary>
         private Thread _socketThread;
         private SocketService _socketService;
-        private Timer _globalTimer;
+        /// <summary>用于搜索歌曲和歌词</summary>
         private Thread _searchThread;
+        /// <summary>全局计时器：歌曲状态显示、歌曲时间更新、歌词显示</summary>
+        private Timer _globalTimer;
 
         private void StartService() {
             _socketService = new SocketService {
@@ -175,29 +192,31 @@ namespace NcmlAtwServer {
                     Properties.Settings.Default.Save();
 
                     Global.IsListening = true;
-                    btnListen.Text = "结束监听";
-                    cbbInterface.Enabled = false;
-                    numPort.ReadOnly = true;
-                    btnQrcode.Enabled = true;
-
+                    Global.Pausing = false;
                     Global.CurrentMetadata = null;
                     Global.CurrentState = null;
                     Global.CurrentPosition = 0;
                     Global.CurrentMusicId = -1;
 
                     // <<<
+                    btnListen.Text = "结束监听";
+                    cbbInterface.Enabled = false; // 网络监听
+                    numPort.ReadOnly = true;
+                    btnQrcode.Enabled = true;
+                    lblDuration.Text = "正在等待歌曲..."; // 当前歌曲
                     btnAdjustOffset.Enabled = false;
-                    btnShowLyric.Enabled = false;
-                    btnVisitLink.Enabled = false;
-                    lblDuration.Text = "正在等待歌曲...";
-                    lblTitle.Visible = lblTitleHint.Visible = false;
-                    lblArtist.Visible = lblArtistHint.Visible = false;
-                    lblAlbum.Visible = lblAlbumHint.Visible = false;
-                    lblLink.Visible = lblLinkHint.Visible = false;
                     lblTitle.Text = "未知标题";
                     lblAlbum.Text = "未知专辑";
                     lblArtist.Text = "未知歌手";
                     lblLink.Text = "未知链接";
+                    lblTitle.Visible = lblTitleHint.Visible = false;
+                    lblArtist.Visible = lblArtistHint.Visible = false;
+                    lblAlbum.Visible = lblAlbumHint.Visible = false;
+                    lblLink.Visible = lblLinkHint.Visible = false;
+                    ckbPauseIgnore.Enabled = true; // 下方按钮
+                    ckbPauseIgnore.Checked = false;
+                    btnShowLyric.Enabled = false;
+                    btnVisitLink.Enabled = false;
                 })),
                 pingCallback = () => Invoke(new Action(() => {
                     Console.WriteLine("pong");
@@ -206,115 +225,117 @@ namespace NcmlAtwServer {
                 metadataCallback = (o) => Invoke(new Action(() => SocketMetadataCallback(o))),
                 playbackStateCallback = (o) => Invoke(new Action(() => SocketPlaybackStateCallback(o))),
                 sessionDestroyedCallback = () => Invoke(new Action(() => {
-                    StopService();
-                    MessageBox.Show("安卓端的连接已经断开。", "监听", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if (ckbAutoDisconnect.Checked) {
+                        StopService();
+                        MessageBox.Show("安卓端的连接已经断开。", "监听", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 })),
             };
 
             int port = (int) numPort.Value;
-            _socketThread = new Thread(() => _socketService.StartService(port)) {
+            _socketThread = new Thread(() => _socketService.StartAndRunService(port)) {
                 IsBackground = true
             };
             _socketThread.Start();
         }
 
         private void StopService() {
+            _searchThread?.Abort();
+            _searchThread = null;
+            _globalTimer.Stop();
             _socketService?.StopService();
             _socketService = null;
             _socketThread?.Abort();
             _socketThread = null;
-            _globalTimer.Stop();
-            _searchThread?.Abort();
-            _searchThread = null;
             if (LyricForm.Instance.Opacity != 0) {
                 LyricForm.Instance.Close();
             }
 
-            Global.IsListening = false;
+            // <<<
             btnListen.Text = "开始监听";
-            cbbInterface.Enabled = true;
+            cbbInterface.Enabled = true; // 网络监听
             numPort.ReadOnly = false;
             btnQrcode.Enabled = false;
-
-            Global.CurrentMetadata = null;
-            Global.CurrentState = null;
-            Global.CurrentPosition = 0;
-            Global.CurrentMusicId = -1;
-
-            // <<<
+            lblDuration.Text = "未监听..."; // 当前歌曲
             btnAdjustOffset.Enabled = false;
-            btnShowLyric.Enabled = false;
-            btnVisitLink.Enabled = false;
-            lblDuration.Text = "未监听...";
             lblTitle.Visible = lblTitleHint.Visible = false;
             lblArtist.Visible = lblArtistHint.Visible = false;
             lblAlbum.Visible = lblAlbumHint.Visible = false;
             lblLink.Visible = lblLinkHint.Visible = false;
+            ckbPauseIgnore.Enabled = false; // 下方按钮
+            ckbPauseIgnore.Checked = false;
+            btnShowLyric.Enabled = false;
+            btnVisitLink.Enabled = false;
+
+            Global.IsListening = false;
+            Global.Pausing = false;
+            Global.CurrentMetadata = null;
+            Global.CurrentState = null;
+            Global.CurrentPosition = 0;
+            Global.CurrentMusicId = -1;
         }
 
         private void SocketMetadataCallback(Metadata obj) {
-            if (!Global.IsListening) {
+            if (!Global.IsListening || Global.Pausing) {
                 return;
             }
-            if (Global.CurrentMetadata != null && Global.CurrentMetadata.Equals(obj)) {
+            if (Global.CurrentMetadata?.Equals(obj) == true) {
                 return;
             }
             Global.CurrentMetadata = obj;
             Global.CurrentPosition = 0;
-            Global.CurrentMusicId = -1;
+            Global.CurrentMusicId = -1; // 等待搜索歌曲
+            Global.CurrentLyric = null;
+            Global.CurrentLyricState = LyricState.NotFound;
 
             // <<<
             btnAdjustOffset.Enabled = true;
-            btnShowLyric.Enabled = true;
-            btnVisitLink.Enabled = true;
-            lblTitle.Visible = lblTitleHint.Visible = true;
-            lblArtist.Visible = lblArtistHint.Visible = true;
-            lblAlbum.Visible = lblAlbumHint.Visible = true;
-            lblLink.Visible = lblLinkHint.Visible = true;
             lblTitle.Text = obj.Title;
             lblArtist.Text = obj.Artist;
             lblAlbum.Text = obj.Album;
             lblLink.Text = "未知链接";
+            lblTitle.Visible = lblTitleHint.Visible = true;
+            lblArtist.Visible = lblArtistHint.Visible = true;
+            lblAlbum.Visible = lblAlbumHint.Visible = true;
+            lblLink.Visible = lblLinkHint.Visible = true;
             tipText.SetToolTip(lblTitle, lblTitle.Text);
             tipText.SetToolTip(lblArtist, lblArtist.Text);
             tipText.SetToolTip(lblAlbum, lblAlbum.Text);
             tipText.SetToolTip(lblLink, lblLink.Text);
+            btnShowLyric.Enabled = true;
+            btnVisitLink.Enabled = true;
 
             _globalTimer.Start();
             _searchThread?.Abort();
             _searchThread = new Thread(() => {
-                Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: true)));
-                Global.CurrentMusicId = -1;
-                Global.CurrentLyric = null;
-                Global.CurrentLyricState = LyricState.NotFound;
-
+                // search music
+                Invoke(new Action(() => LyricForm.Instance.UpdateMusicLyric(searching: true)));
                 var song = Utils.SearchMusicFromNcma(obj);
                 if (song == null) {
-                    Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: false)));
+                    Invoke(new Action(() => LyricForm.Instance.UpdateMusicLyric(searching: false)));
                     return;
                 }
-
                 Global.CurrentMusicId = song.Id;
                 Invoke(new Action(() => {
                     lblLink.Text = Utils.GetMusicLink(song.Id);
                     tipText.SetToolTip(lblLink, lblLink.Text);
                 }));
 
-                Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: true)));
+                // search music lyric
+                Invoke(new Action(() => LyricForm.Instance.UpdateMusicLyric(searching: true)));
                 var (lyricPage, lyricState) = Utils.SearchLyricFromNcma(song.Id);
                 Console.WriteLine($"Lyric lines: {lyricPage?.Lines?.Count ?? 0}, Lyric state: {lyricState}");
-                Global.CurrentLyric = null;
                 Global.CurrentLyricState = lyricState;
                 if (lyricState == LyricState.Found) {
                     Global.CurrentLyric = lyricPage;
                 }
-                Invoke(new Action(() => LyricForm.Instance.UpdateSongLyric(isSearching: false)));
+                Invoke(new Action(() => LyricForm.Instance.UpdateMusicLyric(searching: false)));
             });
             _searchThread.Start();
         }
 
         private void SocketPlaybackStateCallback(PlaybackState obj) {
-            if (!Global.IsListening) {
+            if (!Global.IsListening || Global.Pausing) {
                 return;
             }
 
@@ -324,38 +345,46 @@ namespace NcmlAtwServer {
 
             // <<<
             btnAdjustOffset.Enabled = true;
-            btnShowLyric.Enabled = true;
-            btnVisitLink.Enabled = true;
             lblTitle.Visible = lblTitleHint.Visible = true;
             lblArtist.Visible = lblArtistHint.Visible = true;
             lblAlbum.Visible = lblAlbumHint.Visible = true;
             lblLink.Visible = lblLinkHint.Visible = true;
+            btnShowLyric.Enabled = true;
+            btnVisitLink.Enabled = true;
 
             _globalTimer.Start();
         }
 
+        private void UpdateShownDuration(double current, double total) {
+            int curSec = (int) (current / 60.0);
+            int curMs = (int) (current % 60.0);
+            int totSec = (int) (total / 60.0);
+            int totMs = (int) (total % 60.0);
+            lblDuration.Text = string.Format("当前进度 : {0:00}:{1:00} / {2:00}:{3:00}", curSec, curMs, totSec, totMs);
+        }
+
         private void GlobalTimer_Elapsed(object sender, ElapsedEventArgs e) {
-            if (LyricForm.Instance.IsShown) {
+            if (LyricForm.Instance.TimerEnabled) {
                 try {
                     LyricForm.Instance.GlobalTimer_Elapsed(sender, e);
                 } catch { }
             }
+            if (!Global.IsListening || Global.Pausing) {
+                return;
+            }
 
             if (Global.CurrentMetadata == null) {
                 lblDuration.Text = "正在等待歌曲...";
-            } else if (Global.CurrentState == null) {
-                var tot = Global.CurrentMetadata.Duration;
-                lblDuration.Text = string.Format("当前进度 : 00:00 / {0:00}:{1:00}", (int) (tot / 60.0), (int) (tot % 60.0));
-            } else {
+            } else if (Global.CurrentState == null) { // 无当前时间
+                UpdateShownDuration(current: 0, total: Global.CurrentMetadata.Duration);
+            } else if (!Global.CurrentState.IsPlaying) { // 暂停中
+                UpdateShownDuration(current: Global.CurrentState.CurrentPosition + Global.Offset, total: Global.CurrentMetadata.Duration);
+            } else { // 实时更新时间
                 long now = Utils.GetCurrentTimestamp(); // ms
                 Global.CurrentPosition = Global.CurrentState.CurrentPosition + (double) ((now - Global.LastUpdateTimestamp) / 1000.0) + Global.Offset;
-                if (!Global.CurrentState.IsPlaying || Global.CurrentPosition >= Global.CurrentMetadata.Duration) {
-                    return;
+                if (Global.CurrentPosition <= Global.CurrentMetadata.Duration) {
+                    UpdateShownDuration(current: Global.CurrentPosition, total: Global.CurrentMetadata.Duration);
                 }
-
-                var cur = Global.CurrentPosition;
-                var tot = Global.CurrentMetadata.Duration;
-                lblDuration.Text = string.Format("当前进度 : {0:00}:{1:00} / {2:00}:{3:00}", (int) (cur / 60.0), (int) (cur % 60.0), (int) (tot / 60.0), (int) (tot % 60.0));
             }
         }
     }
